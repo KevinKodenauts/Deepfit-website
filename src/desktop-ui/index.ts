@@ -4,6 +4,7 @@ export { default as BlogDetailDesktop } from "./blog/BlogDetailDesktop";
 export { default as SearchDesktop } from "./search/SearchDesktop";
 export { default as CartDesktop } from "./cart/CartDesktop";
 export { default as OrdersDesktop } from "./orders/OrdersDesktop";
+export { default as NotificationsDesktop } from "./notifications/NotificationsDesktop";
 export { default as MyEquipmentDesktop } from "./exercise/my-equipment/MyEquipmentDesktop";
 export { default as ProductDetailDesktop } from "./product/ProductDetailDesktop";
 export { default as ProfileDesktop } from "./profile/ProfileDesktop";

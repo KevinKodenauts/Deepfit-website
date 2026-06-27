@@ -39,12 +39,19 @@ type CartContextValue = {
   openAddToCart: (product: AddToCartProduct) => void;
   closeCart: () => void;
   refreshCart: (options?: { silent?: boolean }) => Promise<void>;
-  confirmAddToCart: (quantity: number) => Promise<string | null>;
+  confirmAddToCart: (
+    quantity: number,
+    productOverride?: AddToCartProduct,
+  ) => Promise<string | null>;
   updateQuantity: (cartItemId: number, qty: number) => Promise<void>;
   removeItem: (cartItemId: number) => Promise<void>;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
+
+function isApiSuccess(status: unknown): boolean {
+  return status === true || status === "true" || status === 1 || status === "1";
+}
 
 async function resolveVariantIds(product: AddToCartProduct) {
   if (product.variantId && product.productAttributeId) {
@@ -61,13 +68,15 @@ async function resolveVariantIds(product: AddToCartProduct) {
 
   const variant =
     product.variantId && details.variants?.length
-      ? details.variants.find((item) => item.id === product.variantId) ??
-        details.variants[0]
+      ? (details.variants.find((item) => item.id === product.variantId) ??
+        details.variants[0])
       : details.variants?.[0];
 
   const variantId = variant?.id;
   const productAttributeId =
-    variant?.attributeDetails?.id ?? details.attributes?.[0]?.id;
+    product.productAttributeId ??
+    variant?.attributeDetails?.id ??
+    details.attributes?.[0]?.id;
 
   if (!variantId || !productAttributeId) {
     throw new Error("Please select product variant");
@@ -82,10 +91,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [pendingProduct, setPendingProduct] = useState<AddToCartProduct | null>(
-    null
+    null,
   );
   const itemsRef = useRef(items);
+  const pendingProductRef = useRef<AddToCartProduct | null>(null);
   itemsRef.current = items;
+  pendingProductRef.current = pendingProduct;
 
   const refreshCart = useCallback(async (options?: { silent?: boolean }) => {
     const customerId = getCustomerId();
@@ -103,7 +114,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const cart = await getCart(customerId);
       setItems(cart);
     } catch {
-      setItems([]);
+      // Keep existing cart items on transient fetch errors.
     } finally {
       if (!silent) {
         setIsLoading(false);
@@ -130,8 +141,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const confirmAddToCart = useCallback(
-    async (quantity: number) => {
-      if (!pendingProduct) {
+    async (quantity: number, productOverride?: AddToCartProduct) => {
+      const product = productOverride ?? pendingProductRef.current;
+      if (!product) {
         return "No product selected.";
       }
 
@@ -142,20 +154,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
       try {
         const { variantId, productAttributeId } =
-          await resolveVariantIds(pendingProduct);
+          await resolveVariantIds(product);
 
         const result = await addToCartApi(customerId, {
-          productId: pendingProduct.productId,
+          productId: product.productId,
           qty: quantity,
           productAttributeId,
           productVariantId: variantId,
         });
 
-        if (!result.status) {
+        if (!isApiSuccess(result.status)) {
           return result.message ?? "Could not add to cart.";
         }
 
-        await refreshCart();
+        await refreshCart({ silent: false });
         closeCart();
         return null;
       } catch (error) {
@@ -164,7 +176,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           : "Could not add to cart.";
       }
     },
-    [pendingProduct, refreshCart, closeCart]
+    [refreshCart, closeCart],
   );
 
   const updateQuantity = useCallback(

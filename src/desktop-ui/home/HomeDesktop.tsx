@@ -1,17 +1,21 @@
 "use client";
 
 import FallbackImage from "@/components/FallbackImage";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ShoppingBag, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Grid3x3,
+  Search,
+  Sparkles,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { CurrencyAmount } from "@/components/CurrencySymbol";
 import { mapToHomeProduct, type HomeProductView } from "@/lib/api/mappers";
 import type {
   DashboardBanner,
-  DashboardCategory,
   DashboardData,
-  MainCategory,
   PopularCollection,
 } from "@/lib/api/types";
 import { buildProductHref } from "@/lib/productNavigation";
@@ -22,21 +26,14 @@ const SLIDER_INTERVAL_MS = 5000;
 
 export default function HomeDesktop() {
   const router = useRouter();
-  const {
-    isLoading,
-    dashboard,
-    mainCategories,
-    selectedCategoryIndex,
-    handleCategorySelect,
-    visibleCategories,
-  } = useHomeDashboard();
+  const { isLoading, dashboard } = useHomeDashboard();
 
   const openProduct = useCallback(
     (productId: number, products: HomeProductView[]) => {
       const ids = [...new Set(products.map((item) => item.id))];
       router.push(buildProductHref(productId, ids));
     },
-    [router]
+    [router],
   );
 
   const sliders = dashboard?.sliderList ?? [];
@@ -46,36 +43,29 @@ export default function HomeDesktop() {
       {sliders.length > 0 && <HeroCarousel sliders={sliders} />}
 
       <div className={styles.body}>
-        <CategoryRow
-          categories={mainCategories}
-          isLoading={isLoading}
-          selectedIndex={selectedCategoryIndex}
-          onSelect={handleCategorySelect}
-        />
-
         {isLoading && !dashboard ? (
           <div className={styles.loadingWrap}>
             <div className={styles.loadingSpinner} />
           </div>
         ) : (
           <>
-            {visibleCategories.map((category, index) => (
-              <div key={category.id}>
-                <CategoryBlock
-                  category={category}
-                  onSubCategoryClick={() =>
-                    router.push(`/categories?main=${category.id}`)
-                  }
-                />
-                {index === 1 && (dashboard?.brandsList?.length ?? 0) > 0 && (
-                  <BrandsSection brands={dashboard?.brandsList ?? []} />
-                )}
-              </div>
-            ))}
+            <QuickLinksSection
+              onBrowseCategories={() => router.push("/categories")}
+              onSearch={() => router.push("/search")}
+            />
 
             <SpecialOfferSection
               banner={dashboard?.bannerList?.[0]}
               onOpen={(id) => openProduct(id, [])}
+            />
+
+            <ProductGridSection
+              title="Top Selling Products"
+              subtitle="What our customers buy most"
+              products={(dashboard?.topSellingProductList ?? []).map(
+                mapToHomeProduct,
+              )}
+              onOpen={openProduct}
             />
 
             <PopularCollectionsSection
@@ -83,29 +73,32 @@ export default function HomeDesktop() {
               onSelect={() => router.push("/categories")}
             />
 
-            <AdvertiseSection banners={dashboard?.advertiseBannerList ?? []} />
+            {(dashboard?.brandsList?.length ?? 0) > 0 && (
+              <BrandsSection brands={dashboard?.brandsList ?? []} />
+            )}
 
-            <ProductGridSection
-              title="Top Selling Products"
-              products={(dashboard?.topSellingProductList ?? []).map(
-                mapToHomeProduct
-              )}
-              onOpen={openProduct}
-            />
-            <ProductGridSection
-              title="Top Rated Products"
-              products={(dashboard?.topRatedProductList ?? []).map(
-                mapToHomeProduct
-              )}
-              onOpen={openProduct}
-            />
-            <ProductGridSection
-              title="Featured Products"
-              products={(dashboard?.featuredProductList ?? []).map(
-                mapToHomeProduct
-              )}
-              onOpen={openProduct}
-            />
+            <div className={styles.splitSections}>
+              <ProductGridSection
+                title="Top Rated"
+                subtitle="Highest rated by shoppers"
+                products={(dashboard?.topRatedProductList ?? []).map(
+                  mapToHomeProduct,
+                )}
+                onOpen={openProduct}
+                compact
+              />
+              <ProductGridSection
+                title="Featured Products"
+                subtitle="Hand-picked for you"
+                products={(dashboard?.featuredProductList ?? []).map(
+                  mapToHomeProduct,
+                )}
+                onOpen={openProduct}
+                compact
+              />
+            </div>
+
+            <AdvertiseSection banners={dashboard?.advertiseBannerList ?? []} />
           </>
         )}
       </div>
@@ -125,7 +118,7 @@ function HeroCarousel({
     (index: number) => {
       setCurrentIndex((index + sliders.length) % sliders.length);
     },
-    [sliders.length]
+    [sliders.length],
   );
 
   const goNext = useCallback(() => {
@@ -218,120 +211,78 @@ function HeroCarousel({
   );
 }
 
-function CategoryRow({
-  categories,
-  isLoading,
-  selectedIndex,
-  onSelect,
+function QuickLinksSection({
+  onBrowseCategories,
+  onSearch,
 }: {
-  categories: MainCategory[];
-  isLoading: boolean;
-  selectedIndex: number;
-  onSelect: (index: number, category?: MainCategory) => void;
+  onBrowseCategories: () => void;
+  onSearch: () => void;
 }) {
-  if (isLoading && categories.length === 0) {
-    return (
-      <div className={styles.loadingWrap}>
-        <div className={styles.loadingSpinner} />
-      </div>
-    );
-  }
-
   return (
-    <div className={styles.categoryRow}>
+    <section className={styles.quickLinks}>
       <button
         type="button"
-        className={`${styles.categoryChip} ${
-          selectedIndex === 0 ? styles.categoryChipActive : ""
-        }`}
-        onClick={() => onSelect(0)}
+        className={styles.quickLinkCard}
+        onClick={onBrowseCategories}
       >
-        <div className={styles.categoryIcon}>
-          <ShoppingBag size={24} color="#624da4" />
-        </div>
-        <span className={styles.categoryLabel}>All</span>
+        <span className={styles.quickLinkIcon}>
+          <Grid3x3 size={22} />
+        </span>
+        <span className={styles.quickLinkText}>
+          <span className={styles.quickLinkTitle}>Browse categories</span>
+          <span className={styles.quickLinkDesc}>
+            Explore supplements, gear &amp; more
+          </span>
+        </span>
+        <ArrowRight size={18} className={styles.quickLinkArrow} />
       </button>
 
-      {categories.map((category, index) => {
-        const itemIndex = index + 1;
-        const isSelected = selectedIndex === itemIndex;
-        return (
-          <button
-            key={category.id}
-            type="button"
-            className={`${styles.categoryChip} ${
-              isSelected ? styles.categoryChipActive : ""
-            }`}
-            onClick={() => onSelect(itemIndex, category)}
-          >
-            <div className={styles.categoryIcon}>
-              {category.mainCategoryImage ? (
-                <Image
-                  src={category.mainCategoryImage}
-                  alt={category.mainCategoryName}
-                  width={64}
-                  height={64}
-                  className={styles.categoryImage}
-                />
-              ) : (
-                <ShoppingBag size={24} color="#624da4" />
-              )}
-            </div>
-            <span className={styles.categoryLabel}>
-              {category.mainCategoryName}
-            </span>
-          </button>
-        );
-      })}
-    </div>
+      <button
+        type="button"
+        className={styles.quickLinkCard}
+        onClick={onSearch}
+      >
+        <span className={styles.quickLinkIcon}>
+          <Search size={22} />
+        </span>
+        <span className={styles.quickLinkText}>
+          <span className={styles.quickLinkTitle}>Search products</span>
+          <span className={styles.quickLinkDesc}>
+            Find exactly what you need
+          </span>
+        </span>
+        <ArrowRight size={18} className={styles.quickLinkArrow} />
+      </button>
+    </section>
   );
 }
 
-function CategoryBlock({
-  category,
-  onSubCategoryClick,
+function SectionHeader({
+  title,
+  subtitle,
+  action,
 }: {
-  category: DashboardCategory;
-  onSubCategoryClick: () => void;
+  title: string;
+  subtitle?: string;
+  action?: { label: string; onClick: () => void };
 }) {
-  const subCategories = category.subCategories ?? [];
-  if (subCategories.length === 0) return null;
-
   return (
-    <section className={styles.categoryBlock}>
-      <div className={styles.categoryHeader}>
-        <h2 className={styles.categoryBlockTitle}>{category.categoryName}</h2>
+    <div className={styles.sectionHeader}>
+      <div className={styles.sectionHeaderText}>
+        <h2 className={styles.sectionTitle}>{title}</h2>
+        {subtitle && <p className={styles.sectionSubtitle}>{subtitle}</p>}
+      </div>
+      {action && (
         <button
           type="button"
-          className={styles.seeAllBtn}
-          onClick={onSubCategoryClick}
+          className={styles.sectionAction}
+          onClick={action.onClick}
         >
-          See all
+          {action.label}
+          <ArrowRight size={16} />
         </button>
-      </div>
-      <div className={styles.subCategoryRow}>
-        {subCategories.map((sub) => (
-          <button
-            key={sub.id}
-            type="button"
-            className={styles.subCategoryCard}
-            onClick={onSubCategoryClick}
-          >
-            <div className={styles.subCategoryImageWrap}>
-              <FallbackImage
-                src={sub.subCategoryImage}
-                alt={sub.subCategoryName}
-                fill
-                className={styles.productImage}
-              />
-            </div>
-            <span className={styles.subCategoryLabel}>
-              {sub.subCategoryName}
-            </span>
-          </button>
-        ))}
-      </div>
-    </section>
+      )}
+    </div>
   );
 }
 
@@ -342,7 +293,10 @@ function BrandsSection({
 }) {
   return (
     <section className={styles.section}>
-      <h2 className={styles.sectionTitle}>Top Brands</h2>
+      <SectionHeader
+        title="Top Brands"
+        subtitle="Trusted names in fitness & wellness"
+      />
       <div className={styles.brandTrack}>
         {brands.map((brand) => (
           <div key={brand.id} className={styles.brandCard}>
@@ -375,35 +329,45 @@ function SpecialOfferSection({
         className={styles.specialOfferCard}
         onClick={() => onOpen(banner.id)}
       >
-        <div className={styles.specialOfferImageWrap}>
-          <FallbackImage
-            src={banner.productImage || banner.bannerImage}
-            alt={banner.productName || banner.bannerName}
-            fill
-            className={styles.specialOfferImage}
-          />
+        <div className={styles.specialOfferBadge}>
+          <Sparkles size={14} />
+          Limited time deal
         </div>
-        <div className={styles.specialOfferBody}>
-          <span className={styles.specialOfferLabel}>Limited time deal</span>
-          <p className={styles.specialOfferName}>
-            {banner.productName || banner.bannerName}
-          </p>
-          <div className={styles.specialOfferPrices}>
-            {banner.offerPrice != null && (
-              <span className={styles.specialOfferPrice}>
-                <CurrencyAmount>{Math.round(banner.offerPrice)}</CurrencyAmount>
-              </span>
-            )}
-            {banner.originalPrice != null &&
-              banner.originalPrice > (banner.offerPrice ?? 0) && (
-                <span className={styles.specialOfferMrp}>
+        <div className={styles.specialOfferContent}>
+          <div className={styles.specialOfferImageWrap}>
+            <FallbackImage
+              src={banner.productImage || banner.bannerImage}
+              alt={banner.productName || banner.bannerName}
+              fill
+              className={styles.specialOfferImage}
+            />
+          </div>
+          <div className={styles.specialOfferBody}>
+            <p className={styles.specialOfferName}>
+              {banner.productName || banner.bannerName}
+            </p>
+            <div className={styles.specialOfferPrices}>
+              {banner.offerPrice != null && (
+                <span className={styles.specialOfferPrice}>
                   <CurrencyAmount>
-                    {Math.round(banner.originalPrice)}
+                    {Math.round(banner.offerPrice)}
                   </CurrencyAmount>
                 </span>
               )}
+              {banner.originalPrice != null &&
+                banner.originalPrice > (banner.offerPrice ?? 0) && (
+                  <span className={styles.specialOfferMrp}>
+                    <CurrencyAmount>
+                      {Math.round(banner.originalPrice)}
+                    </CurrencyAmount>
+                  </span>
+                )}
+            </div>
+            <span className={styles.specialOfferCta}>
+              Shop now
+              <ArrowRight size={16} />
+            </span>
           </div>
-          <span className={styles.specialOfferCta}>Shop now</span>
         </div>
       </button>
     </section>
@@ -421,7 +385,11 @@ function PopularCollectionsSection({
 
   return (
     <section className={styles.section}>
-      <h2 className={styles.sectionTitle}>Popular Collections</h2>
+      <SectionHeader
+        title="Popular Collections"
+        subtitle="Shop curated picks by category"
+        action={{ label: "View all", onClick: onSelect }}
+      />
       <div className={styles.collectionsGrid}>
         {collections.map((collection) => (
           <button
@@ -440,6 +408,10 @@ function PopularCollectionsSection({
               <span className={styles.collectionTitle}>
                 {collection.mainCategoryName}
               </span>
+              <span className={styles.collectionCta}>
+                Explore
+                <ArrowRight size={14} />
+              </span>
             </div>
           </button>
         ))}
@@ -453,7 +425,7 @@ function AdvertiseSection({ banners }: { banners: DashboardBanner[] }) {
 
   return (
     <section className={styles.section}>
-      <h2 className={styles.sectionTitle}>Special Offers</h2>
+      <SectionHeader title="Special Offers" subtitle="Exclusive deals for you" />
       <div className={styles.adTrack}>
         {banners.map((banner) => (
           <div key={banner.id} className={styles.adCard}>
@@ -472,19 +444,27 @@ function AdvertiseSection({ banners }: { banners: DashboardBanner[] }) {
 
 function ProductGridSection({
   title,
+  subtitle,
   products,
   onOpen,
+  compact = false,
 }: {
   title: string;
+  subtitle?: string;
   products: HomeProductView[];
   onOpen: (productId: number, products: HomeProductView[]) => void;
+  compact?: boolean;
 }) {
   if (products.length === 0) return null;
 
   return (
-    <section className={styles.section}>
-      <h2 className={styles.sectionTitle}>{title}</h2>
-      <div className={styles.productGrid}>
+    <section
+      className={`${styles.section} ${compact ? styles.sectionCompact : ""}`}
+    >
+      <SectionHeader title={title} subtitle={subtitle} />
+      <div
+        className={`${styles.productGrid} ${compact ? styles.productGridCompact : ""}`}
+      >
         {products.map((product) => (
           <button
             key={product.id}
