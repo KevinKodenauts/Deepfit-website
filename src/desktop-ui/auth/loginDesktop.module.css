@@ -1,0 +1,260 @@
+.page {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  background: linear-gradient(180deg, #f3f6f8 0%, #eef2f5 100%);
+  font-family: var(--font-outfit), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.page :where(button, input, select, textarea, a) {
+  font-family: inherit;
+}
+
+.skipRow {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+}
+
+.skipLink {
+  font-size: 14px;
+  font-weight: 500;
+  color: #424242;
+  text-decoration: none;
+}
+
+.skipLink:hover {
+  color: #1a637b;
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #e8ecef;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+  padding: 40px 36px 36px;
+}
+
+.branding {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.logoIcon {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.brandName {
+  margin-top: 10px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: #1a637b;
+}
+
+.tagline {
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 400;
+  color: #9e9e9e;
+}
+
+.sectionTitle {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 400;
+  color: #9e9e9e;
+  margin-bottom: 24px;
+}
+
+.googleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 50px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #424242;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+  color: #9e9e9e;
+  font-size: 13px;
+}
+
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.dividerText {
+  padding: 0 12px;
+}
+
+.authForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #212121;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  min-height: 52px;
+}
+
+.inputIconLeft {
+  position: absolute;
+  left: 16px;
+  color: #9e9e9e;
+  pointer-events: none;
+}
+
+.inputField {
+  width: 100%;
+  padding: 16px 48px 16px 48px;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 500;
+  color: #212121;
+  outline: none;
+}
+
+.inputField::placeholder {
+  color: #bdbdbd;
+  font-weight: 400;
+}
+
+.inputIconAction {
+  position: absolute;
+  right: 12px;
+  color: #9e9e9e;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.inputIconAction:hover {
+  color: #616161;
+}
+
+.fieldError {
+  color: #ef4444;
+  font-size: 12px;
+  margin: 0;
+}
+
+.formError {
+  color: #ef4444;
+  font-size: 14px;
+  margin: 0;
+}
+
+.forgotRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -6px;
+}
+
+.forgotLink {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a637b;
+  text-decoration: none;
+}
+
+.forgotLink:hover {
+  text-decoration: underline;
+}
+
+.loginBtn {
+  width: 100%;
+  height: 52px;
+  margin-top: 4px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.loginBtnEnabled {
+  background: #1a637b;
+  color: #ffffff;
+}
+
+.loginBtnEnabled:hover {
+  background: #155066;
+}
+
+.loginBtnDisabled {
+  background: #e8e8e8;
+  color: #424242;
+  cursor: not-allowed;
+}
+
+.signupPrompt {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #757575;
+}
+
+.signupPrompt a {
+  font-weight: 600;
+  color: #1a637b;
+  margin-left: 4px;
+  text-decoration: none;
+}
+
+.signupPrompt a:hover {
+  text-decoration: underline;
+}

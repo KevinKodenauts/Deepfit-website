@@ -1,0 +1,14 @@
+/* Tablet: keep existing centered column behaviour */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .app-shell {
+    max-width: 100%;
+    margin: 0;
+    padding-bottom: var(--bottom-nav-offset);
+    box-shadow: none;
+    background: var(--background);
+  }
+
+  .app-main {
+    padding: 0 0 48px;
+  }
+}

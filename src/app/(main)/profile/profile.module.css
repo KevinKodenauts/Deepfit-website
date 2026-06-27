@@ -1,0 +1,337 @@
+.container {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-outfit), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.container :where(button, input, select, textarea, a) {
+  font-family: inherit;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  padding: 12px 16px;
+  background: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.backBtn,
+.editBtn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #111111;
+}
+
+.pageTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111111;
+  text-align: center;
+  margin: 0;
+}
+
+.headerSpacer {
+  width: 40px;
+}
+
+.accountSection {
+  width: 100%;
+  background: #f7f7f7;
+  padding: 16px;
+}
+
+.accountTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 8px;
+}
+
+.accountSubtitle {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.54);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.accountPhone {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  color: rgba(0, 0, 0, 0.87);
+  margin: 0;
+}
+
+.continueBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #4caf50;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.continueBtn:hover {
+  background: #43a047;
+}
+
+.inviteCard {
+  margin-top: 24px;
+  padding: 20px;
+  border-radius: 16px;
+  background: #1a637b;
+  box-shadow: 0 4px 12px rgba(26, 99, 123, 0.3);
+}
+
+.inviteHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.inviteTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.inviteHelp {
+  color: rgba(255, 255, 255, 0.8);
+  flex-shrink: 0;
+}
+
+.inviteDescription {
+  margin: 8px 0 20px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.rewardsCard {
+  padding: 16px;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.rewardsLabel {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.rewardsStats {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.statValue {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111111;
+}
+
+.statGreen {
+  color: #2e7d32;
+}
+
+.statLabel {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.54);
+}
+
+.statDivider {
+  width: 1px;
+  height: 40px;
+  background: #e0e0e0;
+}
+
+.referralCodeBox {
+  margin-top: 16px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.referralCodeLabel {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.referralCode {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  word-break: break-all;
+}
+
+.referralActions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.referralActionBtn {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.referralActionBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.copyMessage {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+}
+
+.quickActions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.quickActionCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 88px;
+  padding: 12px 8px;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #111111;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.listSection {
+  padding: 16px 16px 0;
+}
+
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.45);
+  letter-spacing: 0.5px;
+  margin: 0 0 16px;
+}
+
+.listItems {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-size: 15px;
+  font-weight: 400;
+  color: #111111;
+}
+
+.listIcon {
+  flex-shrink: 0;
+  color: #111111;
+}
+
+.deleteAccountBtn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-size: 15px;
+  font-weight: 400;
+  color: #d32f2f;
+}
+
+.footer {
+  margin-top: auto;
+  padding: 32px 16px 40px;
+  text-align: center;
+}
+
+.brandName {
+  font-size: 24px;
+  font-weight: 700;
+  color: #bdbdbd;
+  letter-spacing: 0.5px;
+  margin: 0 0 4px;
+}
+
+.version {
+  font-size: 14px;
+  color: #bdbdbd;
+  margin: 0;
+}

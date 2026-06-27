@@ -1,0 +1,15 @@
+export const imageSizes = {
+  orderThumb: "56px",
+  orderDetailThumb: "64px",
+  productCard: "(max-width: 768px) 160px, 220px",
+  categoryIcon: "48px",
+  categoryProduct: "(max-width: 768px) 50vw, 280px",
+  welcomeHero: "(max-width: 768px) 100vw, 480px",
+  promoBanner: "(max-width: 768px) 100vw, 1280px",
+  mapTracking: "(max-width: 768px) 100vw, 1280px",
+  exerciseCard: "(max-width: 768px) 45vw, 200px",
+  productHero: "(max-width: 768px) 100vw, 480px",
+  exerciseHero: "100vw",
+  exerciseVideo: "100vw",
+  avatar: "96px",
+} as const;

@@ -1,0 +1,264 @@
+.container {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 30px 24px 16px;
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a1a2e;
+}
+
+.pageTitle {
+  font-size: var(--page-title-size);
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.content {
+  flex: 1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.inputLabel {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 16px;
+}
+
+.amountDisplay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 40px;
+}
+
+.currencySymbol {
+  color: #4b5563;
+}
+
+.amountValue {
+  font-size: 48px;
+  font-weight: 800;
+  color: #1a1a2e;
+}
+
+.chipsContainer {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 48px;
+}
+
+.chip {
+  flex: 1;
+  padding: 12px 0;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4b5563;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chipActive {
+  border-color: #15803d; /* green */
+  color: #15803d;
+  background: #f0fdf4; /* light green */
+}
+
+.noteSection {
+  width: 100%;
+  margin-bottom: 40px;
+}
+
+.noteTitle {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.noteList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.noteItem {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+  position: relative;
+  padding-left: 16px;
+}
+
+.noteItem::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #8b5cf6; /* purple dot */
+}
+
+.linkText {
+  color: #10b981;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.watermarkContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.watermarkCard {
+  width: 64px;
+  height: 52px;
+  border: 2px solid #cbd5e1;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-15deg);
+  margin-bottom: 16px;
+}
+
+.watermarkIcon {
+  color: #94a3b8;
+}
+
+.watermarkText {
+  font-size: 24px;
+  font-weight: 800;
+  color: #cbd5e1;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Bottom Bar */
+.bottomBar {
+  width: 100%;
+  margin-top: auto; /* Pushes to bottom of content */
+  padding-top: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.payUsing {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.payUsingLabelRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background: #0ea5e9; /* blue */
+  border-radius: 50%;
+}
+
+.payUsingLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.paymentMethod {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.payNowBtn {
+  background: #276249; /* dark green */
+  border-radius: 12px;
+  border: none;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  color: white;
+}
+
+.payAmount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.payAmountValue {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.payAmountLabel {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+}
+
+.payAction {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.errorText {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #ef4444;
+  text-align: center;
+}

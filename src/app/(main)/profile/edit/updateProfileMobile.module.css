@@ -1,0 +1,137 @@
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  font-family: var(--font-outfit), Arial, Helvetica, sans-serif;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f0f4f5;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #111111;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111111;
+  text-align: center;
+  margin: 0;
+}
+
+.headerSpacer {
+  width: 40px;
+}
+
+.content {
+  flex: 1;
+  padding: 24px 20px 40px;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 28px;
+  border-radius: 50%;
+  background: rgba(26, 99, 123, 0.1);
+  color: #1a637b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.field {
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.inputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f9fafb;
+}
+
+.inputDisabled {
+  background: #e5e7eb;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 14px;
+  color: #6b7280;
+  pointer-events: none;
+}
+
+.lockIcon {
+  position: absolute;
+  right: 14px;
+  color: #9ca3af;
+}
+
+.input {
+  width: 100%;
+  padding: 14px 44px 14px 44px;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  color: #111827;
+  outline: none;
+}
+
+.input:disabled {
+  color: #6b7280;
+}
+
+.formError {
+  color: #dc2626;
+  font-size: 13px;
+  margin: 0 0 16px;
+}
+
+.submitBtn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  background: #1a637b;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.submitBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

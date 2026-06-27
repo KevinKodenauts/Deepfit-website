@@ -1,0 +1,287 @@
+.header {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+}
+
+.inner {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--desktop-padding-x);
+  min-height: var(--desktop-nav-height);
+}
+
+.leftGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.logo {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.location {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: 200px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: #fafbfc;
+  text-decoration: none;
+  transition: border-color 0.2s ease;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.location:hover {
+  border-color: #624da4;
+}
+
+.locationIcon {
+  flex-shrink: 0;
+  color: #624da4;
+}
+
+.locationText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.deliveryLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: #888;
+}
+
+.locationLine {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #444;
+  min-width: 0;
+}
+
+.locationLineText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.nav::-webkit-scrollbar {
+  display: none;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.navLink:hover {
+  background: #f5f3fa;
+  color: #624da4;
+}
+
+.navLinkActive {
+  background: #f0ebf8;
+  color: #624da4;
+  font-weight: 600;
+}
+
+.navLabel {
+  white-space: nowrap;
+}
+
+.navIconWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cartBadge {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #624da4;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
+.rightGroup {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.walletTag {
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #4bcb9a, #6c4ab6);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.iconBtn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: #444;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.iconBtn:hover {
+  background: #f5f3fa;
+  color: #624da4;
+}
+
+.notificationBadge,
+.wishlistBadge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #5a4b9c;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
+.wishlistBadge {
+  background: #e8456a;
+}
+
+/* Compact laptop: icon-only nav, tighter spacing */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .inner {
+    gap: 10px;
+    padding: 0 16px;
+  }
+
+  .leftGroup {
+    gap: 10px;
+  }
+
+  .location {
+    max-width: 140px;
+    padding: 6px 10px;
+  }
+
+  .deliveryLabel {
+    display: none;
+  }
+
+  .navLink {
+    padding: 8px;
+    gap: 0;
+  }
+
+  .navLabel {
+    display: none;
+  }
+
+  .walletTag {
+    display: none;
+  }
+
+  .iconBtn {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .header {
+    display: block;
+  }
+}
+
+@media (min-width: 1280px) {
+  .inner {
+    gap: 20px;
+  }
+
+  .nav {
+    gap: 4px;
+  }
+
+  .navLink {
+    padding: 10px 14px;
+  }
+
+  .actions {
+    gap: 6px;
+  }
+}

@@ -1,0 +1,16 @@
+.shell {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.main {
+  width: 100%;
+}
+
+.noBottomNavPadding {
+  padding-bottom: 0;
+}
+
+.desktopShell {
+  padding-bottom: 0;
+}

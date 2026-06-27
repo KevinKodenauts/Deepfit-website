@@ -1,0 +1,24 @@
+.pageShell {
+  width: 100%;
+  min-height: calc(100vh - var(--desktop-nav-height));
+  background: var(--background);
+}
+
+.inner {
+  width: 100%;
+  margin: 0 auto;
+  padding: 32px var(--desktop-padding-x) 48px;
+}
+
+.innerFlush {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.narrow {
+  max-width: 720px;
+}
+
+.wide {
+  max-width: 1440px;
+}

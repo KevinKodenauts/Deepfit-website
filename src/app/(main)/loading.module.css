@@ -1,0 +1,33 @@
+.overlay {
+  position: relative;
+  min-height: 200px;
+  pointer-events: none;
+}
+
+.bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 200;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--primary-teal),
+    var(--primary-purple),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: routeProgress 0.9s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes routeProgress {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

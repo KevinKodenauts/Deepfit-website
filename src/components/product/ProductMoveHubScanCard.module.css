@@ -1,0 +1,100 @@
+.card {
+  margin-top: 12px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid #eef2f7;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #f8fafc;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.card:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+}
+
+.card:disabled {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.cardDesktop {
+  margin-top: 16px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  border-color: var(--border-color);
+  background: #fff;
+}
+
+.cardDesktop:hover:not(:disabled) {
+  background: #f8fafc;
+}
+
+.qrImageWrap {
+  width: 72px;
+  height: 72px;
+  padding: 6px;
+  border-radius: 8px;
+  background: #fff;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qrImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.textCol {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.desc {
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.chevron {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #e2e8f0;
+  border-top-color: #624da4;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+.error {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #ef4444;
+  font-weight: 500;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,317 @@
+.container {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.contentBox {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-x: hidden;
+  background: white;
+  margin-top: 8px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 30px 24px 16px;
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  flex-shrink: 0;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a1a2e;
+}
+
+.pageTitle {
+  font-size: var(--page-title-size);
+  font-weight: 800;
+  color: #1a1a2e;
+  line-height: 1.2;
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Scroll Area */
+.scrollArea {
+  flex: 1;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Hero Section */
+.heroImageWrap {
+  width: 100%;
+  height: 280px;
+  position: relative;
+  background: #f8fafc;
+  margin-top: 16px;
+}
+
+.heroImage {
+  object-fit: cover;
+}
+
+.badges {
+  padding: 16px 24px 0;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 16px;
+}
+
+.content {
+  padding: 24px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1a1a2e;
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.description {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+/* How to Use Section */
+.sectionTitle {
+  font-size: var(--section-title-size);
+  font-weight: 800;
+  color: #1a1a2e;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.sectionTitle::before {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 20px;
+  background: #0ea5e9; /* Light blue accent */
+  border-radius: 4px;
+  margin-right: 12px;
+}
+
+.stepList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.stepItem {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.stepNumber {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #1e293b;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.stepContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.stepTitle {
+  font-size: 11px;
+  font-weight: 800;
+  color: #1a1a2e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.stepDesc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Pro Tip */
+.proTipBox {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #0f766e; /* Dark teal accent */
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+}
+
+.proTipHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.proTipTitle {
+  font-size: 11px;
+  font-weight: 800;
+  color: #1a1a2e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.proTipDesc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Bottom Action Bar */
+.bottomAction {
+  width: 100%;
+  padding: 24px 24px 24px;
+}
+
+.showExerciseBtn {
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 16px rgba(79, 70, 229, 0.2);
+}
+
+/* ── Tablet / Laptop / Desktop ── */
+@media (min-width: 768px) {
+  .container {
+    align-items: center;
+    background: white;
+    padding: 0;
+    margin-bottom: -48px;
+  }
+
+  .header {
+    align-self: stretch;
+    width: 100%;
+    padding: 32px 40px 16px;
+  }
+
+  .contentBox {
+    max-width: 640px;
+    width: 100%;
+    align-self: center;
+    margin-top: 20px;
+    border-radius: var(--desktop-radius);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+  }
+
+  .scrollArea {
+    padding: 0 24px;
+  }
+
+  .heroImageWrap {
+    height: auto;
+    aspect-ratio: 16 / 10;
+    max-height: 360px;
+    width: 100%;
+    margin-top: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .heroImage {
+    object-fit: contain;
+  }
+
+  .badges {
+    padding: 16px 0 0;
+  }
+
+  .content {
+    padding: 24px 0;
+  }
+
+  .bottomAction {
+    padding: 24px 0 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .contentBox {
+    max-width: 720px;
+    margin-top: 24px;
+  }
+
+  .scrollArea {
+    padding: 0 32px;
+  }
+
+  .heroImageWrap {
+    max-height: 400px;
+    margin-top: 24px;
+  }
+
+  .bottomAction {
+    padding-bottom: 32px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .contentBox {
+    max-width: 800px;
+    margin-top: 28px;
+  }
+
+  .heroImageWrap {
+    max-height: 440px;
+    margin-top: 28px;
+  }
+}

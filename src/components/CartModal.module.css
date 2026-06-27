@@ -1,0 +1,263 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+  overscroll-behavior: none;
+}
+
+.sheet {
+  background: white;
+  width: 100%;
+  max-width: 520px;
+  max-height: 92vh;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.handle {
+  width: 40px;
+  height: 4px;
+  background: #d1d5db;
+  border-radius: 2px;
+  margin: 12px auto 8px;
+  flex-shrink: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2d2d2d;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: #2d2d2d;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.divider {
+  height: 1px;
+  background: #e5e7eb;
+  flex-shrink: 0;
+}
+
+.productSection {
+  padding: 20px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.productImage {
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #f3f4f6;
+  flex-shrink: 0;
+}
+
+.productInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.productName {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d2d2d;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.productPrice {
+  margin-top: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a637b;
+}
+
+.quantitySection {
+  padding: 20px;
+}
+
+.quantityLabel {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d2d2d;
+  margin-bottom: 16px;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stepperBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #1a637b;
+  flex-shrink: 0;
+}
+
+.stepperBtn:disabled {
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.stepperBtnPlus {
+  background: #1a637b;
+  border-color: #1a637b;
+  color: white;
+}
+
+.qtyDisplay {
+  min-width: 56px;
+  padding: 12px 24px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2d2d2d;
+}
+
+.orDivider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.orLine {
+  flex: 1;
+  height: 1px;
+  background: #d1d5db;
+}
+
+.orText {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.qtyInputWrap {
+  position: relative;
+}
+
+.qtyInput {
+  width: 100%;
+  padding: 16px 16px 12px 44px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 16px;
+  color: #2d2d2d;
+  outline: none;
+  background: white;
+}
+
+.qtyInput:focus {
+  border-color: #1a637b;
+  box-shadow: 0 0 0 2px rgba(26, 99, 123, 0.15);
+}
+
+.qtyInputLabel {
+  position: absolute;
+  top: -8px;
+  left: 12px;
+  padding: 0 4px;
+  font-size: 12px;
+  color: #6b7280;
+  background: white;
+}
+
+.qtyInputIcon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #1a637b;
+  pointer-events: none;
+}
+
+.footer {
+  padding: 0 20px 20px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+}
+
+.addBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  height: 56px;
+  background: #1a637b;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.addBtn:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (min-width: 768px) {
+  .backdrop {
+    align-items: flex-end;
+    padding-bottom: 0;
+  }
+
+  .sheet {
+    max-width: 480px;
+    margin-bottom: 0;
+  }
+}

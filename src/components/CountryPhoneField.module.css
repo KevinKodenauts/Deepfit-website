@@ -1,0 +1,92 @@
+.field {
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.inputWrap {
+  display: flex;
+  align-items: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f9fafb;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.inputWrap:focus-within {
+  border-color: #1a637b;
+  box-shadow: 0 0 0 2px rgba(26, 99, 123, 0.12);
+}
+
+.inputWrapError {
+  border-color: #dc2626;
+}
+
+.countryBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.flag {
+  width: 22px;
+  height: 16px;
+  border-radius: 2px;
+  object-fit: cover;
+}
+
+.dialCode {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.chevron {
+  color: #6b7280;
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background: #d1d5db;
+  margin-left: 4px;
+}
+
+.phoneInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 14px 16px 14px 12px;
+  font-size: 15px;
+  color: #111827;
+  outline: none;
+}
+
+.phoneInput::placeholder {
+  color: #9ca3af;
+}
+
+.helper {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.error {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #dc2626;
+}

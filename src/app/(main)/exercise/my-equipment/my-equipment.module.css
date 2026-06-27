@@ -1,0 +1,215 @@
+.container {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: white;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  padding: 30px 24px 16px;
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a1a2e;
+}
+
+.pageTitle {
+  font-size: var(--page-title-size);
+  font-weight: 800;
+  color: #1a1a2e;
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* Subtitle / Counter */
+.subtitleBlock {
+  padding: 0 24px 24px;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.badge {
+  display: inline-block;
+  background: #e0e7ff; /* light indigo */
+  color: #4f46e5;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+.statusText {
+  padding: 24px 4px;
+  color: #64748b;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* List Area */
+.listArea {
+  padding: 0 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Card */
+.equipCard {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+  border: 1px solid var(--border-color);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.imageWrap {
+  width: 100%;
+  height: 180px;
+  position: relative;
+  background: #f8fafc;
+}
+
+.equipImage {
+  object-fit: cover;
+}
+
+.primaryBadge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: #0f766e; /* Dark teal */
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 12px;
+  z-index: 2;
+}
+
+.cardBody {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.equipTitle {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a1a2e;
+}
+
+.deleteBtn {
+  background: none;
+  border: none;
+  color: #ef4444; /* red */
+  cursor: pointer;
+  padding: 4px;
+  margin-top: -4px;
+}
+
+.category {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.description {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 20px;
+  flex: 1;
+}
+
+.howToUseBtn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed); /* matches view btn */
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ── Tablet: 3-column grid only when 3+ items ── */
+
+@media (min-width: 768px) {
+  .header {
+    padding: 32px 40px 16px;
+  }
+
+  .subtitleBlock {
+    padding: 0 40px 24px;
+  }
+
+  .subtitle {
+    font-size: 15px;
+  }
+
+  .listArea {
+    padding: 0 40px 40px;
+  }
+
+  .listAreaTabletThree {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .listAreaTabletThree .imageWrap {
+    height: 160px;
+  }
+
+  .listAreaTabletThree .cardBody {
+    padding: 16px;
+  }
+
+  .listAreaTabletThree .equipTitle {
+    font-size: 15px;
+  }
+
+  .listAreaTabletThree .description {
+    font-size: 12px;
+    margin-bottom: 14px;
+  }
+
+  .listAreaTabletThree .howToUseBtn {
+    padding: 12px;
+    font-size: 13px;
+  }
+}

@@ -1,0 +1,14 @@
+.symbol {
+  font-family: var(--font-dirham), var(--font-outfit), Arial, sans-serif;
+  font-size: 0.68em;
+  line-height: 1;
+  display: inline-block;
+  vertical-align: middle;
+  font-weight: 400;
+}
+
+.amount {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}

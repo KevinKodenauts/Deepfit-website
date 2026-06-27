@@ -1,0 +1,218 @@
+.exerciseContainer {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: white;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  padding: 30px 24px 16px;
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a1a2e;
+}
+
+.pageTitle {
+  font-size: var(--page-title-size);
+  font-weight: 800;
+  color: #1a1a2e;
+  line-height: 1.2;
+}
+
+.subtitle {
+  padding: 0 24px 24px;
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.statusText {
+  grid-column: 1 / -1;
+  padding: 24px 4px;
+  color: #64748b;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Grid Area */
+.gridArea {
+  flex: 1;
+  padding: 0 20px 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-content: start;
+}
+
+.gridAreaWithAction {
+  padding-bottom: calc(var(--bottom-nav-offset) + 80px);
+}
+
+/* Equipment Card */
+.equipCard {
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.equipCard.selected {
+  border: 1.5px solid #65a30d;
+  box-shadow: 0 8px 16px rgba(101, 163, 13, 0.1);
+}
+
+.imageWrap {
+  width: 100%;
+  aspect-ratio: 1;
+  position: relative;
+  background: #f8fafc;
+}
+
+.equipImage {
+  object-fit: cover;
+}
+
+.checkBadge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #65a30d;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.cardContent {
+  padding: 12px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.categoryBadge {
+  align-self: flex-start;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+.equipTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a2e;
+  line-height: 1.3;
+}
+
+/* View Selected — fixed above bottom nav */
+.bottomAction {
+  position: fixed;
+  left: 50%;
+  bottom: calc(10px + 64px + 12px);
+  transform: translateX(-50%);
+  width: calc(100% - 40px);
+  max-width: calc(var(--app-shell-max-width) - 40px);
+  z-index: 45;
+  padding: 12px 0 8px;
+  background: transparent;
+  pointer-events: none;
+}
+
+.viewBtn {
+  display: block;
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.28);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  pointer-events: auto;
+}
+
+.bottomAction:hover .viewBtn {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(79, 70, 229, 0.34);
+}
+
+.viewBtn:disabled {
+  background: #cbd5e1;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+@media (min-width: 768px) {
+  .exerciseContainer {
+    background: white;
+    border-radius: var(--desktop-radius);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    min-height: calc(100vh - var(--desktop-nav-height) - 48px);
+  }
+
+  .header {
+    padding: 32px 40px 16px;
+  }
+
+  .subtitle {
+    padding: 0 40px 32px;
+    font-size: 15px;
+  }
+
+  .gridArea {
+    padding: 0 40px 40px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .gridAreaWithAction {
+    padding-bottom: calc(var(--bottom-nav-offset) + 88px);
+  }
+
+  .equipCard:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  }
+
+  .bottomAction {
+    width: calc(100% - 80px);
+    max-width: 400px;
+  }
+}

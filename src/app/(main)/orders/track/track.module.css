@@ -1,0 +1,223 @@
+.trackContainer {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: white;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  padding: 30px 24px 16px;
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  margin-right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a1a2e;
+}
+
+.pageTitle {
+  font-size: var(--page-title-size);
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+/* Map Section */
+.mapSection {
+  padding: 0 24px;
+  margin-bottom: 24px;
+}
+
+.mapWrapper {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+}
+
+.mapImage {
+  object-fit: cover;
+}
+
+/* Status Box */
+.statusBox {
+  margin: 0 24px 24px;
+  padding: 24px;
+  border-radius: 24px;
+  border: 1px solid var(--border-color);
+  background: white;
+}
+
+.statusHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.etaBlock {
+  display: flex;
+  flex-direction: column;
+}
+
+.etaLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--primary-purple);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.etaTime {
+  font-size: 32px;
+  font-weight: 400;
+  color: #1a1a2e;
+}
+
+.statusBadge {
+  background: #d1fae5;
+  color: #059669;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.statusDesc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-top: 16px;
+}
+
+/* Progress Timeline */
+.progressSection {
+  margin: 0 24px 40px;
+  padding: 24px;
+  border-radius: 24px;
+  border: 1px solid var(--border-color);
+  background: white;
+}
+
+.progressTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin-bottom: 24px;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  bottom: 30px;
+  left: 11px; /* Center of the 24px icon */
+  width: 2px;
+  background: #e2e8f0;
+  z-index: 1;
+}
+
+.timelineStep {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 2;
+}
+
+.timelineStep:last-child {
+  margin-bottom: 0;
+}
+
+.stepIcon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 4px white; /* To hide the background line behind it */
+}
+
+.stepIcon.completed {
+  background: var(--primary-purple);
+  color: white;
+}
+
+.stepIcon.active {
+  background: var(--primary-purple);
+  color: white;
+  box-shadow: 0 0 0 4px rgba(108, 74, 182, 0.1), 0 0 0 4px white;
+}
+
+.stepContent {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.stepTitle {
+  font-size: 15px;
+  font-weight: 500;
+  color: #1a1a2e;
+  margin-bottom: 2px;
+}
+
+.stepTitle.completed {
+  color: #1a1a2e;
+}
+
+.stepTitle.active {
+  color: var(--primary-purple);
+}
+
+.stepTitle.pending {
+  color: var(--text-muted);
+}
+
+.stepMeta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.stepMeta.active {
+  color: var(--primary-purple);
+}
+
+/* Help Link */
+.helpLink {
+  text-align: center;
+  margin: 0 24px 24px;
+}
+
+.helpLink a {
+  color: #9b72cf; /* Muted purple to match design */
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+}

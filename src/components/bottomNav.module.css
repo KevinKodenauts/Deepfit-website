@@ -1,0 +1,119 @@
+.bottomNavOuter {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--app-shell-max-width);
+  padding: 0 16px max(12px, env(safe-area-inset-bottom, 0px));
+  z-index: 50;
+  pointer-events: none;
+}
+
+.bottomNav {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
+  min-height: 64px;
+  padding: 6px;
+  background: #ffffff;
+  border-radius: 28px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.08),
+    0 2px 12px rgba(98, 77, 164, 0.1);
+  pointer-events: auto;
+}
+
+.pill {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 6px;
+  width: calc((100% - 12px) / 4);
+  background: #624da4;
+  border-radius: 20px;
+  transition: transform 320ms cubic-bezier(0.65, 0, 0.35, 1);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.navItem {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 52px;
+  padding: 6px 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-decoration: none;
+  min-width: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.iconWrap {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #837f7f;
+  line-height: 1.2;
+  letter-spacing: -0.1px;
+  white-space: nowrap;
+  transition: color 320ms ease, font-weight 320ms ease;
+}
+
+.navItemActive .label {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+  border: 1.5px solid #ffffff;
+  background: #624da4;
+  color: #ffffff;
+}
+
+.badgeSelected {
+  background: #ffffff;
+  color: #624da4;
+  border-color: #624da4;
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .bottomNavOuter {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .bottomNavOuter {
+    display: none;
+  }
+}
