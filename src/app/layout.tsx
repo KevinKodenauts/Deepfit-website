@@ -35,6 +35,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${outfit.variable} ${dirham.variable}`}>
+      <head>
+      <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9WGNHQ38ZZ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-9WGNHQ38ZZ');
+</script>
+      </head>
       <body className={`${outfit.className} antialiased`} suppressHydrationWarning>
         <AuthProvider>
           <AddressProvider>
