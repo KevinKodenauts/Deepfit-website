@@ -29,7 +29,7 @@ function siteUrl(request: Request) {
   }
 
   return (
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://deepfit.life"
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://main.d2qyw7wq587knx.amplifyapp.com"
   );
 }
 
