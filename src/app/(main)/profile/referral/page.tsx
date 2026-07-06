@@ -103,7 +103,7 @@ export default function ReferralPage() {
           <ChevronLeft size={22} />
         </button>
         <div className={styles.headerTitleRow}>
-          <h1 className={{...styles.headerTitle, color: "white"}}>Invite &amp; Earn</h1>
+          <h1 className={styles.headerTitle}>Invite &amp; Earn</h1>
           <HelpCircle size={18} className={styles.helpIcon} />
         </div>
         <p className={styles.headerSubtitle}>
