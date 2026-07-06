@@ -11,6 +11,8 @@ import {
 } from "react";
 import { fetchNotifications } from "@/lib/api/notifications";
 import { useAuth } from "@/contexts/AuthContext";
+import { catalogSyncBus } from "@/lib/realtime/catalogSyncBus";
+import { isNotificationEvent } from "@/lib/realtime/catalogSyncEvent";
 
 type NotificationContextValue = {
   unreadCount: number;
@@ -76,6 +78,15 @@ export function NotificationProvider({
     }, 300);
 
     return () => window.clearTimeout(timer);
+  }, [isAuthenticated, refreshUnreadCount]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    return catalogSyncBus.subscribe((event) => {
+      if (!isNotificationEvent(event)) return;
+      void refreshUnreadCount({ force: true });
+    });
   }, [isAuthenticated, refreshUnreadCount]);
 
   useEffect(() => {

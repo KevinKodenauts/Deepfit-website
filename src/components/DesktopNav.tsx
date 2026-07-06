@@ -7,9 +7,9 @@ import {
   Bell,
   User,
   Home,
-  LayoutGrid,
+  Info,
   ShoppingCart,
-  Dumbbell,
+  Compass,
   ChevronDown,
   MapPin,
   Heart,
@@ -26,10 +26,10 @@ import styles from "./desktopNav.module.css";
 
 const navItems = [
   { name: "Home", href: "/home", icon: Home },
-  { name: "Categories", href: "/categories", icon: LayoutGrid },
+  { name: "About Us", href: "/about", icon: Info },
+  { name: "Explore", href: "/explore", icon: Compass },
   { name: "Blog", href: "/blog", icon: BookOpen },
   { name: "Cart", href: "/cart", icon: ShoppingCart },
-  { name: "Exercise", href: "/exercise", icon: Dumbbell },
 ];
 
 export default function DesktopNav() {
@@ -83,8 +83,12 @@ export default function DesktopNav() {
                 ? pathname === "/cart" ||
                   pathname.startsWith("/cart/") ||
                   pathname === "/checkout"
-                : pathname === item.href ||
-                  pathname.startsWith(`${item.href}/`);
+                : item.href === "/explore"
+                  ? pathname === "/explore" ||
+                    pathname.startsWith("/explore/") ||
+                    pathname.startsWith("/exercise")
+                  : pathname === item.href ||
+                    pathname.startsWith(`${item.href}/`);
 
             return (
               <Link
@@ -126,11 +130,11 @@ export default function DesktopNav() {
               aria-label="Wishlist"
             >
               <Heart size={20} />
-              {wishlistCount > 0 && (
+              {/* {wishlistCount > 0 && (
                 <span className={styles.wishlistBadge}>
                   {wishlistCount > 99 ? "99+" : wishlistCount}
                 </span>
-              )}
+              )} */}
             </Link>
             <Link
               href="/notifications"

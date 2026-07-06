@@ -4,9 +4,11 @@
   top: 0;
   z-index: 100;
   width: 100%;
-  background: #ffffff;
-  border-bottom: 1px solid var(--border-color);
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+  background: rgba(252, 252, 253, 0.78);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.04);
 }
 
 .inner {
@@ -40,23 +42,24 @@
   min-width: 0;
   max-width: 200px;
   padding: 8px 12px;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid var(--border-color);
-  background: #fafbfc;
+  background: var(--bg-card);
   text-decoration: none;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
   font: inherit;
   text-align: left;
 }
 
 .location:hover {
-  border-color: #624da4;
+  border-color: transparent;
+  box-shadow: 0 0 0 1.5px #6faef7, var(--shadow-soft);
 }
 
 .locationIcon {
   flex-shrink: 0;
-  color: #624da4;
+  color: #6faef7;
 }
 
 .locationText {
@@ -68,8 +71,9 @@
 .deliveryLabel {
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.6px;
-  color: #888;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
 }
 
 .locationLine {
@@ -78,7 +82,7 @@
   gap: 4px;
   font-size: 12px;
   font-weight: 600;
-  color: #444;
+  color: var(--text-primary);
   min-width: 0;
 }
 
@@ -109,24 +113,26 @@
   justify-content: center;
   gap: 8px;
   flex-shrink: 0;
-  padding: 10px 12px;
-  border-radius: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-family: var(--font-display);
   font-size: 14px;
-  font-weight: 500;
-  color: #666;
+  font-weight: 600;
+  color: var(--text-secondary);
   text-decoration: none;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .navLink:hover {
-  background: #f5f3fa;
-  color: #624da4;
+  background: var(--brand-gradient-soft);
+  color: var(--navy);
 }
 
 .navLinkActive {
-  background: #f0ebf8;
-  color: #624da4;
-  font-weight: 600;
+  background: var(--brand-gradient);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: var(--brand-glow);
 }
 
 .navLabel {
@@ -148,7 +154,7 @@
   height: 16px;
   padding: 0 4px;
   border-radius: 999px;
-  background: #624da4;
+  background: var(--brand-gradient);
   color: #fff;
   font-size: 10px;
   font-weight: 700;
@@ -171,14 +177,16 @@
 }
 
 .walletTag {
-  padding: 8px 12px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #4bcb9a, #6c4ab6);
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--brand-gradient);
   color: #fff;
+  font-family: var(--font-display);
   font-size: 13px;
   font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
+  box-shadow: var(--brand-glow);
 }
 
 .iconBtn {
@@ -186,20 +194,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   background: transparent;
-  color: #444;
+  color: var(--text-primary);
   text-decoration: none;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
 }
 
 .iconBtn:hover {
-  background: #f5f3fa;
-  color: #624da4;
+  background: var(--brand-gradient-soft);
+  color: var(--navy);
 }
 
 .notificationBadge,
@@ -211,7 +219,7 @@
   height: 16px;
   padding: 0 4px;
   border-radius: 999px;
-  background: #5a4b9c;
+  background: var(--brand-gradient);
   color: white;
   font-size: 10px;
   font-weight: 700;
@@ -220,10 +228,9 @@
 }
 
 .wishlistBadge {
-  background: #e8456a;
+  background: linear-gradient(135deg, #a78bfa, #6faef7);
 }
 
-/* Compact laptop: icon-only nav, tighter spacing */
 @media (min-width: 1024px) and (max-width: 1279px) {
   .inner {
     gap: 10px;

@@ -154,7 +154,7 @@
 }
 
 .dotActive {
-  background: #624da4;
+  background: var(--brand-gradient);
   transform: scale(1.15);
 }
 
@@ -432,16 +432,9 @@
   display: none;
 }
 
-.similarCard {
-  flex: 0 0 156px;
-  width: 156px;
-  border: 1px solid #eef2f7;
-  border-radius: 14px;
-  overflow: hidden;
-  background: #fff;
-  text-align: left;
-  cursor: pointer;
-  padding: 0;
+.similarCardWrap {
+  flex: 0 0 240px;
+  width: 240px;
 }
 
 .similarImageWrap {

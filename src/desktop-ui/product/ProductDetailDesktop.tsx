@@ -13,6 +13,8 @@ import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import FallbackImage from "@/components/FallbackImage";
 import { CurrencyAmount } from "@/components/CurrencySymbol";
+import ProductCard from "@/components/product/ProductCard";
+import { imageSizes } from "@/constants/imageSizes";
 import ProductReviewsModal from "@/components/ProductReviewsModal";
 import ProductMoveHubScanCard from "@/components/product/ProductMoveHubScanCard";
 import { useProductEquipmentScan } from "@/hooks/useProductEquipmentScan";
@@ -175,8 +177,14 @@ export default function ProductDetailDesktop() {
       title: product.title,
       image: displayImages[activeImage] ?? displayImage ?? product.images[0],
       price: displayPrice,
-      variantId: selectedVariant?.id || undefined,
-      productAttributeId: selectedVariant?.attributeId,
+      variantId:
+        selectedVariant?.id && selectedVariant.id > 0
+          ? selectedVariant.id
+          : undefined,
+      productAttributeId:
+        selectedVariant?.attributeId && selectedVariant.attributeId > 0
+          ? selectedVariant.attributeId
+          : undefined,
     });
   };
 
@@ -273,6 +281,7 @@ export default function ProductDetailDesktop() {
                         src={image}
                         alt={`${product.title} ${index + 1}`}
                         fill
+                        sizes={imageSizes.productHero}
                         priority={index === 0}
                         className={styles.mainImage}
                       />
@@ -321,6 +330,7 @@ export default function ProductDetailDesktop() {
                   src={displayImage ?? displayImages[0]}
                   alt={product.title}
                   fill
+                  sizes={imageSizes.productHero}
                   priority
                   className={styles.mainImage}
                 />
@@ -343,6 +353,7 @@ export default function ProductDetailDesktop() {
                       src={image}
                       alt={`${product.title} thumbnail ${index + 1}`}
                       fill
+                      sizes={imageSizes.productThumbStrip}
                       className={styles.thumbImage}
                     />
                   </button>
@@ -495,29 +506,15 @@ export default function ProductDetailDesktop() {
             <h2 className={styles.similarHeading}>Similar products</h2>
             <div className={styles.similarGrid}>
               {siblingProducts.map((item) => (
-                <button
+                <ProductCard
                   key={item.id}
-                  type="button"
-                  className={styles.similarCard}
-                  onClick={() => goToProduct(item.id)}
-                >
-                  <div className={styles.similarImageWrap}>
-                    <FallbackImage
-                      src={item.images[0]}
-                      alt={item.title}
-                      fill
-                      className={styles.similarImage}
-                    />
-                  </div>
-                  <div className={styles.similarBody}>
-                    <span className={styles.similarTitle}>{item.title}</span>
-                    <span className={styles.similarPrice}>
-                      <CurrencyAmount>
-                        {item.price.toLocaleString()}
-                      </CurrencyAmount>
-                    </span>
-                  </div>
-                </button>
+                  productId={item.id}
+                  image={item.images[0]}
+                  title={item.title}
+                  price={item.price}
+                  rating={item.rating || 5}
+                  onOpen={() => goToProduct(item.id)}
+                />
               ))}
             </div>
           </section>

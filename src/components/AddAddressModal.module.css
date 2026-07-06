@@ -161,9 +161,9 @@
 }
 
 .typeBtnActive {
-  border-color: #624da4;
+  border-color: #A78BFA;
   background: #f5f3fa;
-  color: #624da4;
+  color: #A78BFA;
   box-shadow: 0 0 0 1px rgba(98, 77, 164, 0.08);
 }
 
@@ -192,7 +192,7 @@
 }
 
 .input:focus {
-  border-color: #624da4;
+  border-color: #A78BFA;
   box-shadow: 0 0 0 3px rgba(98, 77, 164, 0.12);
 }
 
@@ -218,7 +218,7 @@
 }
 
 .select:focus {
-  border-color: #624da4;
+  border-color: #A78BFA;
   box-shadow: 0 0 0 3px rgba(98, 77, 164, 0.12);
 }
 
@@ -250,7 +250,7 @@
   min-height: 52px;
   border: none;
   border-radius: 12px;
-  background: #624da4;
+  background: var(--brand-gradient);
   color: white;
   font-size: 15px;
   font-weight: 600;

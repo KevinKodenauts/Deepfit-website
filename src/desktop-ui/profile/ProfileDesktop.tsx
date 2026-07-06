@@ -11,6 +11,7 @@ import {
   LogOut,
   Mail,
   MapPin,
+  MessageCircle,
   PackageX,
   Phone,
   Receipt,
@@ -22,6 +23,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useProfilePage } from "@/hooks/useProfilePage";
+import { openCrispChat } from "@/lib/analytics";
 import ProfileModals from "@/app/(main)/profile/ProfileModals";
 import styles from "./profileDesktop.module.css";
 
@@ -40,7 +42,6 @@ export default function ProfileDesktop() {
     referralCode,
     totalRewards,
     initials,
-    setActivePolicy,
     requireAuth,
     handleCopyReferral,
     handleShareReferral,
@@ -157,6 +158,14 @@ export default function ProfileDesktop() {
               >
                 <MapPin size={18} className={styles.navIcon} />
                 Address book
+              </button>
+              <button
+                type="button"
+                className={styles.navItem}
+                onClick={() => openCrispChat()}
+              >
+                <MessageCircle size={18} className={styles.navIcon} />
+                Live chat support
               </button>
 
               <p className={styles.navSectionLabel}>ACCOUNT</p>
@@ -282,38 +291,22 @@ export default function ProfileDesktop() {
             <section className={styles.policySection}>
               <h3 className={styles.policyTitle}>POLICIES</h3>
               <div className={styles.policyGrid}>
-                <button
-                  type="button"
-                  className={styles.policyCard}
-                  onClick={() => setActivePolicy("terms")}
-                >
+                <Link href="/policies/terms" className={styles.policyCard}>
                   <FileText size={18} className={styles.policyIcon} />
                   Terms and conditions
-                </button>
-                <button
-                  type="button"
-                  className={styles.policyCard}
-                  onClick={() => setActivePolicy("returns")}
-                >
+                </Link>
+                <Link href="/policies/return" className={styles.policyCard}>
                   <PackageX size={18} className={styles.policyIcon} />
                   Returns policy
-                </button>
-                <button
-                  type="button"
-                  className={styles.policyCard}
-                  onClick={() => setActivePolicy("refunds")}
-                >
+                </Link>
+                <Link href="/policies/refund" className={styles.policyCard}>
                   <CircleDollarSign size={18} className={styles.policyIcon} />
                   Refunds policy
-                </button>
-                <button
-                  type="button"
-                  className={styles.policyCard}
-                  onClick={() => setActivePolicy("privacy")}
-                >
+                </Link>
+                <Link href="/policies/privacy" className={styles.policyCard}>
                   <Shield size={18} className={styles.policyIcon} />
                   Privacy policy
-                </button>
+                </Link>
               </div>
             </section>
 
@@ -326,8 +319,6 @@ export default function ProfileDesktop() {
       </div>
 
       <ProfileModals
-        activePolicy={profile.activePolicy}
-        setActivePolicy={profile.setActivePolicy}
         showUpdateProfile={profile.showUpdateProfile}
         setShowUpdateProfile={profile.setShowUpdateProfile}
         showChangePassword={profile.showChangePassword}

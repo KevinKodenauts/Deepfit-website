@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import FallbackImage from "@/components/FallbackImage";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -13,6 +13,8 @@ import {
   Truck,
 } from "lucide-react";
 import { CurrencyAmount } from "@/components/CurrencySymbol";
+import CartPaymentMethodSection from "@/components/cart/CartPaymentMethodSection";
+import { imageSizes } from "@/constants/imageSizes";
 import { useCartPage } from "@/hooks/useCartPage";
 import styles from "./cartDesktop.module.css";
 
@@ -58,12 +60,12 @@ export default function CartDesktop() {
               {cart.items.map((item) => (
                 <article key={item.id} className={styles.itemCard}>
                   <div className={styles.itemImageWrap}>
-                    <Image
+                    <FallbackImage
                       src={item.image}
                       alt={item.title}
                       fill
                       className={styles.itemImage}
-                      sizes="120px"
+                      sizes={imageSizes.orderThumb}
                     />
                   </div>
 
@@ -199,6 +201,13 @@ export default function CartDesktop() {
               </div>
 
               <div className={styles.card}>
+                <CartPaymentMethodSection
+                  value={cart.paymentMethod}
+                  onChange={cart.setPaymentMethod}
+                />
+              </div>
+
+              <div className={styles.card}>
                 <div className={styles.addressBlock}>
                   <Home size={20} className={styles.addressIcon} />
                   <div>
@@ -230,10 +239,14 @@ export default function CartDesktop() {
                 disabled={cart.placing}
               >
                 {cart.placing
-                  ? "Placing order..."
+                  ? cart.paymentMethod === "cod"
+                    ? "Placing order..."
+                    : "Opening payment..."
                   : cart.isAuthenticated
-                    ? "Place order"
-                    : "Login to place order"}
+                    ? cart.paymentMethod === "cod"
+                      ? "Place Order (COD)"
+                      : "Pay with Ziina"
+                    : "Login to checkout"}
                 <ArrowRight size={20} />
               </button>
             </aside>

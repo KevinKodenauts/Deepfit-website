@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import FallbackImage from "@/components/FallbackImage";
 import { CurrencyAmount } from "@/components/CurrencySymbol";
+import ProductCard from "@/components/product/ProductCard";
 import styles from "@/app/(main)/product/[id]/product.module.css";
 import { imageSizes } from "@/constants/imageSizes";
 import { useCart } from "@/contexts/CartContext";
@@ -131,6 +132,7 @@ export default function ProductDetailContent({
   const [siblingProducts, setSiblingProducts] = useState<ProductDetailView[]>(
     [],
   );
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const reloadProduct = useCallback(
     (force = false) => {
@@ -304,21 +306,33 @@ export default function ProductDetailContent({
     ? buildProductsHref(product.mainCategoryId, product.categoryId || undefined)
     : "/categories";
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     const customerId = getCustomerId();
     if (!customerId) {
       router.push("/login");
       return;
     }
+    if (isAddingToCart) return;
 
-    openAddToCart({
-      productId: product.id,
-      title: product.title,
-      image: displayImage ?? product.images[0],
-      price: displayPrice,
-      variantId: selectedVariant?.id || undefined,
-      productAttributeId: selectedVariant?.attributeId,
-    });
+    setIsAddingToCart(true);
+    try {
+      await openAddToCart({
+        productId: product.id,
+        title: product.title,
+        image: displayImage ?? product.images[0],
+        price: displayPrice,
+        variantId:
+          selectedVariant?.id && selectedVariant.id > 0
+            ? selectedVariant.id
+            : undefined,
+        productAttributeId:
+          selectedVariant?.attributeId && selectedVariant.attributeId > 0
+            ? selectedVariant.attributeId
+            : undefined,
+      });
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
   const handleWishlist = async () => {
@@ -624,33 +638,20 @@ export default function ProductDetailContent({
               <h2 className={styles.similarHeading}>Similar products</h2>
               <div className={styles.similarTrack}>
                 {siblingProducts.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={styles.similarCard}
-                    onClick={() =>
-                      router.push(
-                        buildProductHref(item.id, siblingProductIds),
-                      )
-                    }
-                  >
-                    <div className={styles.similarImageWrap}>
-                      <FallbackImage
-                        src={item.images[0]}
-                        alt={item.title}
-                        fill
-                        className={styles.similarImage}
-                      />
-                    </div>
-                    <div className={styles.similarBody}>
-                      <span className={styles.similarTitle}>{item.title}</span>
-                      <span className={styles.similarPrice}>
-                        <CurrencyAmount>
-                          {item.price.toLocaleString()}
-                        </CurrencyAmount>
-                      </span>
-                    </div>
-                  </button>
+                  <div key={item.id} className={styles.similarCardWrap}>
+                    <ProductCard
+                      productId={item.id}
+                      image={item.images[0]}
+                      title={item.title}
+                      price={item.price}
+                      rating={item.rating || 5}
+                      onOpen={() =>
+                        router.push(
+                          buildProductHref(item.id, siblingProductIds),
+                        )
+                      }
+                    />
+                  </div>
                 ))}
               </div>
             </section>
@@ -683,8 +684,10 @@ export default function ProductDetailContent({
           type="button"
           className={styles.addToCartBtn}
           onClick={handleAddToCart}
+          disabled={isAddingToCart}
+          aria-busy={isAddingToCart}
         >
-          Add to cart
+          {isAddingToCart ? "Adding…" : "Add to cart"}
         </button>
       </div>
 

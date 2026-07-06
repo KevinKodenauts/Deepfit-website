@@ -17,12 +17,14 @@
   align-items: stretch;
   min-height: 64px;
   padding: 6px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-radius: 28px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(229, 231, 235, 0.9);
   box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.08),
-    0 2px 12px rgba(98, 77, 164, 0.1);
+    0 8px 32px rgba(15, 23, 42, 0.1),
+    0 2px 12px rgba(111, 174, 247, 0.12);
   pointer-events: auto;
 }
 
@@ -32,11 +34,12 @@
   bottom: 6px;
   left: 6px;
   width: calc((100% - 12px) / 4);
-  background: #624da4;
+  background: var(--brand-gradient);
   border-radius: 20px;
   transition: transform 320ms cubic-bezier(0.65, 0, 0.35, 1);
   pointer-events: none;
   z-index: 0;
+  box-shadow: var(--brand-glow);
 }
 
 .navItem {
@@ -68,9 +71,10 @@
 }
 
 .label {
+  font-family: var(--font-display);
   font-size: 11px;
-  font-weight: 500;
-  color: #837f7f;
+  font-weight: 600;
+  color: var(--text-secondary);
   line-height: 1.2;
   letter-spacing: -0.1px;
   white-space: nowrap;
@@ -79,7 +83,7 @@
 
 .navItemActive .label {
   color: #ffffff;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .badge {
@@ -95,14 +99,14 @@
   line-height: 17px;
   text-align: center;
   border: 1.5px solid #ffffff;
-  background: #624da4;
+  background: var(--brand-gradient);
   color: #ffffff;
 }
 
 .badgeSelected {
   background: #ffffff;
-  color: #624da4;
-  border-color: #624da4;
+  color: #6faef7;
+  border-color: #6faef7;
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {

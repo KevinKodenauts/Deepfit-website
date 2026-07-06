@@ -1,6 +1,8 @@
 export type ApiProduct = {
   id: number;
   productName: string;
+  metaTitle?: string;
+  metaDescription?: string;
   sku?: string;
   productDescription?: string;
   productShortDescription?: string;
@@ -12,6 +14,8 @@ export type ApiProduct = {
   isFeaturedProduct?: string | boolean;
   isTopSellingProduct?: string | boolean;
   stockStatus?: string;
+  inStock?: boolean | string;
+  productStatus?: string;
   mainCategoryDetails?: { id: number; mainCategoryName: string };
   categoryDetails?: { id: number; categoryName: string };
   subCategoryDetails?: { id: number; subCategoryName: string };

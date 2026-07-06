@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,8 +19,13 @@ import WriteReviewModal from "@/components/WriteReviewModal";
 import { CurrencyAmount } from "@/components/CurrencySymbol";
 import { imageSizes } from "@/constants/imageSizes";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
+import { useCatalogSync } from "@/hooks/useCatalogSync";
 import { getCustomerOrders, type OrderSummary } from "@/lib/api/orders";
 import { getCustomerId } from "@/lib/auth/session";
+import {
+  affectsOrder,
+  isOrderEvent,
+} from "@/lib/realtime/catalogSyncEvent";
 
 function OrderDetailsContent() {
   const router = useRouter();
@@ -31,7 +36,7 @@ function OrderDetailsContent() {
   const [order, setOrder] = useState<OrderSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const loadOrder = useCallback(() => {
     if (authLoading || !isAuthenticated) return;
 
     const customerId = getCustomerId();
@@ -40,12 +45,24 @@ function OrderDetailsContent() {
       return;
     }
 
+    setLoading(true);
     getCustomerOrders(customerId)
       .then((orders) => orders.find((o) => o.id === orderId) ?? null)
       .then(setOrder)
       .catch(() => setOrder(null))
       .finally(() => setLoading(false));
   }, [authLoading, isAuthenticated, orderId]);
+
+  useEffect(() => {
+    loadOrder();
+  }, [loadOrder]);
+
+  useCatalogSync(
+    () => {
+      loadOrder();
+    },
+    (event) => isOrderEvent(event) && affectsOrder(event, orderId)
+  );
 
   if (loading) {
     return (

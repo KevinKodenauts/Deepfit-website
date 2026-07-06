@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import {
   ChevronLeft,
   Check,
@@ -10,11 +10,12 @@ import {
   Building2,
   ChevronRight,
 } from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import FallbackImage from "@/components/FallbackImage";
+import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./checkout.module.css";
 import ChangeAddressModal from "@/components/ChangeAddressModal";
 import { CurrencyAmount } from "@/components/CurrencySymbol";
+import { imageSizes } from "@/constants/imageSizes";
 import { useCart } from "@/contexts/CartContext";
 import { useCatalogSync } from "@/hooks/useCatalogSync";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
@@ -22,23 +23,37 @@ import { getAddresses, type AddressView } from "@/lib/api/addresses";
 import {
   getShippingCharge,
   placeOrder,
+  startZiinaPayment,
   validateCoupon,
 } from "@/lib/api/orders";
 import { getCustomerId } from "@/lib/auth/session";
 
-export default function CheckoutPage() {
+function CheckoutPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { items, subtotal, refreshCart } = useCart();
   const { isAuthenticated, isLoading: authLoading } = useRequireAuth();
   const [promoCode, setPromoCode] = useState("");
   const [isPromoApplied, setIsPromoApplied] = useState(false);
   const [promoError, setPromoError] = useState("");
-  const [selectedPayment, setSelectedPayment] = useState("cod");
+  const [selectedPayment, setSelectedPayment] = useState("credit");
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [addresses, setAddresses] = useState<AddressView[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string>("");
   const [deliveryFee, setDeliveryFee] = useState(0);
   const [placing, setPlacing] = useState(false);
+  const [paymentNotice, setPaymentNotice] = useState("");
+
+  useEffect(() => {
+    const payment = searchParams.get("payment");
+    if (payment === "cancelled") {
+      setPaymentNotice("Payment was cancelled. You can try again when ready.");
+      setSelectedPayment("credit");
+    } else if (payment === "failed") {
+      setPaymentNotice("Payment failed. Please try another method or retry.");
+      setSelectedPayment("credit");
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (items.length === 0) {
@@ -112,12 +127,23 @@ export default function CheckoutPage() {
       return;
     }
 
+    const isOnlinePayment = selectedPayment !== "cod";
+    if (isOnlinePayment && grandTotal < 2) {
+      alert("Online payments require a minimum of 2 AED.");
+      return;
+    }
+
     setPlacing(true);
     try {
       const result = await placeOrder({
         customerId,
         addressId,
-        paymentMethod: selectedPayment === "cod" ? "COD" : "ONLINE",
+        paymentMethod: isOnlinePayment ? "ZIINA" : "COD",
+        platform: "web",
+        subtotal,
+        shippingCost: deliveryFee,
+        discountAmount: discount,
+        grandTotal,
         items: items.map((item) => ({
           productId: item.productId,
           quantity: item.qty,
@@ -126,8 +152,39 @@ export default function CheckoutPage() {
         couponCode: isPromoApplied ? promoCode.trim() : undefined,
       });
 
-      if (!result.status || !result.orderNumber) {
+      if (!result.status || !result.orderNumber || !result.orderId) {
         alert(result.message ?? "Could not place order.");
+        return;
+      }
+
+      if (isOnlinePayment) {
+        let paymentUrl = result.paymentUrl;
+        let paymentIntentId = result.paymentIntentId;
+
+        // Production API may not create Ziina intents yet — start payment from the website server.
+        if (!paymentUrl) {
+          const payment = await startZiinaPayment({
+            orderId: result.orderId,
+            orderNumber: result.orderNumber,
+            amount: grandTotal,
+          });
+          paymentUrl = payment.paymentUrl;
+          paymentIntentId = payment.paymentIntentId;
+        }
+
+        if (!paymentUrl) {
+          alert("Could not open the payment page. Please try again.");
+          return;
+        }
+
+        if (paymentIntentId && typeof window !== "undefined") {
+          sessionStorage.setItem(
+            `ziina:${result.orderId}`,
+            paymentIntentId
+          );
+        }
+
+        window.location.href = paymentUrl;
         return;
       }
 
@@ -135,8 +192,12 @@ export default function CheckoutPage() {
       router.push(
         `/orders/success?orderNumber=${encodeURIComponent(result.orderNumber)}&orderId=${result.orderId ?? ""}`
       );
-    } catch {
-      alert("Something went wrong while placing your order.");
+    } catch (error) {
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while placing your order."
+      );
     } finally {
       setPlacing(false);
     }
@@ -174,11 +235,12 @@ export default function CheckoutPage() {
         <div className={styles.itemsList}>
           {items.map((item) => (
             <div key={item.id} className={styles.itemCard}>
-              <Image
+              <FallbackImage
                 src={item.image}
                 alt={item.title}
                 width={56}
                 height={56}
+                sizes={imageSizes.orderThumb}
                 className={styles.itemImage}
               />
               <div className={styles.itemInfo}>
@@ -271,6 +333,11 @@ export default function CheckoutPage() {
         )}
 
         <h2 className={styles.sectionTitle}>Payment Method</h2>
+        {paymentNotice && (
+          <p style={{ color: "#b45309", fontSize: "13px", marginBottom: "12px" }}>
+            {paymentNotice}
+          </p>
+        )}
         <div className={styles.paymentList}>
           <div
             className={`${styles.paymentCard} ${selectedPayment === "credit" ? styles.paymentCardSelected : ""}`}
@@ -280,8 +347,8 @@ export default function CheckoutPage() {
               <CreditCard size={24} />
             </div>
             <div className={styles.paymentInfo}>
-              <h3 className={styles.paymentTitle}>Credit / Debit Cards</h3>
-              <p className={styles.paymentDesc}>Visa, Mastercard, Amex</p>
+              <h3 className={styles.paymentTitle}>Pay Online (Ziina)</h3>
+              <p className={styles.paymentDesc}>Cards, Apple Pay & more</p>
             </div>
             <div
               className={`${styles.radioCircle} ${selectedPayment === "credit" ? styles.radioSelected : ""}`}
@@ -340,7 +407,7 @@ export default function CheckoutPage() {
           <div className={styles.footerActionRow}>
             <div className={styles.payInfo}>
               <span className={styles.payLabel}>
-                Pay via {selectedPayment === "credit" ? "Card" : "Cash"}
+                Pay via {selectedPayment === "credit" ? "Ziina" : "Cash"}
               </span>
               <span className={styles.payAmount}>
                 <CurrencyAmount>{grandTotal.toLocaleString()}</CurrencyAmount>
@@ -351,7 +418,13 @@ export default function CheckoutPage() {
               onClick={handlePlaceOrder}
               disabled={placing || !selectedAddress}
             >
-              {placing ? "Placing..." : "Place Order"}{" "}
+              {placing
+                ? selectedPayment === "cod"
+                  ? "Placing..."
+                  : "Opening payment..."
+                : selectedPayment === "cod"
+                  ? "Place Order"
+                  : "Pay with Ziina"}{" "}
               <ChevronRight size={20} />
             </button>
           </div>
@@ -374,5 +447,13 @@ export default function CheckoutPage() {
         }}
       />
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<p style={{ padding: "24px", color: "#64748b" }}>Loading...</p>}>
+      <CheckoutPageContent />
+    </Suspense>
   );
 }

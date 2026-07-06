@@ -1,0 +1,47 @@
+.wrapper {
+  margin-top: 4px;
+}
+
+.label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: #1a637b;
+  cursor: pointer;
+}
+
+.text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #616161;
+}
+
+.link {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: #1a637b;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.link:hover {
+  color: #155066;
+}
+
+.error {
+  color: #ef4444;
+  font-size: 12px;
+  margin: 6px 0 0 28px;
+}

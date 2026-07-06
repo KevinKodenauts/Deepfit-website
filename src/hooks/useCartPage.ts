@@ -9,9 +9,11 @@ import { useCatalogSync } from "@/hooks/useCatalogSync";
 import {
   getShippingCharge,
   placeOrder,
+  startZiinaPayment,
   validateCoupon,
 } from "@/lib/api/orders";
 import { getCustomerId } from "@/lib/auth/session";
+import type { CartPaymentMethod } from "@/components/cart/CartPaymentMethodSection";
 
 export function useCartPage() {
   const router = useRouter();
@@ -32,6 +34,7 @@ export function useCartPage() {
   const [isAddressOpen, setIsAddressOpen] = useState(false);
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [useRewardCoins, setUseRewardCoins] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<CartPaymentMethod>("ziina");
   const [placing, setPlacing] = useState(false);
 
   const itemCount = items.reduce((sum, item) => sum + item.qty, 0);
@@ -123,7 +126,10 @@ export function useCartPage() {
     await updateDeliveryFee(address?.pincode);
   };
 
-  const handlePlaceOrder = async (options?: { onMissingAddress?: () => void }) => {
+  /** Place order from the cart (Ziina or cash on delivery). */
+  const handlePlaceOrder = async (options?: {
+    onMissingAddress?: () => void;
+  }) => {
     if (!isAuthenticated) {
       router.push("/login?next=/cart");
       return;
@@ -137,7 +143,13 @@ export function useCartPage() {
         options.onMissingAddress();
         return;
       }
-      router.push("/profile/addresses");
+      router.push("/profile/addresses?select=1&next=/cart");
+      return;
+    }
+
+    const isOnlinePayment = paymentMethod === "ziina";
+    if (isOnlinePayment && grandTotal < 2) {
+      alert("Online payments require a minimum of 2 AED.");
       return;
     }
 
@@ -146,7 +158,11 @@ export function useCartPage() {
       const result = await placeOrder({
         customerId,
         addressId: selectedAddressId,
-        paymentMethod: "COD",
+        paymentMethod: isOnlinePayment ? "ZIINA" : "COD",
+        platform: "web",
+        subtotal: itemsTotal,
+        shippingCost: deliveryFee,
+        grandTotal,
         items: items.map((item) => ({
           productId: item.productId,
           quantity: item.qty,
@@ -155,17 +171,48 @@ export function useCartPage() {
         couponCode: appliedCoupon ?? undefined,
       });
 
-      if (!result.status || !result.orderNumber) {
+      if (!result.status || !result.orderNumber || !result.orderId) {
         alert(result.message ?? "Could not place order.");
+        return;
+      }
+
+      if (isOnlinePayment) {
+        let paymentUrl = result.paymentUrl;
+        let paymentIntentId = result.paymentIntentId;
+
+        if (!paymentUrl) {
+          const payment = await startZiinaPayment({
+            orderId: result.orderId,
+            orderNumber: result.orderNumber,
+            amount: grandTotal,
+          });
+          paymentUrl = payment.paymentUrl;
+          paymentIntentId = payment.paymentIntentId;
+        }
+
+        if (!paymentUrl) {
+          alert("Could not open the payment page. Please try again.");
+          return;
+        }
+
+        if (paymentIntentId) {
+          sessionStorage.setItem(`ziina:${result.orderId}`, paymentIntentId);
+        }
+
+        window.location.href = paymentUrl;
         return;
       }
 
       await refreshCart();
       router.push(
-        `/orders/success?orderNumber=${encodeURIComponent(result.orderNumber)}&orderId=${result.orderId ?? ""}`
+        `/orders/success?orderNumber=${encodeURIComponent(result.orderNumber)}&orderId=${result.orderId ?? ""}`,
       );
-    } catch {
-      alert("Something went wrong while placing your order.");
+    } catch (error) {
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while placing your order.",
+      );
     } finally {
       setPlacing(false);
     }
@@ -202,6 +249,8 @@ export function useCartPage() {
     appliedCoupon,
     useRewardCoins,
     setUseRewardCoins,
+    paymentMethod,
+    setPaymentMethod,
     placing,
     isCouponOpen,
     setIsCouponOpen,

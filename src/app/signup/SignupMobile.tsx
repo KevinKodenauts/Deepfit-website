@@ -2,12 +2,17 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { User, Mail, Lock, Eye, EyeOff, ChevronLeft } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import CountryPhoneField from "@/components/CountryPhoneField";
+import TermsAcceptanceField from "@/components/TermsAcceptanceField";
 import type { useSignupForm } from "@/hooks/useSignupForm";
 import styles from "./signup.module.css";
 
 type SignupMobileProps = ReturnType<typeof useSignupForm>;
+
+const PHONE_PLACEHOLDERS: Record<string, string> = {
+  ae: "501234567",
+};
 
 export default function SignupMobile({
   router,
@@ -27,6 +32,8 @@ export default function SignupMobile({
   setConfirmPassword,
   showConfirmPassword,
   setShowConfirmPassword,
+  acceptedTerms,
+  setAcceptedTerms,
   error,
   fieldErrors,
   loading,
@@ -34,6 +41,9 @@ export default function SignupMobile({
   handleSubmit,
   clearFieldError,
 }: SignupMobileProps) {
+  const phonePlaceholder =
+    PHONE_PLACEHOLDERS[mobileCountry.iso2] ?? "501234567";
+
   return (
     <div className={styles.page}>
       <header className={styles.header}>
@@ -42,8 +52,9 @@ export default function SignupMobile({
           className={styles.backBtn}
           onClick={() => router.back()}
           aria-label="Go back"
+          disabled={loading}
         >
-          <ChevronLeft size={24} />
+          <ArrowLeft size={22} strokeWidth={2} />
         </button>
         <h1 className={styles.headerTitle}>Create Account</h1>
         <div className={styles.headerSpacer} />
@@ -87,6 +98,7 @@ export default function SignupMobile({
                 }}
                 autoComplete="name"
                 required
+                disabled={loading}
               />
             </div>
             {fieldErrors.name && (
@@ -112,6 +124,7 @@ export default function SignupMobile({
                 }}
                 autoComplete="email"
                 required
+                disabled={loading}
               />
             </div>
             {fieldErrors.email && (
@@ -120,9 +133,12 @@ export default function SignupMobile({
           </div>
 
           <CountryPhoneField
-            label="Mobile Number"
+            label="Phone Number"
             value={mobile}
             country={mobileCountry}
+            placeholder={phonePlaceholder}
+            showChevron={false}
+            compact
             onValueChange={(value) => {
               setMobile(value);
               clearFieldError("mobile");
@@ -152,6 +168,7 @@ export default function SignupMobile({
                 }}
                 autoComplete="new-password"
                 required
+                disabled={loading}
               />
               <button
                 type="button"
@@ -159,6 +176,7 @@ export default function SignupMobile({
                 onClick={() => setShowPassword(!showPassword)}
                 tabIndex={-1}
                 aria-label={showPassword ? "Hide password" : "Show password"}
+                disabled={loading}
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
@@ -189,6 +207,7 @@ export default function SignupMobile({
                 }}
                 autoComplete="new-password"
                 required
+                disabled={loading}
               />
               <button
                 type="button"
@@ -198,6 +217,7 @@ export default function SignupMobile({
                 aria-label={
                   showConfirmPassword ? "Hide password" : "Show password"
                 }
+                disabled={loading}
               >
                 {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
@@ -209,6 +229,18 @@ export default function SignupMobile({
 
           {error && <p className={styles.formError}>{error}</p>}
 
+          <div className={styles.termsWrap}>
+            <TermsAcceptanceField
+              id="signup-terms-mobile"
+              checked={acceptedTerms}
+              onChange={(checked) => {
+                setAcceptedTerms(checked);
+                clearFieldError("acceptedTerms");
+              }}
+              error={fieldErrors.acceptedTerms}
+            />
+          </div>
+
           <button
             type="submit"
             className={`${styles.signupBtn} ${
@@ -216,6 +248,7 @@ export default function SignupMobile({
                 ? styles.signupBtnEnabled
                 : styles.signupBtnDisabled
             }`}
+            disabled={!isFormValid || loading}
           >
             {loading ? "Sending code..." : "Sign Up"}
           </button>

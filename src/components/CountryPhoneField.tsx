@@ -16,6 +16,9 @@ type CountryPhoneFieldProps = {
   onCountryChange: (country: ParsedCountry) => void;
   optional?: boolean;
   error?: string;
+  placeholder?: string;
+  showChevron?: boolean;
+  compact?: boolean;
 };
 
 export default function CountryPhoneField({
@@ -26,12 +29,19 @@ export default function CountryPhoneField({
   onCountryChange,
   optional = false,
   error,
+  placeholder,
+  showChevron = true,
+  compact = false,
 }: CountryPhoneFieldProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const expectedLength = getExpectedPhoneLength(country);
+  const inputPlaceholder =
+    placeholder ?? (optional ? "Optional" : "Enter phone number");
 
   return (
-    <div className={styles.field}>
+    <div
+      className={`${styles.field}${compact ? ` ${styles.fieldCompact}` : ""}`}
+    >
       <label className={styles.label}>{label}</label>
 
       <div className={`${styles.inputWrap} ${error ? styles.inputWrapError : ""}`}>
@@ -43,7 +53,9 @@ export default function CountryPhoneField({
         >
           <FlagImage iso2={country.iso2} className={styles.flag} />
           <span className={styles.dialCode}>+{country.dialCode}</span>
-          <ChevronDown size={16} className={styles.chevron} />
+          {showChevron && (
+            <ChevronDown size={16} className={styles.chevron} />
+          )}
           <span className={styles.divider} />
         </button>
 
@@ -57,7 +69,7 @@ export default function CountryPhoneField({
             const digits = event.target.value.replace(/\D/g, "");
             onValueChange(digits.slice(0, expectedLength));
           }}
-          placeholder={optional ? "Optional" : "Enter phone number"}
+          placeholder={inputPlaceholder}
         />
       </div>
 

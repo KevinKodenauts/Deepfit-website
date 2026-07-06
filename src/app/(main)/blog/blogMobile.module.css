@@ -9,7 +9,7 @@
 }
 
 .icon {
-  color: #624da4;
+  color: #A78BFA;
   margin-bottom: 20px;
 }
 
@@ -31,7 +31,7 @@
 .link {
   padding: 12px 24px;
   border-radius: 12px;
-  background: #624da4;
+  background: var(--brand-gradient);
   color: #fff;
   font-size: 14px;
   font-weight: 700;

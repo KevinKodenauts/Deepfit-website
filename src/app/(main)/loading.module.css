@@ -14,13 +14,15 @@
   background: linear-gradient(
     90deg,
     transparent,
-    var(--primary-teal),
-    var(--primary-purple),
+    #6ee7b7,
+    #6faef7,
+    #a78bfa,
     transparent
   );
   background-size: 200% 100%;
   animation: routeProgress 0.9s ease-in-out infinite;
   pointer-events: none;
+  box-shadow: 0 0 12px rgba(111, 174, 247, 0.5);
 }
 
 @keyframes routeProgress {

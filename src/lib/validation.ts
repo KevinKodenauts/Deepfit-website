@@ -5,6 +5,9 @@ import { validatePhoneNumber } from "@/lib/phone/utils";
 
 export type FieldErrors = Record<string, string>;
 
+export const TERMS_ACCEPTANCE_ERROR =
+  "You must accept the Terms & Conditions and Privacy Policy to continue.";
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MOBILE_RE = /^[6-9]\d{9}$/; // Indian mobile: starts with 6-9, 10 digits
 
@@ -44,15 +47,26 @@ export function validateName(name: string): string | null {
   return null;
 }
 
+export function validateTermsAcceptance(accepted: boolean): string | null {
+  if (!accepted) return TERMS_ACCEPTANCE_ERROR;
+  return null;
+}
+
 /**
  * Validate the login form and return a map of field → error message.
  * Returns an empty object when all fields are valid.
  */
-export function validateLoginForm(email: string, password: string): FieldErrors {
+export function validateLoginForm(
+  email: string,
+  password: string,
+  acceptedTerms: boolean
+): FieldErrors {
   const errors: FieldErrors = {};
   const emailErr = validateEmail(email);
   if (emailErr) errors.email = emailErr;
   if (!password) errors.password = "Password is required.";
+  const termsErr = validateTermsAcceptance(acceptedTerms);
+  if (termsErr) errors.acceptedTerms = termsErr;
   return errors;
 }
 
@@ -66,6 +80,7 @@ export function validateSignupForm(fields: {
   email: string;
   password: string;
   confirmPassword: string;
+  acceptedTerms: boolean;
   mobileCountry?: ParsedCountry;
 }): FieldErrors {
   const errors: FieldErrors = {};
@@ -89,6 +104,9 @@ export function validateSignupForm(fields: {
   } else if (fields.password !== fields.confirmPassword) {
     errors.confirmPassword = "Passwords do not match.";
   }
+
+  const termsErr = validateTermsAcceptance(fields.acceptedTerms);
+  if (termsErr) errors.acceptedTerms = termsErr;
 
   return errors;
 }

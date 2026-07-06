@@ -310,7 +310,7 @@
   justify-content: center;
   gap: 8px;
   padding: 14px;
-  background: linear-gradient(135deg, var(--primary-teal), var(--primary-purple));
+  background: var(--brand-gradient);
   color: white;
   border: none;
   border-radius: 12px;

@@ -4,7 +4,7 @@
   background: #ffffff;
   display: flex;
   flex-direction: column;
-  font-family: var(--font-outfit), Arial, Helvetica, sans-serif;
+  font-family: var(--font-display), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -291,6 +291,7 @@
   background: transparent;
   cursor: pointer;
   text-align: left;
+  text-decoration: none;
   font-size: 15px;
   font-weight: 400;
   color: #111111;

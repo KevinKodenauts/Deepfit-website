@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import type { useLoginForm } from "@/hooks/useLoginForm";
+import TermsAcceptanceField from "@/components/TermsAcceptanceField";
 import styles from "./loginDesktop.module.css";
 
 type LoginDesktopProps = ReturnType<typeof useLoginForm>;
@@ -19,9 +20,12 @@ export default function LoginDesktop({
   fieldErrors,
   loading,
   isFormValid,
+  acceptedTerms,
+  setAcceptedTerms,
   handleSubmit,
   clearEmailError,
   clearPasswordError,
+  clearTermsError,
 }: LoginDesktopProps) {
   return (
     <div className={styles.page}>
@@ -147,6 +151,16 @@ export default function LoginDesktop({
               Forgot password?
             </Link>
           </div>
+
+          <TermsAcceptanceField
+            id="login-terms-desktop"
+            checked={acceptedTerms}
+            onChange={(checked) => {
+              setAcceptedTerms(checked);
+              clearTermsError();
+            }}
+            error={fieldErrors.acceptedTerms}
+          />
 
           <button
             type="submit"

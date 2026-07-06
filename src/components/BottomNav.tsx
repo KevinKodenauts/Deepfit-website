@@ -16,13 +16,15 @@ const TABS = [
   { label: "Cart", href: "/cart", isCart: true },
   {
     label: "Explore",
-    href: "/exercise",
-    match: (path: string) => path.startsWith("/exercise"),
+    href: "/explore",
+    match: (path: string) =>
+      path.startsWith("/explore") || path.startsWith("/exercise"),
   },
 ] as const;
 
 function getActiveIndex(pathname: string): number {
-  if (pathname.startsWith("/exercise")) return 3;
+  if (pathname.startsWith("/explore") || pathname.startsWith("/exercise"))
+    return 3;
   if (pathname.startsWith("/cart") || pathname.startsWith("/checkout")) return 2;
   if (pathname.startsWith("/categories")) return 1;
   if (pathname === "/home") return 0;
@@ -38,7 +40,8 @@ export default function BottomNav() {
     pathname.startsWith("/product/") ||
     pathname.startsWith("/categories/products") ||
     pathname.startsWith("/cart") ||
-    pathname.startsWith("/checkout")
+    pathname.startsWith("/checkout") ||
+    pathname.startsWith("/explore")
   ) {
     return null;
   }
@@ -85,7 +88,7 @@ export default function BottomNav() {
                   <Icon
                     size={22}
                     strokeWidth={isActive ? 2.4 : 2}
-                    color={isActive ? "#ffffff" : "#837f7f"}
+                    color={isActive ? "#ffffff" : "#64748B"}
                   />
                   {isCart && itemCount > 0 && (
                     <span

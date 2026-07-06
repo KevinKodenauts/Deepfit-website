@@ -162,7 +162,7 @@
   transform: translateY(-50%);
   width: 8px;
   height: 8px;
-  background: #5a4b9c; /* brand purple */
+  background: #8FA6F7; /* brand purple */
   border-radius: 50%;
 }
 
@@ -229,3 +229,52 @@
   cursor: pointer;
 }
 
+@media (min-width: 768px) {
+  .container {
+    background: white;
+    border-radius: var(--desktop-radius);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    min-height: calc(100vh - var(--desktop-nav-height) - 48px);
+    padding-bottom: 48px;
+  }
+
+  .header {
+    width: 100%;
+    padding: 32px 40px 16px;
+    position: static;
+  }
+
+  .tabsScroll {
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 8px 40px 28px;
+    justify-content: center;
+    overflow: visible;
+  }
+
+  .content {
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 40px 40px;
+    gap: 20px;
+  }
+
+  .card {
+    padding: 20px;
+    transition: box-shadow 0.2s;
+  }
+
+  .card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  }
+
+  .title {
+    font-size: 17px;
+  }
+
+  .desc {
+    font-size: 14px;
+  }
+}

@@ -204,31 +204,137 @@ export function filterOrdersByStatus(
   });
 }
 
+export type PlaceOrderResult = {
+  status: boolean;
+  message?: string;
+  orderId?: number;
+  orderNumber?: string;
+  paymentRequired?: boolean;
+  paymentUrl?: string;
+  paymentIntentId?: string;
+  isPaid?: boolean;
+};
+
 export async function placeOrder(payload: {
   customerId: number;
   addressId: number;
   paymentMethod: string;
   items: OrderItemPayload[];
   couponCode?: string;
+  subtotal?: number;
+  shippingCost?: number;
+  discountAmount?: number;
+  grandTotal?: number;
+  platform?: "web" | "app";
 }) {
-  return apiRequest<{ status: boolean; message?: string; orderId?: number; orderNumber?: string }>(
-    portalUrl("/addcustomerorder"),
-    {
-      method: "POST",
-      body: {
-        customerId: payload.customerId,
-        addressId: payload.addressId,
-        paymentMethod: payload.paymentMethod,
-        items: payload.items.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          variantId: item.variantId,
-        })),
-        ...(payload.couponCode ? { couponCode: payload.couponCode } : {}),
-      },
-      auth: true,
-    }
-  );
+  return apiRequest<PlaceOrderResult>(portalUrl("/addcustomerorder"), {
+    method: "POST",
+    body: {
+      customerId: payload.customerId,
+      addressId: payload.addressId,
+      shippingAddressId: payload.addressId,
+      billingAddressId: payload.addressId,
+      paymentMethod: payload.paymentMethod,
+      platform: payload.platform ?? "web",
+      subtotal: payload.subtotal,
+      shippingCost: payload.shippingCost,
+      discountAmount: payload.discountAmount,
+      grandTotal: payload.grandTotal,
+      items: payload.items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        variantId: item.variantId,
+      })),
+      ...(payload.couponCode ? { couponCode: payload.couponCode } : {}),
+    },
+    auth: true,
+  });
+}
+
+export async function verifyZiinaPayment(payload: {
+  orderId?: number | string;
+  paymentIntentId?: string;
+}) {
+  return apiRequest<{
+    status: boolean;
+    message?: string;
+    orderId?: number;
+    orderNumber?: string;
+    isPaid?: boolean;
+    paymentStatus?: string;
+  }>(portalUrl("/verifyziinapayment"), {
+    method: "POST",
+    body: {
+      orderId: payload.orderId,
+      paymentIntentId: payload.paymentIntentId,
+    },
+    auth: true,
+  });
+}
+
+/** Start Ziina checkout via the Next.js server (works even if Django is not updated yet). */
+export async function startZiinaPayment(payload: {
+  orderId: number | string;
+  orderNumber: string;
+  amount: number;
+}) {
+  const response = await fetch("/api/payments/ziina/create", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  const data = (await response.json().catch(() => null)) as {
+    status?: boolean;
+    message?: string;
+    paymentUrl?: string;
+    paymentIntentId?: string;
+  } | null;
+
+  if (!response.ok || !data?.status || !data.paymentUrl) {
+    throw new Error(data?.message ?? "Could not start payment");
+  }
+
+  return data as {
+    status: true;
+    paymentUrl: string;
+    paymentIntentId?: string;
+  };
+}
+
+/** Verify Ziina payment via the Next.js server, then best-effort sync to Django. */
+export async function confirmZiinaPayment(payload: {
+  orderId?: number | string;
+  paymentIntentId?: string;
+  amount?: number;
+  accessToken?: string | null;
+}) {
+  const response = await fetch("/api/payments/ziina/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      orderId: payload.orderId,
+      paymentIntentId: payload.paymentIntentId,
+      amount: payload.amount,
+      accessToken: payload.accessToken ?? undefined,
+    }),
+  });
+  const data = (await response.json().catch(() => null)) as {
+    status?: boolean;
+    message?: string;
+    isPaid?: boolean;
+    paymentStatus?: string;
+    orderId?: number | string;
+    paymentIntentId?: string;
+  } | null;
+
+  return {
+    status: Boolean(data?.status),
+    message: data?.message,
+    isPaid: data?.isPaid,
+    paymentStatus: data?.paymentStatus,
+    orderId: data?.orderId,
+    paymentIntentId: data?.paymentIntentId,
+  };
 }
 
 export async function getShippingCharge(customerId: number, pincode: string) {

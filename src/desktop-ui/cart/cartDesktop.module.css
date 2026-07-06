@@ -1,7 +1,7 @@
 .shell {
   width: 100%;
   min-height: calc(100vh - var(--desktop-nav-height));
-  background: #f8f9fb;
+  background: var(--bg);
   padding: 32px var(--desktop-padding-x) 48px;
 }
 
@@ -145,7 +145,7 @@
 .itemPrice {
   font-size: 18px;
   font-weight: 800;
-  color: #624da4;
+  color: #A78BFA;
   margin: 0;
 }
 
@@ -189,7 +189,7 @@
 }
 
 .optionRow:hover {
-  border-color: #624da4;
+  border-color: #A78BFA;
   background: #f5f3fa;
 }
 
@@ -199,7 +199,7 @@
   padding: 4px 10px;
   border-radius: 999px;
   background: #ede9fe;
-  color: #624da4;
+  color: #A78BFA;
   font-size: 12px;
   font-weight: 700;
 }
@@ -260,7 +260,7 @@
 }
 
 .addressIcon {
-  color: #624da4;
+  color: #A78BFA;
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -286,7 +286,7 @@
   border: none;
   font-size: 13px;
   font-weight: 700;
-  color: #624da4;
+  color: #A78BFA;
   cursor: pointer;
 }
 
@@ -372,7 +372,7 @@
 }
 
 .switch input:checked + .slider {
-  background: #624da4;
+  background: var(--brand-gradient);
 }
 
 .switch input:checked + .slider::before {
@@ -438,6 +438,6 @@
 }
 
 .loginHint a {
-  color: #624da4;
+  color: #A78BFA;
   font-weight: 600;
 }

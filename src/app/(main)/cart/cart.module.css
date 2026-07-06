@@ -388,6 +388,15 @@
   color: #111827;
 }
 
+.paymentCard {
+  width: 100%;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: white;
+}
+
 .stickyFooter {
   flex-shrink: 0;
   background: white;

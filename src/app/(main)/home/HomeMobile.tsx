@@ -1,56 +1,191 @@
 "use client";
 
-import FallbackImage from "@/components/FallbackImage";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  Search,
-  Mic,
-  User,
-  Bell,
-  ShoppingBag,
-  ChevronDown,
-} from "lucide-react";
-import { useCallback, useState } from "react";
-import styles from "./home.module.css";
-import SelectAddressSheet from "@/components/SelectAddressSheet";
+import { Search, Mic, User, Bell, Star } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import FallbackImage from "@/components/FallbackImage";
 import { CurrencyAmount } from "@/components/CurrencySymbol";
-import {
-  mapToHomeProduct,
-  type HomeProductView,
-} from "@/lib/api/mappers";
-import type {
-  DashboardBanner,
-  DashboardCategory,
-  DashboardData,
-  MainCategory,
-  PopularCollection,
-} from "@/lib/api/types";
 import { useNotifications } from "@/contexts/NotificationContext";
-import { useSheetOrNavigate } from "@/hooks/useSheetOrNavigate";
+import { mapToHomeProduct, type HomeProductView } from "@/lib/api/mappers";
 import { buildProductHref } from "@/lib/productNavigation";
 import { useHomeDashboard } from "@/desktop-ui/home/useHomeDashboard";
+import styles from "./home.module.css";
+
+const SEARCH_HINTS = [
+  "whey protein",
+  "yoga mat",
+  "dumbbells",
+  "pre-workout",
+  "resistance bands",
+];
+
+function RatingStars() {
+  return (
+    <div className={styles.stars} aria-hidden>
+      {Array.from({ length: 5 }, (_, index) => (
+        <Star key={index} size={10} fill="currentColor" strokeWidth={0} />
+      ))}
+    </div>
+  );
+}
+
+function ElevatedProductCard({
+  product,
+  badge,
+  onOpen,
+}: {
+  product: HomeProductView;
+  badge?: string;
+  onOpen: () => void;
+}) {
+  return (
+    <div className={styles.elevatedCard}>
+      <button
+        type="button"
+        className={styles.cardHitArea}
+        onClick={onOpen}
+        aria-label={product.title}
+      >
+        <div className={styles.elevatedImageWrap}>
+          <FallbackImage
+            src={product.image}
+            alt=""
+            fill
+            sizes="148px"
+            className={styles.elevatedImage}
+          />
+          {badge ? <span className={styles.badge}>{badge}</span> : null}
+        </div>
+        <div className={styles.elevatedBody}>
+          <h3 className={styles.elevatedTitle}>{product.title}</h3>
+          <RatingStars />
+          <div className={styles.elevatedFooter}>
+            <span className={styles.elevatedPrice}>
+              <CurrencyAmount>{Math.round(product.price)}</CurrencyAmount>
+            </span>
+          </div>
+        </div>
+      </button>
+      <button
+        type="button"
+        className={styles.addBtnSolid}
+        onClick={onOpen}
+        aria-label={`Add ${product.title}`}
+      >
+        ADD
+      </button>
+    </div>
+  );
+}
+
+function FlatProductCard({
+  product,
+  onOpen,
+}: {
+  product: HomeProductView;
+  onOpen: () => void;
+}) {
+  return (
+    <div className={styles.flatCard}>
+      <button
+        type="button"
+        className={styles.cardHitArea}
+        onClick={onOpen}
+        aria-label={product.title}
+      >
+        <div className={styles.flatImageWrap}>
+          <FallbackImage
+            src={product.image}
+            alt=""
+            fill
+            sizes="160px"
+            className={styles.flatImage}
+          />
+        </div>
+        <h3 className={styles.flatTitle}>{product.title}</h3>
+        <p className={styles.flatPrice}>
+          <CurrencyAmount>{Math.round(product.price)}</CurrencyAmount>
+        </p>
+      </button>
+      <button
+        type="button"
+        className={styles.addBtnOutline}
+        onClick={onOpen}
+        aria-label={`Add ${product.title}`}
+      >
+        ADD
+      </button>
+    </div>
+  );
+}
+
+function ProductSection({
+  title,
+  products,
+  variant,
+  badge,
+  showViewAll,
+  onOpen,
+}: {
+  title: string;
+  products: HomeProductView[];
+  variant: "elevated" | "flat";
+  badge?: string;
+  showViewAll?: boolean;
+  onOpen: (productId: number, products: HomeProductView[]) => void;
+}) {
+  if (products.length === 0) return null;
+
+  return (
+    <section className={styles.section}>
+      <div className={styles.sectionHeader}>
+        <h2 className={styles.sectionTitle}>{title}</h2>
+        {showViewAll ? (
+          <button
+            type="button"
+            className={styles.viewAll}
+            onClick={() => onOpen(products[0].id, products)}
+          >
+            View All
+          </button>
+        ) : null}
+      </div>
+      <div className={styles.productScroll}>
+        {products.map((product, index) =>
+          variant === "elevated" ? (
+            <ElevatedProductCard
+              key={product.id}
+              product={product}
+              badge={index === 0 ? badge : undefined}
+              onOpen={() => onOpen(product.id, products)}
+            />
+          ) : (
+            <FlatProductCard
+              key={product.id}
+              product={product}
+              onOpen={() => onOpen(product.id, products)}
+            />
+          )
+        )}
+      </div>
+    </section>
+  );
+}
 
 export default function HomeMobile() {
   const router = useRouter();
-  const { openOrNavigate } = useSheetOrNavigate();
   const { unreadCount: notificationCount } = useNotifications();
-  const [isAddressSheetOpen, setIsAddressSheetOpen] = useState(false);
-  const {
-    isLoading,
-    dashboard,
-    mainCategories,
-    selectedCategoryIndex,
-    addresses,
-    selectedAddressId,
-    setSelectedAddressId,
-    locationLine,
-    isAuthenticated,
-    loadAddresses,
-    handleCategorySelect,
-    visibleCategories,
-  } = useHomeDashboard();
+  const { isLoading, dashboard } = useHomeDashboard();
+  const [hintIndex, setHintIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setHintIndex((current) => (current + 1) % SEARCH_HINTS.length);
+    }, 2000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const openProduct = useCallback(
     (productId: number, products: HomeProductView[]) => {
@@ -60,33 +195,36 @@ export default function HomeMobile() {
     [router]
   );
 
+  const openSearch = useCallback(() => {
+    router.push("/search");
+  }, [router]);
+
+  const openVoiceSearch = useCallback(() => {
+    router.push("/search?voice=1");
+  }, [router]);
+
+  const bestSellers = (dashboard?.topSellingProductList ?? []).map(
+    mapToHomeProduct
+  );
+  const recommended = (dashboard?.featuredProductList ?? []).map(
+    mapToHomeProduct
+  );
+
   return (
     <div className={styles.homeContainer}>
       <header className={styles.header}>
         <div className={styles.headerRow}>
-          <div className={styles.deliveryBlock}>
-            <span className={styles.deliveryLabel}>DEEPFIT IN</span>
-            <h1 className={styles.deliveryTime}>13 minutes</h1>
-            <button
-              type="button"
-              className={styles.locationLine}
-              onClick={() => {
-                if (!isAuthenticated) {
-                  router.push("/login");
-                  return;
-                }
-                openOrNavigate("/profile/addresses", () =>
-                  setIsAddressSheetOpen(true)
-                );
-              }}
-            >
-              <span className={styles.locationText}>{locationLine}</span>
-              <ChevronDown size={18} />
-            </button>
-          </div>
+          <Image
+            src="/images/logo/Logo-white.png"
+            alt="Deepfit - Wellness Inside Out"
+            width={145}
+            height={52}
+            className={styles.logo}
+            priority
+          />
           <div className={styles.headerActions}>
             <Link href="/notifications" className={styles.iconBtn}>
-              <Bell size={22} />
+              <Bell size={22} strokeWidth={1.8} />
               {notificationCount > 0 && (
                 <span className={styles.notificationBadge}>
                   {notificationCount > 99 ? "99+" : notificationCount}
@@ -94,30 +232,37 @@ export default function HomeMobile() {
               )}
             </Link>
             <Link href="/profile" className={styles.iconBtn}>
-              <User size={22} />
+              <User size={22} strokeWidth={1.8} />
             </Link>
           </div>
         </div>
-        <button
-          type="button"
-          className={styles.searchBar}
-          onClick={() => router.push("/search")}
-        >
-          <Search size={22} color="#ffffff" />
-          <span className={styles.searchPlaceholder}>
-            Search &quot;pet food&quot;
-          </span>
-          <Mic size={22} color="#ffffff" />
-        </button>
       </header>
 
-      <div className={styles.stickyStrip}>
-        <CategoryStrip
-          categories={mainCategories}
-          isLoading={isLoading}
-          selectedIndex={selectedCategoryIndex}
-          onSelect={handleCategorySelect}
-        />
+      <div className={styles.searchSection}>
+        <div className={styles.searchBar}>
+          <button
+            type="button"
+            className={styles.searchMain}
+            onClick={openSearch}
+            aria-label="Search products"
+          >
+            <Search className={styles.searchIcon} size={22} />
+            <span className={styles.searchText}>
+              Search{" "}
+              <span className={styles.searchHint}>
+                &ldquo;{SEARCH_HINTS[hintIndex]}&rdquo;
+              </span>
+            </span>
+          </button>
+          <button
+            type="button"
+            className={styles.micBtn}
+            onClick={openVoiceSearch}
+            aria-label="Voice search"
+          >
+            <Mic size={22} strokeWidth={1.8} />
+          </button>
+        </div>
       </div>
 
       <div className={styles.content}>
@@ -127,395 +272,23 @@ export default function HomeMobile() {
           </div>
         ) : (
           <>
-            <SliderSection sliders={dashboard?.sliderList ?? []} />
-
-            {visibleCategories.map((category, index) => (
-              <div key={category.id}>
-                <CategorySection
-                  category={category}
-                  onSubCategoryClick={() =>
-                    router.push(`/categories?main=${category.id}`)
-                  }
-                />
-                {index === 1 && (dashboard?.brandsList?.length ?? 0) > 0 && (
-                  <BrandsSection brands={dashboard?.brandsList ?? []} />
-                )}
-              </div>
-            ))}
-
-            <SpecialOfferSection
-              banner={dashboard?.bannerList?.[0]}
-              onOpen={(id) => openProduct(id, [])}
-            />
-
-            <PopularCollectionsSection
-              collections={dashboard?.popularCollectionList ?? []}
-              onSelect={() => router.push("/categories")}
-            />
-
-            <AdvertiseSection banners={dashboard?.advertiseBannerList ?? []} />
-
-            <ProductGridSection
-              title="Top Selling Products"
-              products={(dashboard?.topSellingProductList ?? []).map(
-                mapToHomeProduct
-              )}
+            <ProductSection
+              title="Best Sellers"
+              products={bestSellers}
+              variant="elevated"
+              badge="TOP RATED"
+              showViewAll
               onOpen={openProduct}
             />
-            <ProductGridSection
-              title="Top Rated Products"
-              products={(dashboard?.topRatedProductList ?? []).map(
-                mapToHomeProduct
-              )}
-              onOpen={openProduct}
-            />
-            <ProductGridSection
-              title="Featured Products"
-              products={(dashboard?.featuredProductList ?? []).map(
-                mapToHomeProduct
-              )}
+            <ProductSection
+              title="Recommended For You"
+              products={recommended}
+              variant="flat"
               onOpen={openProduct}
             />
           </>
         )}
       </div>
-
-      <SelectAddressSheet
-        isOpen={isAddressSheetOpen}
-        onClose={() => setIsAddressSheetOpen(false)}
-        addresses={addresses}
-        selectedId={selectedAddressId}
-        onSelect={setSelectedAddressId}
-        onAddressesUpdated={loadAddresses}
-      />
     </div>
-  );
-}
-
-function CategoryStrip({
-  categories,
-  isLoading,
-  selectedIndex,
-  onSelect,
-}: {
-  categories: MainCategory[];
-  isLoading: boolean;
-  selectedIndex: number;
-  onSelect: (index: number, category?: MainCategory) => void;
-}) {
-  const skeletonCount = isLoading && categories.length === 0 ? 5 : 0;
-
-  return (
-    <div className={styles.categoryStrip}>
-      <button
-        type="button"
-        className={styles.categoryItem}
-        onClick={() => onSelect(0)}
-      >
-        <div className={styles.categoryIcon}>
-          <ShoppingBag size={20} color="#212121" />
-        </div>
-        <span
-          className={`${styles.categoryLabel} ${
-            selectedIndex === 0 ? styles.categoryLabelActive : ""
-          }`}
-        >
-          All
-        </span>
-        {selectedIndex === 0 && <div className={styles.categoryUnderline} />}
-      </button>
-
-      {categories.map((category, index) => {
-        const itemIndex = index + 1;
-        const isSelected = selectedIndex === itemIndex;
-        return (
-          <button
-            key={category.id}
-            type="button"
-            className={styles.categoryItem}
-            onClick={() => onSelect(itemIndex, category)}
-          >
-            <div className={styles.categoryIcon}>
-              {category.mainCategoryImage ? (
-                <Image
-                  src={category.mainCategoryImage}
-                  alt={category.mainCategoryName}
-                  width={40}
-                  height={40}
-                  className={styles.categoryImage}
-                />
-              ) : (
-                <ShoppingBag size={20} color="#212121" />
-              )}
-            </div>
-            <span
-              className={`${styles.categoryLabel} ${
-                isSelected ? styles.categoryLabelActive : ""
-              }`}
-            >
-              {category.mainCategoryName}
-            </span>
-            {isSelected && <div className={styles.categoryUnderline} />}
-          </button>
-        );
-      })}
-
-      {Array.from({ length: skeletonCount }).map((_, index) => (
-        <div key={`skel-${index}`} className={styles.categoryItem}>
-          <div className={styles.skeletonCircle} />
-          <div className={styles.skeletonLabel} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function SliderSection({
-  sliders,
-}: {
-  sliders: NonNullable<DashboardData["sliderList"]>;
-}) {
-  if (sliders.length === 0) return null;
-
-  return (
-    <div className={styles.sliderTrack}>
-      {sliders.map((slider) => (
-        <div key={slider.id} className={styles.sliderCard}>
-          <FallbackImage
-            src={slider.sliderImage}
-            alt={slider.title || "Promotion"}
-            fill
-            className={styles.sliderImage}
-          />
-          {(slider.title || slider.description) && (
-            <div className={styles.sliderOverlay}>
-              {slider.title && (
-                <h2 className={styles.sliderTitle}>{slider.title}</h2>
-              )}
-              {slider.description && (
-                <p className={styles.sliderDesc}>{slider.description}</p>
-              )}
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function CategorySection({
-  category,
-  onSubCategoryClick,
-}: {
-  category: DashboardCategory;
-  onSubCategoryClick: () => void;
-}) {
-  if (category.subCategories.length === 0) return null;
-
-  return (
-    <section>
-      <h2 className={styles.sectionTitle}>{category.categoryName}</h2>
-      <div className={styles.grid3}>
-        {category.subCategories.map((sub) => (
-          <button
-            key={sub.id}
-            type="button"
-            className={styles.gridCard}
-            onClick={onSubCategoryClick}
-          >
-            <div className={styles.gridCardImageWrap}>
-              <FallbackImage
-                src={sub.subCategoryImage}
-                alt={sub.subCategoryName}
-                fill
-                className={styles.gridCardImage}
-              />
-            </div>
-            <span className={styles.gridCardLabel}>{sub.subCategoryName}</span>
-          </button>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function BrandsSection({
-  brands,
-}: {
-  brands: NonNullable<DashboardData["brandsList"]>;
-}) {
-  return (
-    <section className={styles.brandSection}>
-      <h2 className={styles.sectionTitle}>Our Brands</h2>
-      <div className={styles.brandTrack}>
-        {brands.map((brand) => (
-          <div key={brand.id} className={styles.brandCard}>
-            {brand.brandIcon ? (
-              <Image
-                src={brand.brandIcon}
-                alt={brand.brandName}
-                width={100}
-                height={100}
-                className={styles.brandImage}
-              />
-            ) : (
-              <div className={styles.brandImage} />
-            )}
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function SpecialOfferSection({
-  banner,
-  onOpen,
-}: {
-  banner?: DashboardBanner;
-  onOpen: (id: number) => void;
-}) {
-  if (!banner) return null;
-
-  return (
-    <section>
-      <h2 className={styles.sectionTitle}>Special Offer</h2>
-      <button
-        type="button"
-        className={styles.specialOfferCard}
-        onClick={() => onOpen(banner.id)}
-      >
-        <FallbackImage
-          src={banner.productImage || banner.bannerImage}
-          alt={banner.productName || banner.bannerName}
-          width={120}
-          height={120}
-          className={styles.specialOfferImage}
-        />
-        <div className={styles.specialOfferBody}>
-          <p className={styles.specialOfferName}>
-            {banner.productName || banner.bannerName}
-          </p>
-          <div>
-            {banner.offerPrice != null && (
-              <span className={styles.specialOfferPrice}>
-                <CurrencyAmount>{Math.round(banner.offerPrice)}</CurrencyAmount>
-              </span>
-            )}
-            {banner.originalPrice != null &&
-              banner.originalPrice > (banner.offerPrice ?? 0) && (
-                <span className={styles.specialOfferMrp}>
-                  <CurrencyAmount>{Math.round(banner.originalPrice)}</CurrencyAmount>
-                </span>
-              )}
-          </div>
-        </div>
-      </button>
-    </section>
-  );
-}
-
-function PopularCollectionsSection({
-  collections,
-  onSelect,
-}: {
-  collections: PopularCollection[];
-  onSelect: () => void;
-}) {
-  if (collections.length === 0) return null;
-
-  return (
-    <section>
-      <h2 className={styles.sectionTitle}>Popular Collections</h2>
-      <div className={styles.collectionScroll}>
-        {collections.map((collection) => (
-          <button
-            key={collection.id}
-            type="button"
-            className={`${styles.gridCard} ${styles.collectionCard}`}
-            onClick={onSelect}
-          >
-            <div className={styles.gridCardImageWrap}>
-              <FallbackImage
-                src={collection.mainCategoryImage}
-                alt={collection.mainCategoryName}
-                fill
-                className={styles.gridCardImage}
-              />
-            </div>
-            <span className={styles.gridCardLabel}>
-              {collection.mainCategoryName}
-            </span>
-          </button>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function AdvertiseSection({
-  banners,
-}: {
-  banners: DashboardBanner[];
-}) {
-  if (banners.length === 0) return null;
-
-  return (
-    <section>
-      <h2 className={styles.sectionTitle}>Special Offers</h2>
-      <div className={styles.adTrack}>
-        {banners.map((banner) => (
-          <div key={banner.id} className={styles.adCard}>
-            <FallbackImage
-              src={banner.bannerImage}
-              alt={banner.bannerName}
-              fill
-              className={styles.sliderImage}
-            />
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function ProductGridSection({
-  title,
-  products,
-  onOpen,
-}: {
-  title: string;
-  products: HomeProductView[];
-  onOpen: (productId: number, products: HomeProductView[]) => void;
-}) {
-  if (products.length === 0) return null;
-
-  return (
-    <section>
-      <h2 className={styles.sectionTitle}>{title}</h2>
-      <div className={styles.grid3}>
-        {products.map((product) => (
-          <button
-            key={product.id}
-            type="button"
-            className={styles.gridCard}
-            onClick={() => onOpen(product.id, products)}
-          >
-            <div className={styles.gridCardImageWrap}>
-              <FallbackImage
-                src={product.image}
-                alt={product.title}
-                fill
-                className={styles.gridCardImage}
-              />
-            </div>
-            <span className={styles.gridCardLabel}>{product.title}</span>
-            <span className={styles.gridCardPrice}>
-              <CurrencyAmount>{product.price}</CurrencyAmount>
-            </span>
-          </button>
-        ))}
-      </div>
-    </section>
   );
 }

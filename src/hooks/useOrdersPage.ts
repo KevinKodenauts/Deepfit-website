@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   filterOrdersByStatus,
   getCustomerOrders,
@@ -10,6 +10,8 @@ import {
 } from "@/lib/api/orders";
 import { getCustomerId } from "@/lib/auth/session";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
+import { useCatalogSync } from "@/hooks/useCatalogSync";
+import { isOrderEvent } from "@/lib/realtime/catalogSyncEvent";
 
 export const ORDER_FILTERS: OrderStatusFilter[] = [
   "All Orders",
@@ -26,7 +28,7 @@ export function useOrdersPage() {
   const [selectedFilter, setSelectedFilter] =
     useState<OrderStatusFilter>("All Orders");
 
-  useEffect(() => {
+  const loadOrders = useCallback(() => {
     if (authLoading || !isAuthenticated) return;
 
     const customerId = getCustomerId();
@@ -35,11 +37,23 @@ export function useOrdersPage() {
       return;
     }
 
+    setLoading(true);
     getCustomerOrders(customerId)
       .then((data) => setOrders(groupOrdersByNumber(data)))
       .catch(() => setOrders([]))
       .finally(() => setLoading(false));
   }, [authLoading, isAuthenticated]);
+
+  useEffect(() => {
+    loadOrders();
+  }, [loadOrders]);
+
+  useCatalogSync(
+    () => {
+      loadOrders();
+    },
+    (event) => isOrderEvent(event)
+  );
 
   const filteredOrders = useMemo(
     () => filterOrdersByStatus(orders, selectedFilter),

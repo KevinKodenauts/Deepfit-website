@@ -4,24 +4,6 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCustomerReferralTree } from "@/lib/api/auth";
-import {
-  getPrivacyPolicy,
-  getRefundPolicy,
-  getReturnPolicy,
-  getTermsAndConditions,
-} from "@/lib/api/policy";
-
-export type PolicyKey = "terms" | "returns" | "refunds" | "privacy";
-
-export const POLICY_CONFIG: Record<
-  PolicyKey,
-  { title: string; fetch: () => Promise<string | null> }
-> = {
-  terms: { title: "Terms and Conditions", fetch: getTermsAndConditions },
-  returns: { title: "Returns Policy", fetch: getReturnPolicy },
-  refunds: { title: "Refunds Policy", fetch: getRefundPolicy },
-  privacy: { title: "Privacy Policy", fetch: getPrivacyPolicy },
-};
 
 export function formatProfilePhone(phone: string) {
   if (!phone) return "";
@@ -39,7 +21,6 @@ export function getProfileInitials(name: string) {
 export function useProfilePage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading, logout, refreshProfile } = useAuth();
-  const [activePolicy, setActivePolicy] = useState<PolicyKey | null>(null);
   const [showUpdateProfile, setShowUpdateProfile] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
@@ -132,8 +113,6 @@ export function useProfilePage() {
     user,
     isAuthenticated,
     isLoading,
-    activePolicy,
-    setActivePolicy,
     showUpdateProfile,
     setShowUpdateProfile,
     showChangePassword,

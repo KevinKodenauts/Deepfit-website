@@ -16,6 +16,7 @@ import {
   setCachedProductDetail,
 } from "@/lib/product/productDetailCache";
 import peekStyles from "@/components/product/productPeek.module.css";
+import { useCatalogSync } from "@/hooks/useCatalogSync";
 
 type ProductPeekExperienceProps = {
   initialId: number;
@@ -50,6 +51,15 @@ function getCenteredOffset(trackWidth: number, slideWidthRatio: number) {
 function getInitialIndex(initialId: number, productIds: number[]) {
   const index = productIds.indexOf(initialId);
   return index >= 0 ? index : 0;
+}
+
+function isInteractiveTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false;
+  return Boolean(
+    target.closest(
+      'button, a, input, select, textarea, label, [role="button"], [data-no-swipe]',
+    ),
+  );
 }
 
 function prefetchProductDetails(productIds: number[]) {
@@ -237,6 +247,10 @@ export default function ProductPeekExperience({
     prefetchProductDetails([currentId, ...neighborIds]);
   }, [activeIndex, productIds]);
 
+  useCatalogSync(() => {
+    prefetchProductDetails(productIds);
+  });
+
   useEffect(() => {
     const track = trackRef.current;
     if (!track || !canSwipe) return;
@@ -325,6 +339,7 @@ export default function ProductPeekExperience({
 
     const onTouchStart = (event: TouchEvent) => {
       if (event.touches.length !== 1) return;
+      if (isInteractiveTarget(event.target)) return;
       beginGesture(event.touches[0].clientX, event.touches[0].clientY);
     };
 
@@ -342,6 +357,7 @@ export default function ProductPeekExperience({
 
     const onPointerDown = (event: PointerEvent) => {
       if (event.pointerType === "touch" || activePointerId != null) return;
+      if (isInteractiveTarget(event.target)) return;
       activePointerId = event.pointerId;
       if (!beginGesture(event.clientX, event.clientY)) return;
       track.setPointerCapture(event.pointerId);

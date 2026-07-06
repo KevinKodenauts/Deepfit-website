@@ -1,16 +1,24 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, Suspense } from "react";
 import AuthTopToast from "@/components/AuthTopToast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import { useLoginForm } from "@/hooks/useLoginForm";
 import LoginDesktop from "@/desktop-ui/auth/LoginDesktop";
+import WelcomeMobile from "@/app/welcome/WelcomeMobile";
 import LoginMobile from "./LoginMobile";
 import styles from "./login.module.css";
+import welcomeStyles from "@/app/welcome/welcome.module.css";
 
-function GuestOnly({ children }: { children: React.ReactNode }) {
+function GuestOnly({
+  children,
+  loadingClassName,
+}: {
+  children: React.ReactNode;
+  loadingClassName: string;
+}) {
   const router = useRouter();
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -21,7 +29,7 @@ function GuestOnly({ children }: { children: React.ReactNode }) {
   }, [isAuthenticated, isLoading, router]);
 
   if (isLoading) {
-    return <div className={styles.page} />;
+    return <div className={loadingClassName} />;
   }
 
   if (isAuthenticated) {
@@ -32,18 +40,44 @@ function GuestOnly({ children }: { children: React.ReactNode }) {
 }
 
 export default function LoginScreen() {
+  const pathname = usePathname();
+  const isWelcomeEntry = pathname === "/";
+  const loadingClassName = isWelcomeEntry ? welcomeStyles.page : styles.page;
+
   return (
-    <Suspense fallback={<div className={styles.page} />}>
-      <GuestOnly>
-        <LoginScreenContent />
+    <Suspense fallback={<div className={loadingClassName} />}>
+      <GuestOnly loadingClassName={loadingClassName}>
+        <LoginScreenContent isWelcomeEntry={isWelcomeEntry} />
       </GuestOnly>
     </Suspense>
   );
 }
 
-function LoginScreenContent() {
+function LoginScreenContent({ isWelcomeEntry }: { isWelcomeEntry: boolean }) {
   const form = useLoginForm();
   const { isDesktop, isHydrated } = useBreakpoint();
+
+  if (isHydrated && isDesktop) {
+    return (
+      <>
+        <AuthTopToast
+          message="Password updated successfully."
+          visible={form.showResetToast}
+          onClose={form.closeResetToast}
+        />
+        <AuthTopToast
+          message="Account verified. Please log in to continue."
+          visible={form.showSignupToast}
+          onClose={form.closeSignupToast}
+        />
+        <LoginDesktop {...form} />
+      </>
+    );
+  }
+
+  if (isWelcomeEntry) {
+    return <WelcomeMobile />;
+  }
 
   return (
     <>
@@ -57,12 +91,7 @@ function LoginScreenContent() {
         visible={form.showSignupToast}
         onClose={form.closeSignupToast}
       />
-
-      {isHydrated && isDesktop ? (
-        <LoginDesktop {...form} />
-      ) : (
-        <LoginMobile {...form} />
-      )}
+      <LoginMobile {...form} />
     </>
   );
 }

@@ -211,7 +211,8 @@
 /* Bottom Action Bar */
 .bottomAction {
   width: 100%;
-  padding: 24px 24px 24px;
+  padding: 24px 24px calc(24px + env(safe-area-inset-bottom, 0px));
+  flex-shrink: 0;
 }
 
 .showExerciseBtn {
@@ -225,4 +226,100 @@
   font-weight: 600;
   cursor: pointer;
   box-shadow: 0 8px 16px rgba(79, 70, 229, 0.2);
+}
+
+/* ── Tablet / Laptop / Desktop ── */
+@media (min-width: 768px) {
+  .container {
+    align-items: center;
+    background: white;
+    padding: 0 0 48px;
+    margin-bottom: 0;
+  }
+
+  .header {
+    align-self: stretch;
+    width: 100%;
+    padding: 32px 40px 16px;
+  }
+
+  .contentBox {
+    max-width: 640px;
+    width: 100%;
+    align-self: center;
+    margin-top: 20px;
+    margin-bottom: 24px;
+    border-radius: var(--desktop-radius);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    overflow: visible;
+  }
+
+  .scrollArea {
+    padding: 0 24px 8px;
+    overflow: visible;
+  }
+
+  .heroImageWrap {
+    height: auto;
+    aspect-ratio: 16 / 10;
+    max-height: 360px;
+    width: 100%;
+    margin-top: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .heroImage {
+    object-fit: contain;
+  }
+
+  .badges {
+    padding: 16px 0 0;
+  }
+
+  .content {
+    padding: 24px 0;
+  }
+
+  .bottomAction {
+    padding: 8px 0 32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-bottom: 56px;
+  }
+
+  .contentBox {
+    max-width: 720px;
+    margin-top: 24px;
+    margin-bottom: 32px;
+  }
+
+  .scrollArea {
+    padding: 0 32px 8px;
+  }
+
+  .heroImageWrap {
+    max-height: 400px;
+    margin-top: 24px;
+  }
+
+  .bottomAction {
+    padding: 12px 0 40px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .contentBox {
+    max-width: 800px;
+    margin-top: 28px;
+  }
+
+  .heroImageWrap {
+    max-height: 440px;
+    margin-top: 28px;
+  }
 }

@@ -67,7 +67,7 @@
 .score {
   font-size: 42px;
   font-weight: 800;
-  color: #6c4ab6;
+  color: #A78BFA;
   line-height: 1;
 }
 
@@ -214,7 +214,7 @@
   border-radius: 999px;
   border: 1px solid #e2e8f0;
   background: #fff;
-  color: #6c4ab6;
+  color: #A78BFA;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -223,9 +223,9 @@
 }
 
 .filterChipActive {
-  background: #6c4ab6;
+  background: var(--brand-gradient);
   color: #fff;
-  border-color: #6c4ab6;
+  border-color: #A78BFA;
 }
 
 .reviewCard {
@@ -247,7 +247,7 @@
   height: 40px;
   border-radius: 50%;
   background: #f3e8ff;
-  color: #6c4ab6;
+  color: #A78BFA;
   font-size: 14px;
   font-weight: 800;
   display: flex;

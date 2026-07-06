@@ -22,9 +22,11 @@ import {
   Share2,
   Trash2,
   HelpCircle,
+  MessageCircle,
 } from "lucide-react";
 import { useSheetOrNavigate } from "@/hooks/useSheetOrNavigate";
 import { useProfilePage } from "@/hooks/useProfilePage";
+import { openCrispChat } from "@/lib/analytics";
 import ProfileModals from "./ProfileModals";
 import styles from "./profile.module.css";
 
@@ -258,44 +260,36 @@ export default function ProfileMobile() {
             <MapPin size={20} className={styles.listIcon} />
             <span>Address Book</span>
           </button>
+          <button
+            type="button"
+            className={styles.listItem}
+            onClick={() => openCrispChat()}
+          >
+            <MessageCircle size={20} className={styles.listIcon} />
+            <span>Live Chat Support</span>
+          </button>
         </div>
       </section>
 
       <section className={styles.listSection}>
         <h3 className={styles.sectionTitle}>POLICY</h3>
         <div className={styles.listItems}>
-          <button
-            type="button"
-            className={styles.listItem}
-            onClick={() => profile.setActivePolicy("terms")}
-          >
+          <Link href="/policies/terms" className={styles.listItem}>
             <FileText size={20} className={styles.listIcon} />
             <span>Terms and conditions</span>
-          </button>
-          <button
-            type="button"
-            className={styles.listItem}
-            onClick={() => profile.setActivePolicy("returns")}
-          >
+          </Link>
+          <Link href="/policies/return" className={styles.listItem}>
             <PackageX size={20} className={styles.listIcon} />
             <span>Returns policy</span>
-          </button>
-          <button
-            type="button"
-            className={styles.listItem}
-            onClick={() => profile.setActivePolicy("refunds")}
-          >
+          </Link>
+          <Link href="/policies/refund" className={styles.listItem}>
             <CircleDollarSign size={20} className={styles.listIcon} />
             <span>Refunds policy</span>
-          </button>
-          <button
-            type="button"
-            className={styles.listItem}
-            onClick={() => profile.setActivePolicy("privacy")}
-          >
+          </Link>
+          <Link href="/policies/privacy" className={styles.listItem}>
             <Shield size={20} className={styles.listIcon} />
             <span>Privacy policy</span>
-          </button>
+          </Link>
         </div>
       </section>
 
@@ -325,8 +319,6 @@ export default function ProfileMobile() {
       </footer>
 
       <ProfileModals
-        activePolicy={profile.activePolicy}
-        setActivePolicy={profile.setActivePolicy}
         showUpdateProfile={profile.showUpdateProfile}
         setShowUpdateProfile={profile.setShowUpdateProfile}
         showChangePassword={profile.showChangePassword}

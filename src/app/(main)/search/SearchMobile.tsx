@@ -1,10 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Mic, Search, Star } from "lucide-react";
+import { ChevronLeft, Mic, Search } from "lucide-react";
 import FallbackImage from "@/components/FallbackImage";
+import ProductCard from "@/components/product/ProductCard";
 import styles from "./search.module.css";
-import { CurrencyAmount } from "@/components/CurrencySymbol";
 import { buildProductsHref } from "@/lib/categoryNavigation";
 import { imageSizes } from "@/constants/imageSizes";
 import { useSearchPage } from "@/hooks/useSearchPage";
@@ -24,6 +24,10 @@ export default function SearchMobile() {
     hasMore,
     handleLoadMore,
     handleOpenProduct,
+    isListening,
+    isSupported,
+    voiceError,
+    toggleListening,
   } = useSearchPage();
 
   return (
@@ -38,20 +42,39 @@ export default function SearchMobile() {
           <ChevronLeft size={24} />
         </button>
 
-        <div className={styles.searchField}>
-          <Search size={18} className={styles.searchIcon} />
-          <input
-            ref={inputRef}
-            type="search"
-            className={styles.searchInput}
-            placeholder='Search for atta, dal, coke and more'
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            autoComplete="off"
-          />
-          <button type="button" className={styles.micBtn} aria-label="Voice search">
-            <Mic size={18} />
-          </button>
+        <div className={styles.headerSearchWrap}>
+          <div className={styles.searchField}>
+            <Search size={18} className={styles.searchIcon} />
+            <input
+              ref={inputRef}
+              type="search"
+              className={styles.searchInput}
+              placeholder='Search for atta, dal, coke and more'
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              autoComplete="off"
+            />
+            <button
+              type="button"
+              className={`${styles.micBtn} ${isListening ? styles.micBtnActive : ""}`}
+              onClick={toggleListening}
+              disabled={!isSupported}
+              aria-label={isListening ? "Stop voice search" : "Voice search"}
+              aria-pressed={isListening}
+            >
+              <Mic size={18} />
+            </button>
+          </div>
+          {isListening ? (
+            <p className={styles.voiceStatus} role="status">
+              Listening… speak now
+            </p>
+          ) : null}
+          {voiceError ? (
+            <p className={styles.voiceError} role="alert">
+              {voiceError}
+            </p>
+          ) : null}
         </div>
       </header>
 
@@ -97,58 +120,17 @@ export default function SearchMobile() {
             <p className={styles.statusText}>No products found</p>
           </div>
         ) : (
-          <div className={styles.resultsList}>
+          <div className={styles.resultsGrid}>
             {results.map((product) => (
-              <button
+              <ProductCard
                 key={product.id}
-                type="button"
-                className={styles.resultCard}
-                onClick={() => handleOpenProduct(product)}
-              >
-                <div className={styles.resultImageWrap}>
-                  <FallbackImage
-                    src={product.image}
-                    alt={product.title}
-                    fill
-                    sizes={imageSizes.categoryProduct}
-                    className={styles.resultImage}
-                  />
-                </div>
-
-                <div className={styles.resultBody}>
-                  <h3 className={styles.resultTitle}>{product.title}</h3>
-
-                  {product.rating > 0 && (
-                    <div className={styles.ratingRow}>
-                      {Array.from({
-                        length: Math.min(5, Math.floor(product.rating)),
-                      }).map((_, index) => (
-                        <Star
-                          key={index}
-                          size={12}
-                          fill="#ffc107"
-                          color="#ffc107"
-                        />
-                      ))}
-                      <span className={styles.reviewCount}>
-                        ({product.reviewCount})
-                      </span>
-                    </div>
-                  )}
-
-                  <div className={styles.priceRow}>
-                    <span className={styles.currentPrice}>
-                      <CurrencyAmount>{product.price}</CurrencyAmount>
-                    </span>
-                    {product.originalPrice != null &&
-                      product.originalPrice > product.price && (
-                        <span className={styles.originalPrice}>
-                          <CurrencyAmount>{product.originalPrice}</CurrencyAmount>
-                        </span>
-                      )}
-                  </div>
-                </div>
-              </button>
+                productId={product.id}
+                image={product.image}
+                title={product.title}
+                price={product.price}
+                rating={product.rating || 5}
+                onOpen={() => handleOpenProduct(product)}
+              />
             ))}
 
             {hasMore && (

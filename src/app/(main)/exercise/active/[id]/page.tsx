@@ -6,14 +6,11 @@ import Image from "next/image";
 import { useRouter, useParams } from "next/navigation";
 import {
   ChevronLeft,
-  Menu,
-  Video,
   Play,
   Pause,
   SkipBack,
   SkipForward,
-  User,
-  Activity,
+  RotateCcw,
 } from "lucide-react";
 import styles from "./active.module.css";
 import { imageSizes } from "@/constants/imageSizes";
@@ -92,6 +89,12 @@ export default function ActiveWorkoutPage() {
   const handleNext = () => {
     if (!exercise) return;
     setCurrentSet((prev) => Math.min(exercise.sets ?? 1, prev + 1));
+  };
+
+  const handleReset = () => {
+    setTimeLeft(exercise?.durationSeconds ?? 45);
+    setCurrentSet(1);
+    setIsPlaying(false);
   };
 
   if (loading) {
@@ -222,6 +225,15 @@ export default function ActiveWorkoutPage() {
         </div>
 
         <div className={styles.controlsContainer}>
+          <button
+            type="button"
+            className={styles.controlBtn}
+            onClick={handleReset}
+            aria-label="Reset workout"
+            title="Reset"
+          >
+            <RotateCcw size={22} />
+          </button>
           <button
             type="button"
             className={styles.controlBtn}

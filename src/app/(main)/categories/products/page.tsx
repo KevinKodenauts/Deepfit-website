@@ -1,10 +1,13 @@
 "use client";
 
 import FallbackImage from "@/components/FallbackImage";
+import { CurrencyAmount } from "@/components/CurrencySymbol";
+import { imageSizes } from "@/constants/imageSizes";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
 import {
   ChevronDown,
-  ChevronLeft,
-  Clock,
+  ArrowLeft,
   SlidersHorizontal,
   ArrowUpDown,
   Wallet,
@@ -31,11 +34,8 @@ import {
   buildSidebarCategories,
   type SidebarCategory,
 } from "@/lib/categoryNavigation";
-import { useCart } from "@/contexts/CartContext";
 import { useCatalogSync } from "@/hooks/useCatalogSync";
-import { getCustomerId } from "@/lib/auth/session";
 import { buildProductHref } from "@/lib/productNavigation";
-import { CurrencyAmount } from "@/components/CurrencySymbol";
 
 type SortOption = "popularity" | "price_asc" | "price_desc" | "rating" | null;
 type PriceRange = {
@@ -84,6 +84,103 @@ const SORT_OPTIONS: { label: string; value: SortOption }[] = [
   { label: "Rating", value: "rating" },
 ];
 
+function RatingStars({ rating }: { rating: number }) {
+  const hasRating = rating > 0;
+  const fullStars = hasRating ? Math.floor(Math.min(rating, 5)) : 0;
+
+  return (
+    <div className={styles.stars} aria-hidden>
+      {Array.from({ length: 5 }, (_, index) => (
+        <Star
+          key={index}
+          size={11}
+          fill="currentColor"
+          strokeWidth={0}
+          style={{
+            color: hasRating && index < fullStars ? "#ffb800" : "#d0d0d0",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function CategoryGridCard({
+  product,
+  productIds,
+}: {
+  product: CategoryProductView;
+  productIds: number[];
+}) {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+  const { openAddToCart } = useCart();
+  const [isAdding, setIsAdding] = useState(false);
+
+  const openProduct = () => {
+    router.push(buildProductHref(product.id, productIds));
+  };
+
+  const handleAdd = async () => {
+    if (isAdding) return;
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+
+    setIsAdding(true);
+    try {
+      await openAddToCart({
+        productId: product.id,
+        title: product.title,
+        image: product.image,
+        price: product.price,
+      });
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
+  return (
+    <div className={styles.productCard}>
+      <button
+        type="button"
+        className={styles.cardHitArea}
+        onClick={openProduct}
+        aria-label={product.title}
+      >
+        <div className={styles.imageWrap}>
+          <FallbackImage
+            src={product.image}
+            alt=""
+            fill
+            sizes="(max-width: 1023px) 45vw, 180px"
+            className={styles.productImage}
+          />
+        </div>
+        <h3 className={styles.productTitle}>{product.title}</h3>
+        <RatingStars rating={product.rating} />
+        <div className={styles.footer}>
+          <div>
+            <span className={styles.price}>
+              <CurrencyAmount>{Math.round(product.price)}</CurrencyAmount>
+            </span>
+          </div>
+        </div>
+      </button>
+      <button
+        type="button"
+        className={styles.addBtn}
+        onClick={handleAdd}
+        disabled={isAdding}
+        aria-label={`Add ${product.title}`}
+      >
+        {isAdding ? "…" : "ADD"}
+      </button>
+    </div>
+  );
+}
+
 function applyClientFilters(
   products: CategoryProductView[],
   sortBy: SortOption,
@@ -113,12 +210,6 @@ function applyClientFilters(
   return filtered;
 }
 
-function formatReviewCount(count: number): string {
-  if (count >= 10000) return `${Math.round(count / 1000)}k`;
-  if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
-  return String(count);
-}
-
 export default function CategoryProductsPage() {
   return (
     <Suspense fallback={null}>
@@ -134,7 +225,6 @@ function CategoryProductsContent() {
   const initialCategoryId = searchParams.get("category")
     ? Number(searchParams.get("category"))
     : undefined;
-  const { openAddToCart } = useCart();
 
   const [mainCategory, setMainCategory] = useState<MainCategory | null>(null);
   const [sidebarCategories, setSidebarCategories] = useState<SidebarCategory[]>(
@@ -148,10 +238,15 @@ function CategoryProductsContent() {
   const [hasMore, setHasMore] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>(null);
   const [priceRange, setPriceRange] = useState<PriceRange | null>(null);
-  const [activeModal, setActiveModal] = useState<"sort" | "price" | null>(null);
+  const [activeModal, setActiveModal] = useState<
+    "filters" | "sort" | "price" | null
+  >(null);
 
   const offsetRef = useRef(0);
+  const productsPaneRef = useRef<HTMLDivElement>(null);
   const limit = 21;
+  const activeFilterCount = (sortBy ? 1 : 0) + (priceRange ? 1 : 0);
+  const hasActiveFilters = activeFilterCount > 0;
 
   const screenTitle = useMemo(() => {
     if (!mainCategory) return "Products";
@@ -262,21 +357,30 @@ function CategoryProductsContent() {
   });
 
   useEffect(() => {
-    const onScroll = () => {
-      if (loading || loadingMore || !hasMore) return;
+    const pane = productsPaneRef.current;
+
+    const isNearBottom = () => {
+      if (pane && pane.scrollHeight > pane.clientHeight + 50) {
+        return pane.scrollTop + pane.clientHeight >= pane.scrollHeight - 200;
+      }
 
       const pageHeight = document.documentElement.scrollHeight;
       const viewportHeight = window.innerHeight;
-      // Don't paginate when everything already fits on screen.
-      if (pageHeight <= viewportHeight + 50) return;
-
-      const nearBottom =
-        window.scrollY + viewportHeight >= pageHeight - 200;
-      if (nearBottom) void loadProducts(false);
+      if (pageHeight <= viewportHeight + 50) return false;
+      return window.scrollY + viewportHeight >= pageHeight - 200;
     };
 
+    const onScroll = () => {
+      if (loading || loadingMore || !hasMore) return;
+      if (isNearBottom()) void loadProducts(false);
+    };
+
+    pane?.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      pane?.removeEventListener("scroll", onScroll);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, [hasMore, loadProducts, loading, loadingMore]);
 
   const handleSidebarSelect = (index: number) => {
@@ -284,7 +388,14 @@ function CategoryProductsContent() {
     setSelectedIndex(index);
     setSortBy(null);
     setPriceRange(null);
+    productsPaneRef.current?.scrollTo({ top: 0, behavior: "smooth" });
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const clearAllFilters = () => {
+    setSortBy(null);
+    setPriceRange(null);
+    setActiveModal(null);
   };
 
   return (
@@ -296,7 +407,7 @@ function CategoryProductsContent() {
           onClick={() => router.back()}
           aria-label="Go back"
         >
-          <ChevronLeft size={24} />
+          <ArrowLeft size={22} strokeWidth={2} />
         </button>
         <h1 className={styles.pageTitle}>{screenTitle}</h1>
       </header>
@@ -306,17 +417,15 @@ function CategoryProductsContent() {
           <button
             type="button"
             className={`${styles.filterChip} ${
-              sortBy || priceRange ? styles.filterChipActive : ""
+              hasActiveFilters ? styles.filterChipActive : ""
             }`}
-            onClick={() => {
-              if (sortBy || priceRange) {
-                setSortBy(null);
-                setPriceRange(null);
-              }
-            }}
+            onClick={() => setActiveModal("filters")}
           >
             <SlidersHorizontal size={18} />
             Filters
+            {hasActiveFilters ? (
+              <span className={styles.filterCount}>{activeFilterCount}</span>
+            ) : null}
             <ChevronDown size={18} />
           </button>
           <button
@@ -365,6 +474,7 @@ function CategoryProductsContent() {
                         src={category.image}
                         alt={category.name}
                         fill
+                        sizes={imageSizes.categoryIcon}
                         className={styles.sidebarImage}
                       />
                     </div>
@@ -382,7 +492,7 @@ function CategoryProductsContent() {
           </aside>
         )}
 
-        <div className={styles.productsPane}>
+        <div className={styles.productsPane} ref={productsPaneRef}>
           {loading && allProducts.length === 0 ? (
             <div className={styles.loadingWrap}>
               <div className={styles.loadingSpinner} />
@@ -403,31 +513,10 @@ function CategoryProductsContent() {
           ) : (
             <div className={styles.productsGrid}>
               {displayedProducts.map((product) => (
-                <ProductCard
+                <CategoryGridCard
                   key={product.id}
                   product={product}
-                  onOpen={() =>
-                    router.push(
-                      buildProductHref(
-                        product.id,
-                        displayedProducts.map((item) => item.id)
-                      )
-                    )
-                  }
-                  onAdd={() => {
-                    const customerId = getCustomerId();
-                    if (!customerId) {
-                      router.push("/login");
-                      return;
-                    }
-
-                    openAddToCart({
-                      productId: product.id,
-                      title: product.title,
-                      image: product.image,
-                      price: product.price,
-                    });
-                  }}
+                  productIds={displayedProducts.map((item) => item.id)}
                 />
               ))}
               {loadingMore && (
@@ -439,6 +528,25 @@ function CategoryProductsContent() {
           )}
         </div>
       </div>
+
+      {activeModal === "filters" && (
+        <ModalOverlay onClose={() => setActiveModal(null)}>
+          <h2 className={styles.modalTitle}>Filters</h2>
+          <p className={styles.modalHint}>
+            {hasActiveFilters
+              ? `${activeFilterCount} filter${activeFilterCount > 1 ? "s" : ""} applied. Clear to reset sort and price.`
+              : "Use Sort and Price to narrow results, or clear filters anytime."}
+          </p>
+          <button
+            type="button"
+            className={styles.clearFiltersBtn}
+            onClick={clearAllFilters}
+            disabled={!hasActiveFilters}
+          >
+            Clear All Filters
+          </button>
+        </ModalOverlay>
+      )}
 
       {activeModal === "sort" && (
         <ModalOverlay onClose={() => setActiveModal(null)}>
@@ -488,87 +596,6 @@ function CategoryProductsContent() {
         </ModalOverlay>
       )}
     </div>
-  );
-}
-
-function ProductCard({
-  product,
-  onOpen,
-  onAdd,
-}: {
-  product: CategoryProductView;
-  onOpen: () => void;
-  onAdd: () => void;
-}) {
-  const fullStars = Math.floor(product.rating);
-  const hasHalf = product.rating - fullStars >= 0.5;
-  const emptyStars = 5 - fullStars - (hasHalf ? 1 : 0);
-
-  return (
-    <article className={styles.productCard} onClick={onOpen}>
-      <div className={styles.imageSection}>
-        <div className={styles.imageWrap}>
-          <FallbackImage
-            src={product.image}
-            alt={product.title}
-            fill
-            className={styles.productImage}
-          />
-        </div>
-        <button
-          type="button"
-          className={styles.addBtn}
-          onClick={(e) => {
-            e.stopPropagation();
-            onAdd();
-          }}
-        >
-          ADD
-        </button>
-      </div>
-      <div className={styles.cardBody}>
-        {product.weight && (
-          <span className={styles.weightText}>{product.weight}</span>
-        )}
-        <h3 className={styles.productTitle}>{product.title}</h3>
-        <div className={styles.ratingRow}>
-          {Array.from({ length: fullStars }).map((_, i) => (
-            <Star key={`full-${i}`} size={13} fill="#ffc107" color="#ffc107" />
-          ))}
-          {hasHalf && (
-            <Star
-              size={13}
-              fill="#ffc107"
-              color="#ffc107"
-              style={{ opacity: 0.5 }}
-            />
-          )}
-          {Array.from({ length: emptyStars }).map((_, i) => (
-            <Star key={`empty-${i}`} size={13} color="#ffc107" />
-          ))}
-          <span className={styles.reviewCount}>
-            ({formatReviewCount(product.reviewCount)})
-          </span>
-        </div>
-        <div className={styles.deliveryRow}>
-          <span className={styles.deliveryIcon}>
-            <Clock size={8} />
-          </span>
-          <span className={styles.deliveryText}>{product.deliveryTime}</span>
-        </div>
-        <div className={styles.priceRow}>
-          <span className={styles.currentPrice}>
-            <CurrencyAmount>{product.price}</CurrencyAmount>
-          </span>
-          {product.originalPrice != null &&
-            product.originalPrice > product.price && (
-              <span className={styles.originalPrice}>
-                MRP <CurrencyAmount>{product.originalPrice}</CurrencyAmount>
-              </span>
-            )}
-        </div>
-      </div>
-    </article>
   );
 }
 

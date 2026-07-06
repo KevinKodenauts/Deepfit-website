@@ -41,3 +41,21 @@ export function affectsProduct(
     (event.entityId == null || event.entityId === productId)
   );
 }
+
+export function affectsOrder(
+  event: CatalogSyncEvent,
+  orderId: number
+): boolean {
+  return (
+    event.entity === "order" &&
+    (event.entityId == null || event.entityId === orderId)
+  );
+}
+
+export function isOrderEvent(event: CatalogSyncEvent): boolean {
+  return event.entity === "order";
+}
+
+export function isNotificationEvent(event: CatalogSyncEvent): boolean {
+  return event.entity === "notification";
+}

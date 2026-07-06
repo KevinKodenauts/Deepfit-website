@@ -71,5 +71,5 @@
 .progressBar {
   height: 100%;
   transform-origin: left center;
-  background: linear-gradient(90deg, #4bcb9a, #6c4ab6);
+  background: var(--brand-gradient);
 }

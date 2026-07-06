@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import FallbackImage from "@/components/FallbackImage";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -15,7 +15,9 @@ import {
 } from "lucide-react";
 import ApplyCouponSheet from "@/components/ApplyCouponSheet";
 import SelectAddressSheet from "@/components/SelectAddressSheet";
+import CartPaymentMethodSection from "@/components/cart/CartPaymentMethodSection";
 import { CurrencyAmount } from "@/components/CurrencySymbol";
+import { imageSizes } from "@/constants/imageSizes";
 import { useCartPage } from "@/hooks/useCartPage";
 import { useSheetOrNavigate } from "@/hooks/useSheetOrNavigate";
 import styles from "./cart.module.css";
@@ -60,11 +62,12 @@ export default function CartMobile() {
               <div className={styles.itemsList}>
                 {cart.items.map((item) => (
                   <div key={item.id} className={styles.itemRow}>
-                    <Image
+                    <FallbackImage
                       src={item.image}
                       alt={item.title}
                       width={70}
                       height={70}
+                      sizes={imageSizes.orderThumb}
                       className={styles.itemImage}
                     />
 
@@ -188,6 +191,13 @@ export default function CartMobile() {
                 </span>
               </div>
             </div>
+
+            <div className={styles.paymentCard}>
+              <CartPaymentMethodSection
+                value={cart.paymentMethod}
+                onChange={cart.setPaymentMethod}
+              />
+            </div>
           </div>
 
           <footer className={styles.stickyFooter}>
@@ -231,7 +241,7 @@ export default function CartMobile() {
                 type="button"
                 className={styles.placeOrderBtn}
                 onClick={() =>
-                  cart.handlePlaceOrder({
+                  void cart.handlePlaceOrder({
                     onMissingAddress: () =>
                       openOrNavigate("/profile/addresses", () =>
                         cart.setIsAddressOpen(true)
@@ -240,7 +250,13 @@ export default function CartMobile() {
                 }
                 disabled={cart.placing}
               >
-                {cart.placing ? "Placing..." : "Place Order"}
+                {cart.placing
+                  ? cart.paymentMethod === "cod"
+                    ? "Placing order..."
+                    : "Opening payment..."
+                  : cart.paymentMethod === "cod"
+                    ? "Place Order (COD)"
+                    : "Pay with Ziina"}
                 <ArrowRight size={20} strokeWidth={2.5} />
               </button>
             </div>

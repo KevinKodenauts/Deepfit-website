@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { User, Mail, Lock, Eye, EyeOff, ChevronLeft } from "lucide-react";
 import CountryPhoneField from "@/components/CountryPhoneField";
+import TermsAcceptanceField from "@/components/TermsAcceptanceField";
 import type { useSignupForm } from "@/hooks/useSignupForm";
 import styles from "./authDesktop.module.css";
 
@@ -27,6 +28,8 @@ export default function SignupDesktop({
   setConfirmPassword,
   showConfirmPassword,
   setShowConfirmPassword,
+  acceptedTerms,
+  setAcceptedTerms,
   error,
   fieldErrors,
   loading,
@@ -242,6 +245,16 @@ export default function SignupDesktop({
           </div>
 
           {error && <p className={styles.formError}>{error}</p>}
+
+          <TermsAcceptanceField
+            id="signup-terms-desktop"
+            checked={acceptedTerms}
+            onChange={(checked) => {
+              setAcceptedTerms(checked);
+              clearFieldError("acceptedTerms");
+            }}
+            error={fieldErrors.acceptedTerms}
+          />
 
           <button
             type="submit"

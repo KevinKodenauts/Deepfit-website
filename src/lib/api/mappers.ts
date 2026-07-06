@@ -113,6 +113,8 @@ export type HomeProductView = {
   originalPrice: number;
   image: string;
   tag?: string;
+  inStock: boolean;
+  stockLabel: string;
 };
 
 export type CategoryProductView = {
@@ -134,6 +136,10 @@ export function mapToHomeProduct(product: ApiProduct): HomeProductView {
   const price = parseProductPrice(product);
   const original = parseOriginalPrice(price, product);
   const badge = getProductBadge(product);
+  const inStock =
+    product.inStock === true ||
+    product.inStock === "true" ||
+    (product.stockStatus !== "outofstock" && product.productStatus !== "Out of stock");
 
   return {
     id: product.id,
@@ -142,6 +148,8 @@ export function mapToHomeProduct(product: ApiProduct): HomeProductView {
     originalPrice: original ?? price,
     image: parseProductGallery(product.productGallery),
     tag: badge?.text,
+    inStock,
+    stockLabel: inStock ? "In stock" : "Out of stock",
   };
 }
 
@@ -272,13 +280,18 @@ function mapUserReview(
 }
 
 export function mapToProductDetail(product: ApiProduct): ProductDetailView {
-  const variants = (product.variants ?? []).map((variant) => ({
-    id: variant.id,
-    attributeId: variant.attributeDetails?.id,
-    label: variant.variantkey ?? variant.attributeDetails?.value ?? "Standard",
-    price: Number(variant.price ?? 0),
-    image: parseProductGallery(variant.variantImageGallery ?? product.productGallery),
-  }));
+  const variants = (product.variants ?? [])
+    .filter((variant) => variant.id > 0)
+    .map((variant) => ({
+      id: variant.id,
+      attributeId:
+        variant.attributeDetails?.id && variant.attributeDetails.id > 0
+          ? variant.attributeDetails.id
+          : undefined,
+      label: variant.variantkey ?? variant.attributeDetails?.value ?? "Standard",
+      price: Number(variant.price ?? 0),
+      image: parseProductGallery(variant.variantImageGallery ?? product.productGallery),
+    }));
 
   const firstVariant = variants[0];
   const price = firstVariant?.price ?? parseProductPrice(product);

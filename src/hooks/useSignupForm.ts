@@ -27,6 +27,7 @@ export function useSignupForm() {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const isFormValid = useMemo(() => {
     return (
@@ -37,11 +38,12 @@ export function useSignupForm() {
           email,
           password,
           confirmPassword,
+          acceptedTerms,
           mobileCountry,
         })
       ).length === 0
     );
-  }, [name, mobile, email, password, confirmPassword, mobileCountry]);
+  }, [name, mobile, email, password, confirmPassword, acceptedTerms, mobileCountry]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +56,7 @@ export function useSignupForm() {
       email,
       password,
       confirmPassword,
+      acceptedTerms,
       mobileCountry,
     });
 
@@ -120,6 +123,8 @@ export function useSignupForm() {
     setConfirmPassword,
     showConfirmPassword,
     setShowConfirmPassword,
+    acceptedTerms,
+    setAcceptedTerms,
     error,
     fieldErrors,
     loading,

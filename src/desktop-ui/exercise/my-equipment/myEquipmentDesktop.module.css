@@ -2,7 +2,7 @@
   width: 100%;
   min-height: calc(100vh - var(--desktop-nav-height));
   background: linear-gradient(180deg, #f3f6f8 0%, #ffffff 42%);
-  font-family: var(--font-outfit), Arial, Helvetica, sans-serif;
+  font-family: var(--font-display), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -12,7 +12,7 @@
 
 .inner {
   width: 100%;
-  /* max-width: 1200px; */
+  max-width: 1200px;
   margin: 0 auto;
   padding: 40px var(--desktop-padding-x) 56px;
 }

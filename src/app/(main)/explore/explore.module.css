@@ -1,0 +1,241 @@
+.page {
+  min-height: calc(100vh - var(--desktop-nav-height, 0px));
+  min-height: calc(100dvh - var(--desktop-nav-height, 0px));
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px 8px;
+  background: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #111827;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.hubTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+
+.contentFlush {
+  padding-bottom: 0;
+}
+
+.comingSoon {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 24px;
+  gap: 0;
+}
+
+.iconCircle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    rgba(110, 231, 183, 0.18),
+    rgba(167, 139, 250, 0.18)
+  );
+  color: #6faef7;
+  margin-bottom: 20px;
+}
+
+.comingSoonLabel {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: #1b1b2f;
+}
+
+.comingSoonHub {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 600;
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.comingSoonText {
+  margin: 0;
+  max-width: 360px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.hubNavOuter {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  padding: 0 16px;
+  pointer-events: none;
+}
+
+.hubNav {
+  pointer-events: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: min(100%, 420px);
+  height: 58px;
+  padding: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+
+.hubTab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  font: inherit;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.hubTabActive {
+  background: rgba(255, 255, 255, 0.92);
+  color: #0f172a;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+}
+
+.hubTabLabel {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+@media (min-width: 1024px) {
+  .page {
+    width: 100%;
+    min-height: calc(100vh - var(--desktop-nav-height));
+    margin: 0;
+    max-width: none;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  .header {
+    display: none;
+  }
+
+  .desktopHubBar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 20px var(--desktop-padding-x, 40px) 8px;
+  }
+
+  .desktopHubTab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: #ffffff;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease,
+      background 0.2s ease;
+  }
+
+  .desktopHubTab:hover {
+    border-color: #6faef7;
+    color: #0f172a;
+  }
+
+  .desktopHubTabActive {
+    border-color: transparent;
+    color: #0f172a;
+    background: linear-gradient(
+      135deg,
+      rgba(110, 231, 183, 0.16),
+      rgba(111, 174, 247, 0.16),
+      rgba(167, 139, 250, 0.16)
+    );
+    box-shadow: 0 0 0 1.5px #6faef7;
+  }
+
+  .hubNavOuter {
+    display: none;
+  }
+
+  .content,
+  .contentFlush {
+    padding-bottom: 0;
+  }
+
+  .comingSoon {
+    padding-bottom: 48px;
+  }
+}
+
+@media (max-width: 1023px) {
+  .desktopHubBar {
+    display: none;
+  }
+}

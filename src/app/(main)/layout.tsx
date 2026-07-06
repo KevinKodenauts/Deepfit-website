@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import BottomNav from "@/components/BottomNav";
-import CartModal from "@/components/CartModal";
+import CartToast from "@/components/CartToast";
 import DesktopNav from "@/components/DesktopNav";
 import { useBreakpoint } from "@/hooks/useBreakpoint";
 import styles from "./mainLayout.module.css";
@@ -12,6 +12,7 @@ const NO_BOTTOM_NAV_PATHS = [
   "/categories/products",
   "/cart",
   "/checkout",
+  "/explore",
 ];
 
 function shouldHideBottomNav(pathname: string) {
@@ -37,7 +38,7 @@ export default function MainLayout({
       <DesktopNav />
       <main className={`app-main ${styles.main}`}>{children}</main>
       <BottomNav />
-      <CartModal />
+      <CartToast />
     </div>
   );
 }

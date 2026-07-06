@@ -17,13 +17,15 @@ export function useLoginForm() {
   const [showResetToast, setShowResetToast] = useState(false);
   const [showSignupToast, setShowSignupToast] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const isFormValid = useMemo(() => {
     return (
       /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email.trim()) &&
-      password.length >= 6
+      password.length >= 6 &&
+      acceptedTerms
     );
-  }, [email, password]);
+  }, [email, password, acceptedTerms]);
 
   const closeResetToast = useCallback(() => {
     setShowResetToast(false);
@@ -54,7 +56,7 @@ export function useLoginForm() {
     setError("");
     setFieldErrors({});
 
-    const errors = validateLoginForm(email, password);
+    const errors = validateLoginForm(email, password, acceptedTerms);
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       return;
@@ -89,6 +91,12 @@ export function useLoginForm() {
     }
   };
 
+  const clearTermsError = () => {
+    if (fieldErrors.acceptedTerms) {
+      setFieldErrors({ ...fieldErrors, acceptedTerms: "" });
+    }
+  };
+
   return {
     email,
     setEmail,
@@ -96,6 +104,8 @@ export function useLoginForm() {
     setPassword,
     showPassword,
     setShowPassword,
+    acceptedTerms,
+    setAcceptedTerms,
     error,
     fieldErrors,
     showResetToast,
@@ -107,5 +117,6 @@ export function useLoginForm() {
     handleSubmit,
     clearEmailError,
     clearPasswordError,
+    clearTermsError,
   };
 }

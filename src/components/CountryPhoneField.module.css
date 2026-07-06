@@ -2,20 +2,24 @@
   margin-bottom: 20px;
 }
 
+.fieldCompact {
+  margin-bottom: 0;
+}
+
 .label {
   display: block;
   font-size: 14px;
-  font-weight: 600;
-  color: #111827;
+  font-weight: 500;
+  color: #212121;
   margin-bottom: 8px;
 }
 
 .inputWrap {
   display: flex;
   align-items: center;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  background: #f9fafb;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #f5f5f5;
   overflow: hidden;
   transition: border-color 0.2s, box-shadow 0.2s;
 }

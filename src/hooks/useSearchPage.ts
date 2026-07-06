@@ -10,6 +10,8 @@ import {
 import { searchProducts } from "@/lib/api/products";
 import type { MainCategory } from "@/lib/api/types";
 import { buildProductHref } from "@/lib/productNavigation";
+import { useCatalogSync } from "@/hooks/useCatalogSync";
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 
 export const SEARCH_LIMIT = 24;
 export const SEARCH_DEBOUNCE_MS = 350;
@@ -31,6 +33,21 @@ export function useSearchPage() {
   const [hasSearched, setHasSearched] = useState(Boolean(searchParams.get("q")));
   const [hasMore, setHasMore] = useState(false);
   const [offset, setOffset] = useState(0);
+  const voiceAutoStartRef = useRef(false);
+
+  const {
+    isListening,
+    isSupported,
+    error: voiceError,
+    setError: setVoiceError,
+    startListening,
+    toggleListening,
+  } = useSpeechRecognition({
+    onResult: (transcript) => {
+      setQuery(transcript);
+      setVoiceError("");
+    },
+  });
 
   useEffect(() => {
     getMainCategories()
@@ -41,6 +58,20 @@ export function useSearchPage() {
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    if (searchParams.get("voice") !== "1" || !isSupported || voiceAutoStartRef.current) {
+      return;
+    }
+
+    voiceAutoStartRef.current = true;
+    startListening();
+
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.delete("voice");
+    const nextQuery = nextParams.toString();
+    router.replace(nextQuery ? `/search?${nextQuery}` : "/search");
+  }, [searchParams, isSupported, startListening, router]);
 
   const runSearch = useCallback(async (searchQuery: string, nextOffset = 0) => {
     const trimmed = searchQuery.trim();
@@ -111,6 +142,17 @@ export function useSearchPage() {
     return () => window.clearTimeout(timer);
   }, [query, runSearch]);
 
+  useCatalogSync(() => {
+    if (query.trim()) {
+      void runSearch(query.trim());
+      return;
+    }
+
+    getMainCategories()
+      .then((categories) => setTrendingCategories(categories.slice(0, 8)))
+      .catch(() => setTrendingCategories([]));
+  });
+
   const handleLoadMore = () => {
     if (!hasMore || loadingMore || loading || !query.trim()) return;
     void runSearch(query, offset);
@@ -139,5 +181,9 @@ export function useSearchPage() {
     hasMore,
     handleLoadMore,
     handleOpenProduct,
+    isListening,
+    isSupported,
+    voiceError,
+    toggleListening,
   };
 }
