@@ -226,7 +226,7 @@ export default function ProfileDesktop() {
 
             <section className={styles.referralCard}>
               <div className={styles.referralHeader}>
-                <h2 className={styles.referralTitle}>Invite &amp; Earn</h2>
+                <h2 className={{...styles.referralTitle, color: "white"}}>Invite &amp; Earn</h2>
               </div>
               <p className={styles.referralDescription}>
                 Turn invites into cash! Earn immediately after your friend joins

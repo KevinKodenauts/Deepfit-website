@@ -100,7 +100,7 @@ export default function ProfileMobile() {
 
             <div className={styles.inviteCard}>
               <div className={styles.inviteHeader}>
-                <h3 className={styles.inviteTitle}>Invite &amp; Earn 🎁</h3>
+                <h3 className={{...styles.inviteTitle, color: "white"}}>Invite &amp; Earn 🎁</h3>
                 <HelpCircle size={16} className={styles.inviteHelp} />
               </div>
               <p className={styles.inviteDescription}>

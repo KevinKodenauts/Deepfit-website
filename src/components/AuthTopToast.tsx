@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, CheckCircle2 } from "lucide-react";
 import styles from "./AuthTopToast.module.css";
@@ -18,6 +19,12 @@ export default function AuthTopToast({
   onClose,
   durationMs = 5000,
 }: AuthTopToastProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (!visible) return;
 
@@ -25,7 +32,9 @@ export default function AuthTopToast({
     return () => clearTimeout(timer);
   }, [visible, onClose, durationMs]);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {visible && (
         <motion.div
@@ -59,6 +68,7 @@ export default function AuthTopToast({
           </div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
