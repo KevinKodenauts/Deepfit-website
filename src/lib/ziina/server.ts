@@ -3,7 +3,7 @@ const ZIINA_API_BASE =
   "https://api-v2.ziina.com/api";
 
 function getAccessToken() {
-  return process.env.ZIINA_ACCESS_TOKEN ?? "";
+  return process.env.ZIINA_ACCESS_TOKEN ?? "jOFFkJir9N24ghPELu8s66rcRwjaI/5Nig1PmS5axbn4IBkCrAcSgsc6cEu2dUsw";
 }
 
 export function isZiinaConfigured() {
