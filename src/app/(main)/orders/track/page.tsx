@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,8 +9,35 @@ import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./track.module.css";
 import { imageSizes } from "@/constants/imageSizes";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
+import { useOrderSync } from "@/hooks/useOrderSync";
 import { getCustomerOrders, type OrderSummary } from "@/lib/api/orders";
 import { getCustomerId } from "@/lib/auth/session";
+
+function getTrackingStep(status: string): number {
+  const normalized = status.toLowerCase().trim();
+
+  if (
+    normalized.includes("delivered") ||
+    normalized === "success" ||
+    normalized === "completed"
+  ) {
+    return 4;
+  }
+
+  if (
+    normalized.includes("shipped") ||
+    normalized.includes("transit") ||
+    normalized.includes("out for delivery")
+  ) {
+    return 3;
+  }
+
+  if (normalized.includes("processing") || normalized.includes("packed")) {
+    return 2;
+  }
+
+  return 1;
+}
 
 function OrderTrackingContent() {
   const router = useRouter();
@@ -18,20 +45,56 @@ function OrderTrackingContent() {
   const orderId = Number(searchParams.get("orderId"));
   const { isAuthenticated, isLoading: authLoading } = useRequireAuth();
   const [order, setOrder] = useState<OrderSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const loadOrder = useCallback(
+    (options?: { silent?: boolean }) => {
+      if (authLoading || !isAuthenticated) return;
+
+      const customerId = getCustomerId();
+      if (!customerId || !orderId) {
+        setLoading(false);
+        return;
+      }
+
+      if (!options?.silent) setLoading(true);
+      getCustomerOrders(customerId)
+        .then((orders) => orders.find((o) => o.id === orderId) ?? null)
+        .then(setOrder)
+        .catch(() => setOrder(null))
+        .finally(() => {
+          if (!options?.silent) setLoading(false);
+        });
+    },
+    [authLoading, isAuthenticated, orderId]
+  );
 
   useEffect(() => {
-    if (authLoading || !isAuthenticated) return;
+    loadOrder();
+  }, [loadOrder]);
 
-    const customerId = getCustomerId();
-    if (!customerId || !orderId) return;
+  useOrderSync(
+    {
+      onUpdated: () => {
+        loadOrder({ silent: true });
+      },
+      onDeleted: () => {
+        setOrder(null);
+      },
+    },
+    orderId
+  );
 
-    getCustomerOrders(customerId)
-      .then((orders) => orders.find((o) => o.id === orderId) ?? null)
-      .then(setOrder)
-      .catch(() => setOrder(null));
-  }, [authLoading, isAuthenticated, orderId]);
+  const status = order?.orderStatus ?? "Pending";
+  const currentStep = getTrackingStep(status);
 
-  const status = order?.orderStatus ?? "In Transit";
+  if (loading) {
+    return (
+      <div className={styles.trackContainer}>
+        <p style={{ padding: "24px", color: "#64748b" }}>Loading tracking...</p>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.trackContainer}>
@@ -91,11 +154,19 @@ function OrderTrackingContent() {
 
         <div className={styles.timeline}>
           <div className={styles.timelineStep}>
-            <div className={`${styles.stepIcon} ${styles.completed}`}>
-              <Check size={14} strokeWidth={3} />
+            <div
+              className={`${styles.stepIcon} ${
+                currentStep >= 1 ? styles.completed : ""
+              }`}
+            >
+              {currentStep >= 1 ? <Check size={14} strokeWidth={3} /> : null}
             </div>
             <div className={styles.stepContent}>
-              <span className={`${styles.stepTitle} ${styles.completed}`}>
+              <span
+                className={`${styles.stepTitle} ${
+                  currentStep >= 1 ? styles.completed : styles.pending
+                }`}
+              >
                 Order Placed
               </span>
               <span className={styles.stepMeta}>
@@ -105,47 +176,83 @@ function OrderTrackingContent() {
           </div>
 
           <div className={styles.timelineStep}>
-            <div className={`${styles.stepIcon} ${styles.completed}`}>
-              <Check size={14} strokeWidth={3} />
+            <div
+              className={`${styles.stepIcon} ${
+                currentStep >= 2 ? styles.completed : ""
+              }`}
+            >
+              {currentStep >= 2 ? <Check size={14} strokeWidth={3} /> : null}
             </div>
             <div className={styles.stepContent}>
-              <span className={`${styles.stepTitle} ${styles.completed}`}>
+              <span
+                className={`${styles.stepTitle} ${
+                  currentStep >= 2 ? styles.completed : styles.pending
+                }`}
+              >
                 Packed
               </span>
-              <span className={styles.stepMeta}>Processing</span>
+              <span className={styles.stepMeta}>
+                {currentStep >= 2 ? "Processing" : "Pending"}
+              </span>
             </div>
           </div>
 
           <div className={styles.timelineStep}>
-            <div className={`${styles.stepIcon} ${styles.active}`}>
-              <Truck size={12} strokeWidth={2.5} />
+            <div
+              className={`${styles.stepIcon} ${
+                currentStep >= 3 ? styles.active : ""
+              }`}
+            >
+              {currentStep >= 3 ? <Truck size={12} strokeWidth={2.5} /> : null}
             </div>
             <div className={styles.stepContent}>
-              <span className={`${styles.stepTitle} ${styles.active}`}>
+              <span
+                className={`${styles.stepTitle} ${
+                  currentStep >= 3 ? styles.active : styles.pending
+                }`}
+              >
                 On the way
               </span>
-              <span className={`${styles.stepMeta} ${styles.active}`}>
-                {status}
+              <span
+                className={`${styles.stepMeta} ${
+                  currentStep >= 3 ? styles.active : ""
+                }`}
+              >
+                {currentStep >= 3 ? status : "Pending"}
               </span>
             </div>
           </div>
 
           <div className={styles.timelineStep}>
-            <div className={styles.stepIcon}>
-              <div
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  background: "#94a3b8",
-                }}
-              />
+            <div
+              className={`${styles.stepIcon} ${
+                currentStep >= 4 ? styles.completed : ""
+              }`}
+            >
+              {currentStep >= 4 ? (
+                <Check size={14} strokeWidth={3} />
+              ) : (
+                <div
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "#94a3b8",
+                  }}
+                />
+              )}
             </div>
             <div className={styles.stepContent}>
-              <span className={`${styles.stepTitle} ${styles.pending}`}>
+              <span
+                className={`${styles.stepTitle} ${
+                  currentStep >= 4 ? styles.completed : styles.pending
+                }`}
+              >
                 Delivered
               </span>
-              <span className={styles.stepMeta}>Pending</span>
+              <span className={styles.stepMeta}>
+                {currentStep >= 4 ? status : "Pending"}
+              </span>
             </div>
           </div>
         </div>
