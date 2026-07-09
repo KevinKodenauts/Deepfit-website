@@ -77,19 +77,19 @@ const PILLARS = [
   {
     icon: Target,
     label: "Our Mission",
-    num: "03",
+    num: "04",
     text: "We exist to help people become the kind who naturally prioritise their wellbeing. Someone who moves with intention. Nourishes themself thoughtfully. Makes time for recovery. And understands that small daily choices create extraordinary lives.",
   },
   {
     icon: Eye,
     label: "Our Vision",
-    num: "04",
+    num: "05",
     text: "We envision a future where wellness feels natural, enjoyable and accessible to everyone. Our ambition is to become the Middle East's most trusted holistic wellness brand, inspiring individuals and communities to embrace healthier lifestyles through an integrated approach to wellbeing.",
   },
   {
     icon: Heart,
     label: "Our Purpose",
-    num: "05",
+    num: "06",
     text: "We created DEEPFIT with one purpose: to help people feel their best—not just for a season, but for life. Everything we design, develop and share is intended to make healthy living simpler, more enjoyable and easier to maintain. Because when wellness fits naturally into everyday life, consistency follows. And consistency is where lasting transformation begins.",
   },
 ] as const;
@@ -211,10 +211,57 @@ export default function AboutPage() {
           </div>
         </AnimatedSection>
 
+        <AnimatedSection className={styles.founderBlock} delay={40}>
+          <div className={styles.storyAside}>
+            <span className={styles.sectionNum}>02</span>
+            <span className={styles.sectionLabel}>Founder</span>
+            <h2 className={styles.storyHeading}>Meet Deepa</h2>
+          </div>
+
+          <div className={styles.storyBody}>
+            <p className={styles.leadPara}>
+              I&apos;m <strong>Deepa</strong>, founder of <strong>DEEPFIT</strong>.
+            </p>
+            <p>
+              Like many people, I spent years believing wellness had to be intense
+              to be effective—long workouts, strict routines, and the constant
+              pressure to do more.
+            </p>
+            <p>
+              Over time, I realised that lasting health is built differently.
+            </p>
+            <p>
+              It&apos;s created through consistent movement, nourishing food, a
+              resilient mindset, and habits that fit into everyday life.
+            </p>
+            <p>
+              That belief became DEEPFIT.
+            </p>
+            <p>
+              Every product, every idea, and every conversation is designed around
+              one purpose: to make holistic wellness simpler, more practical, and
+              sustainable for real life.
+            </p>
+            <p>
+              Because wellness shouldn&apos;t feel overwhelming. It should feel
+              like something you can come back to, every single day.
+            </p>
+            <p>
+              Welcome to DEEPFIT.
+            </p>
+
+            <figure className={styles.quoteCard}>
+              <blockquote>
+                <span className={styles.founderSignature}>Wellness. Inside Out.</span>
+              </blockquote>
+            </figure>
+          </div>
+        </AnimatedSection>
+
         <AnimatedSection className={styles.methodBand} delay={80}>
           <div className={styles.methodHead}>
             <div className={styles.methodHeadLeft}>
-              <span className={styles.sectionNumDark}>02</span>
+              <span className={styles.sectionNumDark}>03</span>
               <span className={styles.sectionLabelLight}>The DeepFit Method</span>
               <h2 className={styles.methodTitle}>
                 <span className={styles.methodWordMind}>Mind</span>
@@ -343,7 +390,7 @@ export default function AboutPage() {
 
         <AnimatedSection className={styles.valuesSection} delay={40}>
           <div className={styles.valuesHead}>
-            <span className={styles.sectionNum}>06</span>
+            <span className={styles.sectionNum}>07</span>
             <span className={styles.sectionLabel}>Our Values</span>
             <h2 className={styles.valuesTitle}>What guides everything we do</h2>
           </div>
@@ -367,7 +414,7 @@ export default function AboutPage() {
 
         <AnimatedSection className={styles.brandDuo} delay={60}>
           <article className={styles.brandPanel}>
-            <span className={styles.sectionNum}>07</span>
+            <span className={styles.sectionNum}>08</span>
             <span className={styles.sectionLabel}>
               Why the name &ldquo;DEEPFIT&rdquo;?
             </span>
