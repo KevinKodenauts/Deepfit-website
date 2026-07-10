@@ -80,7 +80,7 @@ function OrderDetailsContent() {
     if (!order || isCancelling) return;
 
     const confirmed = window.confirm(
-      "Are you sure you want to cancel this order? This action cannot be undone."
+      "Are you sure you want to cancel this order? If you paid online, a refund will be processed automatically."
     );
     if (!confirmed) return;
 
@@ -111,7 +111,7 @@ function OrderDetailsContent() {
     if (reason === null) return;
 
     const confirmed = window.confirm(
-      "Submit a return request for this order?"
+      "Submit a return request? An admin will review it after the product is received. Refund is processed only after approval."
     );
     if (!confirmed) return;
 
@@ -121,10 +121,14 @@ function OrderDetailsContent() {
       if (res.status) {
         setOrder({
           ...order,
-          orderStatus: "Returned",
+          orderStatus: "Return Requested",
           canReturn: false,
         });
         loadOrder({ silent: true });
+        window.alert(
+          res.message ||
+            "Return request submitted. Admin will review after receiving the product."
+        );
       } else {
         window.alert(res.message || "Failed to submit return. Please try again.");
       }
