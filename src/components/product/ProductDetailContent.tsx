@@ -292,7 +292,9 @@ export default function ProductDetailContent({
   const realVariants = product.variants.filter((variant) => variant.id > 0);
   const isMultiVariant = realVariants.length > 1;
   const selectedVariant =
-    product.variants[selectedVariantIndex] ?? product.variants[0];
+    realVariants[selectedVariantIndex] ??
+    realVariants[0] ??
+    product.variants[0];
   const displayPrice =
     selectedVariant?.price && selectedVariant.price > 0
       ? selectedVariant.price
@@ -303,12 +305,15 @@ export default function ProductDetailContent({
     product.originalPrice > product.price
       ? Math.round((displayPrice / product.price) * product.originalPrice)
       : product.originalPrice;
+  // Multi-variant: show only the selected variant image.
+  // Single-variant: keep the full product gallery carousel.
   const displayImages = isMultiVariant
-    ? realVariants.map((variant) => variant.image).filter(Boolean)
+    ? ([selectedVariant?.image].filter(Boolean) as string[])
     : product.images.length > 0
       ? product.images
-      : [selectedVariant?.image].filter(Boolean);
+      : ([selectedVariant?.image].filter(Boolean) as string[]);
   const displayImage =
+    (isMultiVariant ? selectedVariant?.image : null) ??
     displayImages[activeImage] ??
     selectedVariant?.image ??
     displayImages[0];
@@ -424,20 +429,12 @@ export default function ProductDetailContent({
   const selectImage = (index: number) => {
     const clamped = Math.max(0, Math.min(displayImages.length - 1, index));
     setActiveImage(clamped);
-    if (isMultiVariant && clamped < realVariants.length) {
-      setSelectedVariantIndex(clamped);
-    }
     scrollCarouselTo(clamped);
   };
 
   const selectVariant = (index: number) => {
     setSelectedVariantIndex(index);
-    if (isMultiVariant) {
-      setActiveImage(index);
-      scrollCarouselTo(index);
-    } else {
-      setActiveImage(0);
-    }
+    setActiveImage(0);
   };
 
   const handleImageScroll = (event: React.UIEvent<HTMLDivElement>) => {
@@ -445,9 +442,6 @@ export default function ProductDetailContent({
     const index = Math.round(container.scrollLeft / container.clientWidth);
     if (index !== activeImage) {
       setActiveImage(index);
-      if (isMultiVariant && index < realVariants.length) {
-        setSelectedVariantIndex(index);
-      }
     }
   };
 
@@ -507,7 +501,23 @@ export default function ProductDetailContent({
         onScroll={handleContentScroll}
       >
         <div className={styles.imageSection}>
-          {displayImages.length > 1 ? (
+          {isMultiVariant || displayImages.length <= 1 ? (
+            <div className={styles.imageWrap}>
+              <FallbackImage
+                key={displayImage ?? "main"}
+                src={displayImage ?? displayImages[0]}
+                alt={
+                  selectedVariant
+                    ? `${product.title} — ${selectedVariant.label}`
+                    : product.title
+                }
+                fill
+                sizes={imageSizes.productHero}
+                className={styles.productImage}
+                priority
+              />
+            </div>
+          ) : (
             <div
               ref={imageCarouselRef}
               className={styles.imageCarousel}
@@ -526,17 +536,6 @@ export default function ProductDetailContent({
                 </div>
               ))}
             </div>
-          ) : (
-            <div className={styles.imageWrap}>
-              <FallbackImage
-                src={displayImage ?? displayImages[0]}
-                alt={product.title}
-                fill
-                sizes={imageSizes.productHero}
-                className={styles.productImage}
-                priority
-              />
-            </div>
           )}
 
           {isPeekMode && !isExpanded && (
@@ -545,7 +544,7 @@ export default function ProductDetailContent({
             </div>
           )}
 
-          {displayImages.length > 1 && (
+          {!isMultiVariant && displayImages.length > 1 && (
             <div className={styles.dots}>
               {displayImages.map((_, index) => (
                 <button

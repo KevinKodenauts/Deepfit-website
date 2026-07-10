@@ -149,7 +149,9 @@ export default function ProductDetailDesktop() {
   const realVariants = product.variants.filter((variant) => variant.id > 0);
   const isMultiVariant = realVariants.length > 1;
   const selectedVariant =
-    product.variants[selectedVariantIndex] ?? product.variants[0];
+    realVariants[selectedVariantIndex] ??
+    realVariants[0] ??
+    product.variants[0];
   const displayPrice =
     selectedVariant?.price && selectedVariant.price > 0
       ? selectedVariant.price
@@ -160,12 +162,15 @@ export default function ProductDetailDesktop() {
     product.originalPrice > product.price
       ? Math.round((displayPrice / product.price) * product.originalPrice)
       : product.originalPrice;
+  // Multi-variant: show only the selected variant image (main + bottom thumb).
+  // Single-variant: keep the full product gallery carousel.
   const displayImages = isMultiVariant
-    ? realVariants.map((variant) => variant.image).filter(Boolean)
+    ? ([selectedVariant?.image].filter(Boolean) as string[])
     : product.images.length > 0
       ? product.images
-      : [selectedVariant?.image].filter(Boolean);
+      : ([selectedVariant?.image].filter(Boolean) as string[]);
   const displayImage =
+    (isMultiVariant ? selectedVariant?.image : null) ??
     displayImages[activeImage] ??
     selectedVariant?.image ??
     displayImages[0];
@@ -229,18 +234,11 @@ export default function ProductDetailDesktop() {
     if (displayImages.length === 0) return;
     const clamped = Math.max(0, Math.min(displayImages.length - 1, index));
     setActiveImage(clamped);
-    if (isMultiVariant && clamped < realVariants.length) {
-      setSelectedVariantIndex(clamped);
-    }
   };
 
   const selectVariant = (index: number) => {
     setSelectedVariantIndex(index);
-    if (isMultiVariant) {
-      setActiveImage(index);
-    } else {
-      setActiveImage(0);
-    }
+    setActiveImage(0);
   };
 
   const goToPrevImage = () => {
@@ -290,7 +288,23 @@ export default function ProductDetailDesktop() {
 
         <div className={styles.layout}>
           <div className={styles.galleryCol}>
-            {displayImages.length > 1 ? (
+            {isMultiVariant || displayImages.length <= 1 ? (
+              <div className={styles.mainImageWrap}>
+                <FallbackImage
+                  key={displayImage ?? "main"}
+                  src={displayImage ?? displayImages[0]}
+                  alt={
+                    selectedVariant
+                      ? `${product.title} — ${selectedVariant.label}`
+                      : product.title
+                  }
+                  fill
+                  sizes={imageSizes.productHero}
+                  priority
+                  className={styles.mainImage}
+                />
+              </div>
+            ) : (
               <div className={styles.galleryCarousel}>
                 <div
                   className={styles.galleryTrack}
@@ -350,41 +364,48 @@ export default function ProductDetailDesktop() {
                   {activeImage + 1} / {displayImages.length}
                 </span>
               </div>
-            ) : (
-              <div className={styles.mainImageWrap}>
-                <FallbackImage
-                  src={displayImage ?? displayImages[0]}
-                  alt={product.title}
-                  fill
-                  sizes={imageSizes.productHero}
-                  priority
-                  className={styles.mainImage}
-                />
-              </div>
             )}
 
-            {displayImages.length > 1 && (
+            {isMultiVariant && displayImage ? (
               <div className={styles.thumbRow}>
-                {displayImages.map((image, index) => (
-                  <button
-                    key={`${image}-${index}`}
-                    type="button"
-                    className={`${styles.thumbBtn} ${
-                      activeImage === index ? styles.thumbBtnActive : ""
-                    }`}
-                    onClick={() => goToImage(index)}
-                    aria-label={`Image ${index + 1}`}
-                  >
-                    <FallbackImage
-                      src={image}
-                      alt={`${product.title} thumbnail ${index + 1}`}
-                      fill
-                      sizes={imageSizes.productThumbStrip}
-                      className={styles.thumbImage}
-                    />
-                  </button>
-                ))}
+                <div
+                  className={`${styles.thumbBtn} ${styles.thumbBtnActive}`}
+                  aria-label={`${selectedVariant?.label ?? "Selected"} variant image`}
+                >
+                  <FallbackImage
+                    key={displayImage}
+                    src={displayImage}
+                    alt={`${product.title} — ${selectedVariant?.label ?? "selected"}`}
+                    fill
+                    sizes={imageSizes.productThumbStrip}
+                    className={styles.thumbImage}
+                  />
+                </div>
               </div>
+            ) : (
+              displayImages.length > 1 && (
+                <div className={styles.thumbRow}>
+                  {displayImages.map((image, index) => (
+                    <button
+                      key={`${image}-${index}`}
+                      type="button"
+                      className={`${styles.thumbBtn} ${
+                        activeImage === index ? styles.thumbBtnActive : ""
+                      }`}
+                      onClick={() => goToImage(index)}
+                      aria-label={`Image ${index + 1}`}
+                    >
+                      <FallbackImage
+                        src={image}
+                        alt={`${product.title} thumbnail ${index + 1}`}
+                        fill
+                        sizes={imageSizes.productThumbStrip}
+                        className={styles.thumbImage}
+                      />
+                    </button>
+                  ))}
+                </div>
+              )
             )}
           </div>
 
