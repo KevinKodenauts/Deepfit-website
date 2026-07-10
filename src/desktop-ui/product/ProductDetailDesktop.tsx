@@ -146,15 +146,29 @@ export default function ProductDetailDesktop() {
     );
   }
 
+  const realVariants = product.variants.filter((variant) => variant.id > 0);
+  const isMultiVariant = realVariants.length > 1;
   const selectedVariant =
     product.variants[selectedVariantIndex] ?? product.variants[0];
-  const displayPrice = selectedVariant?.price ?? product.price;
-  const displayImages =
-    product.images.length > 0
+  const displayPrice =
+    selectedVariant?.price && selectedVariant.price > 0
+      ? selectedVariant.price
+      : product.price;
+  const displayOriginalPrice =
+    product.originalPrice != null &&
+    product.price > 0 &&
+    product.originalPrice > product.price
+      ? Math.round((displayPrice / product.price) * product.originalPrice)
+      : product.originalPrice;
+  const displayImages = isMultiVariant
+    ? realVariants.map((variant) => variant.image).filter(Boolean)
+    : product.images.length > 0
       ? product.images
       : [selectedVariant?.image].filter(Boolean);
   const displayImage =
-    selectedVariant?.image ?? displayImages[activeImage] ?? displayImages[0];
+    displayImages[activeImage] ??
+    selectedVariant?.image ??
+    displayImages[0];
   const shortDescription = stripHtml(
     product.subtitle || product.description.slice(0, 220),
   );
@@ -175,7 +189,7 @@ export default function ProductDetailDesktop() {
     openAddToCart({
       productId: product.id,
       title: product.title,
-      image: displayImages[activeImage] ?? displayImage ?? product.images[0],
+      image: displayImage ?? product.images[0],
       price: displayPrice,
       variantId:
         selectedVariant?.id && selectedVariant.id > 0
@@ -215,6 +229,18 @@ export default function ProductDetailDesktop() {
     if (displayImages.length === 0) return;
     const clamped = Math.max(0, Math.min(displayImages.length - 1, index));
     setActiveImage(clamped);
+    if (isMultiVariant && clamped < realVariants.length) {
+      setSelectedVariantIndex(clamped);
+    }
+  };
+
+  const selectVariant = (index: number) => {
+    setSelectedVariantIndex(index);
+    if (isMultiVariant) {
+      setActiveImage(index);
+    } else {
+      setActiveImage(0);
+    }
   };
 
   const goToPrevImage = () => {
@@ -387,24 +413,24 @@ export default function ProductDetailDesktop() {
               <span className={styles.currentPrice}>
                 <CurrencyAmount>{displayPrice.toLocaleString()}</CurrencyAmount>
               </span>
-              {product.originalPrice && product.originalPrice > displayPrice && (
+              {displayOriginalPrice && displayOriginalPrice > displayPrice && (
                 <span className={styles.originalPrice}>
                   MRP{" "}
                   <CurrencyAmount>
-                    {product.originalPrice.toLocaleString()}
+                    {displayOriginalPrice.toLocaleString()}
                   </CurrencyAmount>
                 </span>
               )}
             </div>
             <p className={styles.taxNote}>Inclusive of all taxes</p>
 
-            {product.variants.length > 1 && (
+            {isMultiVariant && (
               <div className={styles.variantSection}>
                 <span className={styles.variantHeading}>
                   {product.variantLabel}
                 </span>
                 <div className={styles.variantOptions}>
-                  {product.variants.map((variant, index) => (
+                  {realVariants.map((variant, index) => (
                     <button
                       key={variant.id}
                       type="button"
@@ -413,10 +439,7 @@ export default function ProductDetailDesktop() {
                           ? styles.variantChipActive
                           : ""
                       }`}
-                      onClick={() => {
-                        setSelectedVariantIndex(index);
-                        setActiveImage(0);
-                      }}
+                      onClick={() => selectVariant(index)}
                     >
                       {variant.label}
                     </button>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getBlogPostBySlug } from "@/lib/api/blog";
 import { getEquipmentById, getExerciseById } from "@/lib/api/exercise";
 import { getProductDetails } from "@/lib/api/products";
-import { parseProductGallery } from "@/lib/api/mappers";
+import { resolveProductImage } from "@/lib/api/mappers";
 import { buildMetadata, truncateDescription } from "./build";
 import { DEFAULT_DESCRIPTION } from "./config";
 
@@ -40,7 +40,7 @@ export async function productMetadata(productId: string): Promise<Metadata> {
       title,
       description,
       path: `/product/${id}`,
-      image: parseProductGallery(product.productGallery),
+      image: resolveProductImage(product),
     });
   } catch {
     return buildMetadata({

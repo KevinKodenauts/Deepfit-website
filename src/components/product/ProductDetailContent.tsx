@@ -114,6 +114,7 @@ export default function ProductDetailContent({
     clearError: clearEquipmentError,
   } = useProductEquipmentScan();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const imageCarouselRef = useRef<HTMLDivElement>(null);
   const prevScrollRef = useRef(0);
   const hasScrolledInExpandedRef = useRef(false);
   const pullStartYRef = useRef(0);
@@ -288,15 +289,29 @@ export default function ProductDetailContent({
     );
   }
 
+  const realVariants = product.variants.filter((variant) => variant.id > 0);
+  const isMultiVariant = realVariants.length > 1;
   const selectedVariant =
     product.variants[selectedVariantIndex] ?? product.variants[0];
-  const displayPrice = selectedVariant?.price ?? product.price;
-  const displayImages =
-    product.images.length > 0
+  const displayPrice =
+    selectedVariant?.price && selectedVariant.price > 0
+      ? selectedVariant.price
+      : product.price;
+  const displayOriginalPrice =
+    product.originalPrice != null &&
+    product.price > 0 &&
+    product.originalPrice > product.price
+      ? Math.round((displayPrice / product.price) * product.originalPrice)
+      : product.originalPrice;
+  const displayImages = isMultiVariant
+    ? realVariants.map((variant) => variant.image).filter(Boolean)
+    : product.images.length > 0
       ? product.images
       : [selectedVariant?.image].filter(Boolean);
   const displayImage =
-    selectedVariant?.image ?? displayImages[activeImage] ?? displayImages[0];
+    displayImages[activeImage] ??
+    selectedVariant?.image ??
+    displayImages[0];
   const shortDescription = stripHtml(
     product.subtitle || product.description.slice(0, 180),
   );
@@ -397,11 +412,42 @@ export default function ProductDetailContent({
     router.back();
   };
 
+  const scrollCarouselTo = (index: number) => {
+    const container = imageCarouselRef.current;
+    if (!container || container.clientWidth <= 0) return;
+    container.scrollTo({
+      left: index * container.clientWidth,
+      behavior: "smooth",
+    });
+  };
+
+  const selectImage = (index: number) => {
+    const clamped = Math.max(0, Math.min(displayImages.length - 1, index));
+    setActiveImage(clamped);
+    if (isMultiVariant && clamped < realVariants.length) {
+      setSelectedVariantIndex(clamped);
+    }
+    scrollCarouselTo(clamped);
+  };
+
+  const selectVariant = (index: number) => {
+    setSelectedVariantIndex(index);
+    if (isMultiVariant) {
+      setActiveImage(index);
+      scrollCarouselTo(index);
+    } else {
+      setActiveImage(0);
+    }
+  };
+
   const handleImageScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const container = event.currentTarget;
     const index = Math.round(container.scrollLeft / container.clientWidth);
     if (index !== activeImage) {
       setActiveImage(index);
+      if (isMultiVariant && index < realVariants.length) {
+        setSelectedVariantIndex(index);
+      }
     }
   };
 
@@ -463,6 +509,7 @@ export default function ProductDetailContent({
         <div className={styles.imageSection}>
           {displayImages.length > 1 ? (
             <div
+              ref={imageCarouselRef}
               className={styles.imageCarousel}
               onScroll={handleImageScroll}
             >
@@ -505,7 +552,7 @@ export default function ProductDetailContent({
                   key={index}
                   type="button"
                   className={`${styles.dot} ${activeImage === index ? styles.dotActive : ""}`}
-                  onClick={() => setActiveImage(index)}
+                  onClick={() => selectImage(index)}
                   aria-label={`Image ${index + 1}`}
                 />
               ))}
@@ -544,33 +591,30 @@ export default function ProductDetailContent({
               <span className={styles.currentPrice}>
                 <CurrencyAmount>{displayPrice.toLocaleString()}</CurrencyAmount>
               </span>
-              {product.originalPrice &&
-                product.originalPrice > displayPrice && (
+              {displayOriginalPrice &&
+                displayOriginalPrice > displayPrice && (
                   <span className={styles.originalPrice}>
                     MRP{" "}
                     <CurrencyAmount>
-                      {product.originalPrice.toLocaleString()}
+                      {displayOriginalPrice.toLocaleString()}
                     </CurrencyAmount>
                   </span>
                 )}
             </div>
           </div>
 
-          {product.variants.length > 1 && (
+          {isMultiVariant && (
             <div className={styles.variantSection}>
               <span className={styles.variantHeading}>
                 {product.variantLabel}
               </span>
               <div className={styles.variantOptions}>
-                {product.variants.map((variant, index) => (
+                {realVariants.map((variant, index) => (
                   <button
                     key={variant.id}
                     type="button"
                     className={`${styles.variantChip} ${selectedVariantIndex === index ? styles.variantChipActive : ""}`}
-                    onClick={() => {
-                      setSelectedVariantIndex(index);
-                      setActiveImage(0);
-                    }}
+                    onClick={() => selectVariant(index)}
                   >
                     {variant.label}
                   </button>

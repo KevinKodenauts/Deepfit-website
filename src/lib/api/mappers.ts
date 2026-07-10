@@ -52,6 +52,21 @@ export function parseProductGallery(
   return pickBestImageUrl(extractGalleryUrls(gallery));
 }
 
+/** Listing/card image: prefer first variant gallery when the product is multi-variant. */
+export function resolveProductImage(product: ApiProduct): string {
+  const realVariants = (product.variants ?? []).filter((variant) => variant.id > 0);
+  if (realVariants.length > 0) {
+    const firstVariantUrls = extractGalleryUrls(
+      realVariants[0].variantImageGallery
+    );
+    if (firstVariantUrls.length > 0) {
+      return pickBestImageUrl(firstVariantUrls);
+    }
+  }
+
+  return parseProductGallery(product.productGallery);
+}
+
 export function parseProductPrice(product: ApiProduct): number {
   if (product.price !== undefined && product.price !== null) {
     return Number(product.price);
@@ -146,7 +161,7 @@ export function mapToHomeProduct(product: ApiProduct): HomeProductView {
     title: product.productName,
     price,
     originalPrice: original ?? price,
-    image: parseProductGallery(product.productGallery),
+    image: resolveProductImage(product),
     tag: badge?.text,
     inStock,
     stockLabel: inStock ? "In stock" : "Out of stock",
@@ -170,7 +185,7 @@ export function mapToCategoryProduct(product: ApiProduct): CategoryProductView {
     title: product.productName,
     price,
     originalPrice: original,
-    image: parseProductGallery(product.productGallery),
+    image: resolveProductImage(product),
     badge: badge?.text,
     badgeType: badge?.type,
     rating: Number(ratings?.averageRating ?? 0),
@@ -290,7 +305,11 @@ export function mapToProductDetail(product: ApiProduct): ProductDetailView {
           : undefined,
       label: variant.variantkey ?? variant.attributeDetails?.value ?? "Standard",
       price: Number(variant.price ?? 0),
-      image: parseProductGallery(variant.variantImageGallery ?? product.productGallery),
+      image: (() => {
+        const variantUrls = extractGalleryUrls(variant.variantImageGallery);
+        if (variantUrls.length > 0) return pickBestImageUrl(variantUrls);
+        return parseProductGallery(product.productGallery);
+      })(),
     }));
 
   const firstVariant = variants[0];
@@ -306,10 +325,14 @@ export function mapToProductDetail(product: ApiProduct): ProductDetailView {
     : product.averageRatingsDetails;
 
   const galleryUrls = extractGalleryUrls(product.productGallery);
+  const variantImages = variants.map((v) => v.image).filter(Boolean);
+  // Multi-variant: keep images 1:1 with variants so detail UI can sync selection.
   const images =
-    galleryUrls.length > 0
-      ? galleryUrls.map((url) => pickBestImageUrl([url]))
-      : variants.map((v) => v.image).filter(Boolean);
+    variants.length > 1 && variantImages.length > 0
+      ? variantImages
+      : galleryUrls.length > 0
+        ? galleryUrls.map((url) => pickBestImageUrl([url]))
+        : variantImages;
 
   return {
     id: product.id,
@@ -320,7 +343,7 @@ export function mapToProductDetail(product: ApiProduct): ProductDetailView {
       product.subCategoryDetails?.subCategoryName ??
       "",
     description: product.productDescription ?? "",
-    images: images.length > 0 ? images : [parseProductGallery(product.productGallery)],
+    images: images.length > 0 ? images : [resolveProductImage(product)],
     price,
     originalPrice: original,
     mainCategoryId: product.mainCategoryDetails?.id ?? 0,
