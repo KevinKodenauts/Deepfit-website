@@ -287,6 +287,42 @@
   margin-top: 24px;
 }
 
+.cancelBtn {
+  width: 100%;
+  margin-top: 24px;
+  padding: 14px;
+  background: transparent;
+  border: 1px solid #dc2626;
+  color: #dc2626;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancelBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.returnBtn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 14px;
+  background: transparent;
+  border: 1px solid #1a637b;
+  color: #1a637b;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.returnBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .invoiceBtn {
   flex: 1;
   display: flex;

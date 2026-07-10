@@ -22,6 +22,9 @@ export type OrderSummary = {
   orderNumber: string;
   orderStatus: string;
   orderDate: string;
+  deliveredAt?: string;
+  canReturn?: boolean;
+  returnWindowDays?: number;
   grandTotal: number;
   isPaid: boolean;
   paymentStatus?: string;
@@ -34,6 +37,7 @@ type RawOrderProduct = {
   unitPrice?: string | number;
   finalAmount?: string | number;
   lastTrackedStatus?: string;
+  isReturned?: boolean;
   productDetail?: {
     id?: number;
     productname?: string;
@@ -54,6 +58,9 @@ type RawOrder = {
   orderNumber?: string;
   orderStatus: string;
   orderDate: string;
+  deliveredAt?: string;
+  canReturn?: boolean;
+  returnWindowDays?: number;
   netAmount?: string | number;
   grandTotal?: string | number;
   paymentStatus?: string;
@@ -135,6 +142,9 @@ function mapOrder(order: RawOrder): OrderSummary {
     orderNumber: order.orderNo ?? order.orderNumber ?? String(order.id),
     orderStatus: order.orderStatus,
     orderDate: order.orderDate,
+    deliveredAt: order.deliveredAt || undefined,
+    canReturn: order.canReturn,
+    returnWindowDays: order.returnWindowDays ?? 7,
     grandTotal: Number(order.netAmount ?? order.grandTotal ?? 0),
     isPaid,
     paymentStatus: order.paymentStatus,
@@ -166,6 +176,9 @@ export function groupOrdersByNumber(orders: OrderSummary[]): OrderSummary[] {
 
     grouped.set(order.orderNumber, {
       ...existing,
+      deliveredAt: existing.deliveredAt || order.deliveredAt,
+      canReturn: existing.canReturn ?? order.canReturn,
+      returnWindowDays: existing.returnWindowDays ?? order.returnWindowDays,
       orderedProducts: [...existing.orderedProducts, ...order.orderedProducts],
       grandTotal: existing.grandTotal + order.grandTotal,
     });
@@ -180,6 +193,101 @@ export type OrderStatusFilter =
   | "Shipping"
   | "Return"
   | "Cancel";
+
+/** Customer can cancel until the order is shipped (or later). */
+export function canCancelOrder(status: string): boolean {
+  const normalized = (status || "").toLowerCase().trim();
+  if (!normalized) return true;
+
+  if (
+    normalized.includes("ship") ||
+    normalized.includes("transit") ||
+    normalized.includes("out for delivery") ||
+    normalized.includes("deliver") ||
+    normalized.includes("cancel") ||
+    normalized.includes("refund") ||
+    normalized.includes("return") ||
+    normalized === "success" ||
+    normalized === "completed"
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+const RETURN_WINDOW_DAYS = 7;
+
+function isDeliveredStatus(status: string): boolean {
+  const normalized = (status || "").toLowerCase().trim();
+  return (
+    (normalized.includes("deliver") && !normalized.includes("out for")) ||
+    normalized === "success" ||
+    normalized === "completed"
+  );
+}
+
+function parseDateOnly(value?: string | null): Date | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date;
+}
+
+/** Return is allowed only for delivered orders within 7 days of delivery. */
+export function canReturnOrder(order: {
+  orderStatus: string;
+  deliveredAt?: string | null;
+  canReturn?: boolean;
+  returnWindowDays?: number;
+}): boolean {
+  if (typeof order.canReturn === "boolean") {
+    return order.canReturn;
+  }
+
+  const status = (order.orderStatus || "").toLowerCase().trim();
+  if (
+    status.includes("return") ||
+    status.includes("refund") ||
+    status.includes("cancel")
+  ) {
+    return false;
+  }
+  if (!isDeliveredStatus(order.orderStatus)) return false;
+
+  const deliveredAt = parseDateOnly(order.deliveredAt);
+  if (!deliveredAt) return false;
+
+  const windowDays = order.returnWindowDays ?? RETURN_WINDOW_DAYS;
+  const deadline = new Date(deliveredAt);
+  deadline.setDate(deadline.getDate() + windowDays);
+  return Date.now() <= deadline.getTime();
+}
+
+export async function cancelOrder(orderId: number) {
+  return apiRequest<{ status: boolean; message?: string }>(
+    portalUrl("/cancelorder"),
+    {
+      method: "POST",
+      body: { orderId },
+      auth: true,
+    }
+  );
+}
+
+export async function returnOrder(orderId: number, reason?: string) {
+  return apiRequest<{ status: boolean; message?: string }>(
+    portalUrl("/returnorder"),
+    {
+      method: "POST",
+      body: {
+        orderId,
+        ...(reason ? { reason } : {}),
+      },
+      auth: true,
+    }
+  );
+}
 
 export function filterOrdersByStatus(
   orders: OrderSummary[],

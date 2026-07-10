@@ -20,7 +20,14 @@ import { CurrencyAmount } from "@/components/CurrencySymbol";
 import { imageSizes } from "@/constants/imageSizes";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { useOrderSync } from "@/hooks/useOrderSync";
-import { getCustomerOrders, type OrderSummary } from "@/lib/api/orders";
+import {
+  canCancelOrder,
+  canReturnOrder,
+  cancelOrder,
+  returnOrder,
+  getCustomerOrders,
+  type OrderSummary,
+} from "@/lib/api/orders";
 import { getCustomerId } from "@/lib/auth/session";
 
 function OrderDetailsContent() {
@@ -31,6 +38,8 @@ function OrderDetailsContent() {
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [order, setOrder] = useState<OrderSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [isReturning, setIsReturning] = useState(false);
 
   const loadOrder = useCallback((options?: { silent?: boolean }) => {
     if (authLoading || !isAuthenticated) return;
@@ -67,6 +76,65 @@ function OrderDetailsContent() {
     orderId
   );
 
+  const handleCancelOrder = async () => {
+    if (!order || isCancelling) return;
+
+    const confirmed = window.confirm(
+      "Are you sure you want to cancel this order? This action cannot be undone."
+    );
+    if (!confirmed) return;
+
+    setIsCancelling(true);
+    try {
+      const res = await cancelOrder(order.id);
+      if (res.status) {
+        setOrder({ ...order, orderStatus: "Cancelled", canReturn: false });
+        loadOrder({ silent: true });
+      } else {
+        window.alert(res.message || "Failed to cancel order. Please try again.");
+      }
+    } catch {
+      window.alert("Failed to cancel order. Please try again.");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  const handleReturnOrder = async () => {
+    if (!order || isReturning) return;
+
+    const reason =
+      window.prompt(
+        "Please share a reason for returning this order (optional):",
+        ""
+      ) ?? null;
+    if (reason === null) return;
+
+    const confirmed = window.confirm(
+      "Submit a return request for this order?"
+    );
+    if (!confirmed) return;
+
+    setIsReturning(true);
+    try {
+      const res = await returnOrder(order.id, reason.trim() || undefined);
+      if (res.status) {
+        setOrder({
+          ...order,
+          orderStatus: "Returned",
+          canReturn: false,
+        });
+        loadOrder({ silent: true });
+      } else {
+        window.alert(res.message || "Failed to submit return. Please try again.");
+      }
+    } catch {
+      window.alert("Failed to submit return. Please try again.");
+    } finally {
+      setIsReturning(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.detailsContainer}>
@@ -93,6 +161,8 @@ function OrderDetailsContent() {
     (sum, p) => sum + p.totalPrice,
     0
   );
+  const showCancel = canCancelOrder(order.orderStatus);
+  const showReturn = canReturnOrder(order);
 
   return (
     <div className={styles.detailsContainer}>
@@ -217,6 +287,28 @@ function OrderDetailsContent() {
             </span>
           </div>
         </motion.div>
+
+        {showCancel && (
+          <button
+            type="button"
+            className={styles.cancelBtn}
+            onClick={handleCancelOrder}
+            disabled={isCancelling}
+          >
+            {isCancelling ? "Cancelling..." : "Cancel Order"}
+          </button>
+        )}
+
+        {showReturn && (
+          <button
+            type="button"
+            className={styles.returnBtn}
+            onClick={handleReturnOrder}
+            disabled={isReturning}
+          >
+            {isReturning ? "Submitting..." : "Return Order"}
+          </button>
+        )}
 
         <div className={styles.bottomActions}>
           <button className={styles.invoiceBtn}>
