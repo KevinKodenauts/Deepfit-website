@@ -74,6 +74,18 @@ export const PUBLIC_PAGES = {
     path: "/notifications",
     noIndex: true,
   },
+  about: {
+    title: "About Us",
+    description:
+      "Discover the Deepfit story, our Mind. Move. Fuel. method, and our mission to make holistic wellness simple and sustainable.",
+    path: "/about",
+  },
+  contact: {
+    title: "Contact Us",
+    description:
+      "Contact Deepfit for order support, product guidance, or general inquiries.",
+    path: "/contact",
+  },
 } as const satisfies Record<string, PageSeoConfig>;
 
 export const PRIVATE_PAGES = {
@@ -214,3 +226,15 @@ export const PRIVATE_PAGES = {
 export const SITEMAP_PATHS = (
   Object.values(PUBLIC_PAGES) as PageSeoConfig[]
 ).filter((page) => !page.noIndex).map((page) => page.path);
+
+export const ROBOTS_DISALLOW_PATHS = [
+  ...new Set([
+    ...(Object.values(PRIVATE_PAGES) as PageSeoConfig[]).map(
+      (page) => page.path,
+    ),
+    ...(Object.values(PUBLIC_PAGES) as PageSeoConfig[])
+      .filter((page) => page.noIndex)
+      .map((page) => page.path),
+    "/api",
+  ]),
+];

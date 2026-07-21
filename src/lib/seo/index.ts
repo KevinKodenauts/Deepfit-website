@@ -6,6 +6,7 @@ export {
   SITE_NAME,
   SITE_TAGLINE,
   SITE_URL,
+  ROBOTS_DISALLOW_PATHS,
   SITEMAP_PATHS,
   type PageSeoConfig,
 } from "./config";

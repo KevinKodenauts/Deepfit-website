@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getBlogPosts } from "@/lib/api/blog";
+import { POLICY_SLUGS } from "@/lib/api/policy";
 import { getAllProducts } from "@/lib/api/products";
 import { SITE_URL, SITEMAP_PATHS } from "@/lib/seo";
 
@@ -28,5 +29,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: post.publishedAt ? new Date(post.publishedAt) : undefined,
   }));
 
-  return [...staticEntries, ...productEntries, ...blogEntries];
+  const policyEntries: MetadataRoute.Sitemap = POLICY_SLUGS.map((slug) => ({
+    url: `${SITE_URL}/policies/${slug}`,
+    changeFrequency: "monthly",
+    priority: 0.5,
+  }));
+
+  return [
+    ...staticEntries,
+    ...productEntries,
+    ...blogEntries,
+    ...policyEntries,
+  ];
 }
