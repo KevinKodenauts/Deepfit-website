@@ -1,5 +1,6 @@
 import { CUSTOMER_PORTAL, portalUrl } from "./config";
 import { portalCustomerFields, portalRequest } from "./portalClient";
+import { forceLogout, shouldForceLogout } from "@/lib/auth/forceLogout";
 import { getAccessToken } from "@/lib/auth/session";
 import {
   sendCustomerOtp,
@@ -340,6 +341,14 @@ export async function updateCustomerProfile(payload: {
 
   const data = (await response.json().catch(() => null)) as UpdateProfileResponse | null;
 
+  if (shouldForceLogout(response.status, data, Boolean(token))) {
+    forceLogout();
+    return {
+      status: false,
+      message: data?.message ?? `Request failed (${response.status})`,
+    };
+  }
+
   if (!response.ok || !data) {
     return {
       status: false,
@@ -348,6 +357,23 @@ export async function updateCustomerProfile(payload: {
   }
 
   return data;
+}
+
+export async function socialLoginCustomer(
+  provider: "google" | "apple",
+  idToken: string,
+  extra?: { name?: string; email?: string }
+): Promise<AuthResponse> {
+  return apiRequest<AuthResponse>(`${CUSTOMER_PORTAL}/customersociallogin`, {
+    method: "POST",
+    body: {
+      provider,
+      idToken,
+      source: APP_SOURCE,
+      ...(extra?.name ? { name: extra.name } : {}),
+      ...(extra?.email ? { email: extra.email } : {}),
+    },
+  });
 }
 
 export function pickAuthTokens(response: AuthResponse) {

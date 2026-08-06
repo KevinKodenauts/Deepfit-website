@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useRef } from "react";
 
 /** Returns a ref that is `true` while the component is mounted. */

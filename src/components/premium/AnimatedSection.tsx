@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import styles from "./premium.module.css";
 
@@ -31,7 +29,7 @@ export default function AnimatedSection({
           observer.disconnect();
         }
       },
-      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" },
     );
 
     observer.observe(node);

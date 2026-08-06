@@ -1,7 +1,5 @@
-"use client";
-
+import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { forgotPassword, verifyForgotPasswordOtp } from "@/lib/api/auth";
 import {
   FORGOT_EMAIL_KEY,
@@ -12,8 +10,10 @@ const OTP_LENGTH = 6;
 const RESEND_SECONDS = 30;
 
 export function useForgotPasswordVerifyForm() {
-  const router = useRouter();
-  const [otp, setOtp] = useState(() => Array.from({ length: OTP_LENGTH }, () => ""));
+  const navigate = useNavigate();
+  const [otp, setOtp] = useState(() =>
+    Array.from({ length: OTP_LENGTH }, () => "")
+  );
   const [countdown, setCountdown] = useState(RESEND_SECONDS);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,16 +23,20 @@ export function useForgotPasswordVerifyForm() {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const verifyingRef = useRef(false);
 
+  const goBack = () => {
+    window.history.back();
+  };
+
   useEffect(() => {
     const storedEmail = sessionStorage.getItem(FORGOT_EMAIL_KEY) ?? "";
     if (!storedEmail) {
-      router.replace("/forgot-password");
+      void navigate({ to: "/forgot-password", replace: true });
       return;
     }
 
     setEmail(storedEmail);
     setReady(true);
-  }, [router]);
+  }, [navigate]);
 
   useEffect(() => {
     if (!ready || countdown <= 0) return;
@@ -51,7 +55,10 @@ export function useForgotPasswordVerifyForm() {
 
   const fillOtp = useCallback((digits: string) => {
     const cleaned = digits.replace(/\D/g, "").slice(0, OTP_LENGTH);
-    const next = Array.from({ length: OTP_LENGTH }, (_, index) => cleaned[index] ?? "");
+    const next = Array.from(
+      { length: OTP_LENGTH },
+      (_, index) => cleaned[index] ?? ""
+    );
     setOtp(next);
 
     const focusIndex = Math.min(cleaned.length, OTP_LENGTH - 1);
@@ -78,7 +85,7 @@ export function useForgotPasswordVerifyForm() {
         }
 
         sessionStorage.setItem(FORGOT_VERIFIED_KEY, "true");
-        router.push("/forgot-password/reset");
+        void navigate({ to: "/forgot-password/reset" });
       } catch (err) {
         setError(
           err instanceof Error
@@ -91,7 +98,7 @@ export function useForgotPasswordVerifyForm() {
         setStatusText("");
       }
     },
-    [email, router]
+    [email, navigate]
   );
 
   const handleChange = (index: number, value: string) => {
@@ -160,7 +167,7 @@ export function useForgotPasswordVerifyForm() {
   };
 
   return {
-    router,
+    goBack,
     email,
     ready,
     otp,

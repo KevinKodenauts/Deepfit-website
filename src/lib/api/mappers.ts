@@ -84,6 +84,17 @@ export function parseOriginalPrice(
   price: number,
   product: ApiProduct
 ): number | null {
+  const regularFromApi =
+    product.regularPrice != null
+      ? Number(product.regularPrice)
+      : product.mrp != null
+        ? Number(product.mrp)
+        : null;
+
+  if (regularFromApi && regularFromApi > price) {
+    return regularFromApi;
+  }
+
   const discount = Number(product.discountedPercentage ?? 0);
   const hasDiscount =
     product.isDiscountApplicable === true ||
@@ -130,6 +141,10 @@ export type HomeProductView = {
   tag?: string;
   inStock: boolean;
   stockLabel: string;
+  rating: number;
+  reviewCount: number;
+  categoryName?: string;
+  mainCategoryName?: string;
 };
 
 export type CategoryProductView = {
@@ -151,6 +166,9 @@ export function mapToHomeProduct(product: ApiProduct): HomeProductView {
   const price = parseProductPrice(product);
   const original = parseOriginalPrice(price, product);
   const badge = getProductBadge(product);
+  const ratings = Array.isArray(product.averageRatingsDetails)
+    ? product.averageRatingsDetails[0]
+    : product.averageRatingsDetails;
   const inStock =
     product.inStock === true ||
     product.inStock === "true" ||
@@ -165,6 +183,10 @@ export function mapToHomeProduct(product: ApiProduct): HomeProductView {
     tag: badge?.text,
     inStock,
     stockLabel: inStock ? "In stock" : "Out of stock",
+    rating: Number(ratings?.averageRating ?? 0),
+    reviewCount: Number(ratings?.totalRatings ?? 0),
+    categoryName: product.categoryDetails?.categoryName,
+    mainCategoryName: product.mainCategoryDetails?.mainCategoryName,
   };
 }
 
@@ -238,13 +260,15 @@ export type ProductDetailView = {
     label: string;
     price: number;
     image: string;
+    images: string[];
   }>;
   rating: number;
   ratingCount: number;
   ratingBreakdown: RatingBreakdown;
   reviews: ProductReviewView[];
   isTopSelling: boolean;
-  specs?: string;
+  additionalInformation: Array<{ title: string; value: string }>;
+  related: CategoryProductView[];
 };
 
 function getInitials(name: string): string {
@@ -297,20 +321,26 @@ function mapUserReview(
 export function mapToProductDetail(product: ApiProduct): ProductDetailView {
   const variants = (product.variants ?? [])
     .filter((variant) => variant.id > 0)
-    .map((variant) => ({
-      id: variant.id,
-      attributeId:
-        variant.attributeDetails?.id && variant.attributeDetails.id > 0
-          ? variant.attributeDetails.id
-          : undefined,
-      label: variant.variantkey ?? variant.attributeDetails?.value ?? "Standard",
-      price: Number(variant.price ?? 0),
-      image: (() => {
-        const variantUrls = extractGalleryUrls(variant.variantImageGallery);
-        if (variantUrls.length > 0) return pickBestImageUrl(variantUrls);
-        return parseProductGallery(product.productGallery);
-      })(),
-    }));
+    .map((variant) => {
+      const variantUrls = extractGalleryUrls(variant.variantImageGallery);
+      const fallbackImage = parseProductGallery(product.productGallery);
+      const images =
+        variantUrls.length > 0
+          ? variantUrls.map((url) => pickBestImageUrl([url]))
+          : [fallbackImage];
+
+      return {
+        id: variant.id,
+        attributeId:
+          variant.attributeDetails?.id && variant.attributeDetails.id > 0
+            ? variant.attributeDetails.id
+            : undefined,
+        label: variant.variantkey ?? variant.attributeDetails?.value ?? "Standard",
+        price: Number(variant.price ?? 0),
+        image: images[0],
+        images,
+      };
+    });
 
   const firstVariant = variants[0];
   const price = firstVariant?.price ?? parseProductPrice(product);
@@ -363,6 +393,9 @@ export function mapToProductDetail(product: ApiProduct): ProductDetailView {
               label: "Standard",
               price,
               image: parseProductGallery(product.productGallery),
+              images: galleryUrls.length > 0
+                ? galleryUrls.map((url) => pickBestImageUrl([url]))
+                : [parseProductGallery(product.productGallery)],
             },
           ],
     rating: Number(ratings?.averageRating ?? 0),
@@ -378,7 +411,15 @@ export function mapToProductDetail(product: ApiProduct): ProductDetailView {
     isTopSelling:
       product.isTopSellingProduct === true ||
       product.isTopSellingProduct === "true",
-    specs: product.additionalInformation?.[0]?.value,
+    additionalInformation: (product.additionalInformation ?? [])
+      .map((item) => ({
+        title: (item.title ?? "").trim(),
+        value: (item.value ?? "").trim(),
+      }))
+      .filter((item) => item.title || item.value),
+    related: (product.related_products ?? [])
+      .filter((item) => item?.id && item.id !== product.id)
+      .map(mapToCategoryProduct),
   };
 }
 

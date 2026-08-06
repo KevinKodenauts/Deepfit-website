@@ -1,9 +1,13 @@
 const ZIINA_API_BASE =
-  process.env.ZIINA_API_BASE?.replace(/\/$/, "") ??
-  "https://api-v2.ziina.com/api";
+  (typeof process !== "undefined"
+    ? process.env.ZIINA_API_BASE?.replace(/\/$/, "")
+    : undefined) ?? "https://api-v2.ziina.com/api";
 
 function getAccessToken() {
-  return process.env.ZIINA_ACCESS_TOKEN ?? "jOFFkJir9N24ghPELu8s66rcRwjaI/5Nig1PmS5axbn4IBkCrAcSgsc6cEu2dUsw";
+  return (
+    (typeof process !== "undefined" ? process.env.ZIINA_ACCESS_TOKEN : undefined) ??
+    "jOFFkJir9N24ghPELu8s66rcRwjaI/5Nig1PmS5axbn4IBkCrAcSgsc6cEu2dUsw"
+  );
 }
 
 export function isZiinaConfigured() {
@@ -56,7 +60,9 @@ export async function createZiinaPaymentIntent(input: {
     },
     body: JSON.stringify({
       amount: minor,
-      currency_code: process.env.ZIINA_CURRENCY ?? "AED",
+      currency_code:
+        (typeof process !== "undefined" ? process.env.ZIINA_CURRENCY : undefined) ??
+        "AED",
       message: input.message,
       success_url: input.successUrl,
       cancel_url: input.cancelUrl,
@@ -64,10 +70,13 @@ export async function createZiinaPaymentIntent(input: {
       test:
         input.test ??
         ["1", "true", "yes"].includes(
-          (process.env.ZIINA_TEST_MODE ?? "false").toLowerCase()
+          (
+            (typeof process !== "undefined"
+              ? process.env.ZIINA_TEST_MODE
+              : undefined) ?? "false"
+          ).toLowerCase(),
         ),
     }),
-    cache: "no-store",
   });
 
   const data = (await response.json().catch(() => null)) as
@@ -87,7 +96,7 @@ export async function createZiinaPaymentIntent(input: {
 }
 
 export async function getZiinaPaymentIntent(
-  paymentIntentId: string
+  paymentIntentId: string,
 ): Promise<ZiinaPaymentIntent> {
   const token = getAccessToken();
   if (!token) {
@@ -101,8 +110,7 @@ export async function getZiinaPaymentIntent(
         Authorization: `Bearer ${token}`,
         Accept: "application/json",
       },
-      cache: "no-store",
-    }
+    },
   );
 
   const data = (await response.json().catch(() => null)) as

@@ -1,7 +1,5 @@
-"use client";
-
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import type { ParsedCountry } from "react-international-phone";
 import { useAuth } from "@/contexts/AuthContext";
 import { updateCustomerProfile } from "@/lib/api/auth";
@@ -13,7 +11,7 @@ import {
 } from "@/lib/phone/utils";
 
 export function useUpdateProfileForm(options?: { onSuccess?: () => void }) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { user, refreshProfile } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -101,7 +99,7 @@ export function useUpdateProfileForm(options?: { onSuccess?: () => void }) {
       if (options?.onSuccess) {
         options.onSuccess();
       } else {
-        router.back();
+        window.history.back();
       }
     } catch {
       setError("Something went wrong. Please try again.");
@@ -111,7 +109,7 @@ export function useUpdateProfileForm(options?: { onSuccess?: () => void }) {
   };
 
   return {
-    router,
+    navigate,
     user,
     name,
     setName,

@@ -1,5 +1,17 @@
+function readEnv(name: string): string | undefined {
+  if (typeof import.meta !== "undefined" && import.meta.env?.[name]) {
+    return String(import.meta.env[name]);
+  }
+  if (typeof process !== "undefined" && process.env?.[name]) {
+    return process.env[name];
+  }
+  return undefined;
+}
+
 const DEFAULT_API_HOST =
-  process.env.NEXT_PUBLIC_API_URL ?? "https://apideepfit.gaamferi.com";
+  readEnv("VITE_API_URL") ??
+  readEnv("NEXT_PUBLIC_API_URL") ??
+  "https://apideepfit.gaamferi.com";
 
 export const API_BASE_URL =
   typeof window !== "undefined" ? "" : DEFAULT_API_HOST;
@@ -16,7 +28,7 @@ export const PORTAL_IP_ADDRESS = "127.0.0.1";
 /** Django blog routes require trailing slashes (see Backend/blog/urls.py). */
 export function blogUrl(
   path: string,
-  query?: Record<string, string | number | boolean | undefined>
+  query?: Record<string, string | number | boolean | undefined>,
 ) {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   const withSlash = normalizedPath.endsWith("/")
@@ -36,7 +48,10 @@ export function blogUrl(
   return `${BLOG_API}${withSlash}${qs ? `?${qs}` : ""}`;
 }
 
-export function portalUrl(path: string, query?: Record<string, string | number>) {
+export function portalUrl(
+  path: string,
+  query?: Record<string, string | number>,
+) {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   const params = new URLSearchParams({
     clientId: String(PORTAL_CLIENT_ID),
@@ -59,3 +74,5 @@ export function getCatalogWebSocketUrl(): string {
     uri.port && uri.port !== "80" && uri.port !== "443" ? `:${uri.port}` : "";
   return `${scheme}://${uri.host}${portSuffix}/ws/catalog/`;
 }
+
+export { DEFAULT_API_HOST };

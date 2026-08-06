@@ -1,7 +1,5 @@
-"use client";
-
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useNavigate } from "@tanstack/react-router";
 import { getMainCategories } from "@/lib/api/categories";
 import {
   mapToCategoryProduct,
@@ -9,28 +7,30 @@ import {
 } from "@/lib/api/mappers";
 import { searchProducts } from "@/lib/api/products";
 import type { MainCategory } from "@/lib/api/types";
-import { buildProductHref } from "@/lib/productNavigation";
-import { useCatalogSync } from "@/hooks/useCatalogSync";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 
 export const SEARCH_LIMIT = 24;
 export const SEARCH_DEBOUNCE_MS = 350;
 
-export function useSearchPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+type SearchParams = {
+  q?: string;
+  voice?: string;
+};
+
+export function useSearchPage(searchParams: SearchParams = {}) {
+  const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [query, setQuery] = useState(searchParams.get("q") ?? "");
+  const [query, setQuery] = useState(searchParams.q ?? "");
   const [trendingCategories, setTrendingCategories] = useState<MainCategory[]>(
-    []
+    [],
   );
   const [results, setResults] = useState<CategoryProductView[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
-  const [hasSearched, setHasSearched] = useState(Boolean(searchParams.get("q")));
+  const [hasSearched, setHasSearched] = useState(Boolean(searchParams.q));
   const [hasMore, setHasMore] = useState(false);
   const [offset, setOffset] = useState(0);
   const voiceAutoStartRef = useRef(false);
@@ -56,22 +56,34 @@ export function useSearchPage() {
   }, []);
 
   useEffect(() => {
+    if (searchParams.q !== undefined) {
+      setQuery(searchParams.q);
+      setHasSearched(Boolean(searchParams.q));
+    }
+  }, [searchParams.q]);
+
+  useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
   useEffect(() => {
-    if (searchParams.get("voice") !== "1" || !isSupported || voiceAutoStartRef.current) {
+    if (
+      searchParams.voice !== "1" ||
+      !isSupported ||
+      voiceAutoStartRef.current
+    ) {
       return;
     }
 
     voiceAutoStartRef.current = true;
     startListening();
 
-    const nextParams = new URLSearchParams(searchParams.toString());
-    nextParams.delete("voice");
-    const nextQuery = nextParams.toString();
-    router.replace(nextQuery ? `/search?${nextQuery}` : "/search");
-  }, [searchParams, isSupported, startListening, router]);
+    void navigate({
+      to: "/search",
+      search: searchParams.q ? { q: searchParams.q } : {},
+      replace: true,
+    });
+  }, [searchParams.voice, searchParams.q, isSupported, startListening, navigate]);
 
   const runSearch = useCallback(async (searchQuery: string, nextOffset = 0) => {
     const trimmed = searchQuery.trim();
@@ -142,29 +154,16 @@ export function useSearchPage() {
     return () => window.clearTimeout(timer);
   }, [query, runSearch]);
 
-  useCatalogSync(() => {
-    if (query.trim()) {
-      void runSearch(query.trim());
-      return;
-    }
-
-    getMainCategories()
-      .then((categories) => setTrendingCategories(categories.slice(0, 8)))
-      .catch(() => setTrendingCategories([]));
-  });
-
   const handleLoadMore = () => {
     if (!hasMore || loadingMore || loading || !query.trim()) return;
     void runSearch(query, offset);
   };
 
   const handleOpenProduct = (product: CategoryProductView) => {
-    router.push(
-      buildProductHref(
-        product.id,
-        results.map((item) => item.id)
-      )
-    );
+    void navigate({
+      to: "/product/$slug",
+      params: { slug: String(product.id) },
+    });
   };
 
   return {

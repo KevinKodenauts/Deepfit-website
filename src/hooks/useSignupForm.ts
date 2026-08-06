@@ -1,6 +1,4 @@
-"use client";
-
-import { useRouter } from "next/navigation";
+import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import type { ParsedCountry } from "react-international-phone";
 import { sendCustomerOtp } from "@/lib/api/customerAuth";
@@ -13,7 +11,7 @@ import {
 import { validateSignupForm, type FieldErrors } from "@/lib/validation";
 
 export function useSignupForm() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
   const [mobileCountry, setMobileCountry] = useState<ParsedCountry>(() =>
@@ -43,7 +41,23 @@ export function useSignupForm() {
         })
       ).length === 0
     );
-  }, [name, mobile, email, password, confirmPassword, acceptedTerms, mobileCountry]);
+  }, [
+    name,
+    mobile,
+    email,
+    password,
+    confirmPassword,
+    acceptedTerms,
+    mobileCountry,
+  ]);
+
+  const goBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    void navigate({ to: "/login" });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,7 +101,7 @@ export function useSignupForm() {
       }
 
       savePendingSignup(pendingSignup);
-      router.push("/verify-otp");
+      void navigate({ to: "/verify-otp" });
     } catch (err) {
       setError(
         err instanceof Error
@@ -106,7 +120,7 @@ export function useSignupForm() {
   };
 
   return {
-    router,
+    goBack,
     name,
     setName,
     mobile,

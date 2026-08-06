@@ -1,5 +1,3 @@
-"use client";
-
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   filterOrdersByStatus,
@@ -10,7 +8,6 @@ import {
 } from "@/lib/api/orders";
 import { getCustomerId } from "@/lib/auth/session";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
-import { useOrderSync } from "@/hooks/useOrderSync";
 
 export const ORDER_FILTERS: OrderStatusFilter[] = [
   "All Orders",
@@ -27,33 +24,30 @@ export function useOrdersPage() {
   const [selectedFilter, setSelectedFilter] =
     useState<OrderStatusFilter>("All Orders");
 
-  const loadOrders = useCallback((options?: { silent?: boolean }) => {
-    if (authLoading || !isAuthenticated) return;
+  const loadOrders = useCallback(
+    (options?: { silent?: boolean }) => {
+      if (authLoading || !isAuthenticated) return;
 
-    const customerId = getCustomerId();
-    if (!customerId) {
-      setLoading(false);
-      return;
-    }
+      const customerId = getCustomerId();
+      if (!customerId) {
+        setLoading(false);
+        return;
+      }
 
-    if (!options?.silent) setLoading(true);
-    getCustomerOrders(customerId)
-      .then((data) => setOrders(groupOrdersByNumber(data)))
-      .catch(() => setOrders([]))
-      .finally(() => {
-        if (!options?.silent) setLoading(false);
-      });
-  }, [authLoading, isAuthenticated]);
+      if (!options?.silent) setLoading(true);
+      getCustomerOrders(customerId)
+        .then((data) => setOrders(groupOrdersByNumber(data)))
+        .catch(() => setOrders([]))
+        .finally(() => {
+          if (!options?.silent) setLoading(false);
+        });
+    },
+    [authLoading, isAuthenticated]
+  );
 
   useEffect(() => {
     loadOrders();
   }, [loadOrders]);
-
-  useOrderSync({
-    onAny: () => {
-      loadOrders({ silent: true });
-    },
-  });
 
   const filteredOrders = useMemo(
     () => filterOrdersByStatus(orders, selectedFilter),
@@ -74,5 +68,6 @@ export function useOrdersPage() {
     setSelectedFilter,
     filteredOrders,
     getFilterCount,
+    reloadOrders: loadOrders,
   };
 }

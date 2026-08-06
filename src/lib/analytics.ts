@@ -1,52 +1,27 @@
 import type { CustomerUser } from "@/lib/api/types";
 
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "";
+const DEFAULT_CRISP_WEBSITE_ID = "2cff09c6-98f2-4f8b-aa34-a3a43e77dd09";
 
-type GtagCommand = "config" | "event" | "js" | "set";
+function readEnv(name: string): string | undefined {
+  if (typeof import.meta !== "undefined" && import.meta.env?.[name]) {
+    return String(import.meta.env[name]);
+  }
+  if (typeof process !== "undefined" && process.env?.[name]) {
+    return process.env[name];
+  }
+  return undefined;
+}
+
+export const CRISP_WEBSITE_ID =
+  readEnv("VITE_CRISP_WEBSITE_ID") ??
+  readEnv("NEXT_PUBLIC_CRISP_WEBSITE_ID") ??
+  DEFAULT_CRISP_WEBSITE_ID;
 
 declare global {
   interface Window {
-    gtag?: (command: GtagCommand | string, ...args: unknown[]) => void;
-    dataLayer?: unknown[];
     $crisp?: unknown[];
     CRISP_WEBSITE_ID?: string;
   }
-}
-
-export function trackPageView(url: string) {
-  if (!GA_MEASUREMENT_ID || typeof window === "undefined" || !window.gtag) {
-    return;
-  }
-
-  window.gtag("config", GA_MEASUREMENT_ID, {
-    page_path: url,
-  });
-}
-
-export function trackEvent(
-  action: string,
-  params?: Record<string, string | number | boolean>
-) {
-  if (!GA_MEASUREMENT_ID || typeof window === "undefined" || !window.gtag) {
-    return;
-  }
-
-  window.gtag("event", action, params);
-}
-
-export function setAnalyticsUser(user: CustomerUser | null) {
-  if (typeof window === "undefined" || !window.gtag || !GA_MEASUREMENT_ID) {
-    return;
-  }
-
-  if (!user?.id) {
-    window.gtag("config", GA_MEASUREMENT_ID, { user_id: null });
-    return;
-  }
-
-  window.gtag("config", GA_MEASUREMENT_ID, {
-    user_id: String(user.id),
-  });
 }
 
 function crispPush(...args: unknown[]) {
@@ -55,8 +30,12 @@ function crispPush(...args: unknown[]) {
   window.$crisp.push(args);
 }
 
+export function isCrispEnabled() {
+  return Boolean(CRISP_WEBSITE_ID);
+}
+
 export function identifyCrispUser(user: CustomerUser | null) {
-  if (typeof window === "undefined" || !process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID) {
+  if (typeof window === "undefined" || !CRISP_WEBSITE_ID) {
     return;
   }
 
@@ -88,7 +67,7 @@ export function identifyCrispUser(user: CustomerUser | null) {
 }
 
 export function openCrispChat() {
-  if (typeof window === "undefined" || !process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID) {
+  if (typeof window === "undefined" || !CRISP_WEBSITE_ID) {
     return;
   }
 
@@ -96,7 +75,7 @@ export function openCrispChat() {
 }
 
 export function resetCrispSession() {
-  if (typeof window === "undefined" || !process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID) {
+  if (typeof window === "undefined" || !CRISP_WEBSITE_ID) {
     return;
   }
 

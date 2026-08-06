@@ -1,29 +1,24 @@
-import Script from "next/script";
+"use client";
 
-const CRISP_WEBSITE_ID = process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID ?? "2cff09c6-98f2-4f8b-aa34-a3a43e77dd09";
+import { useEffect } from "react";
+import { CRISP_WEBSITE_ID, isCrispEnabled } from "@/lib/analytics";
 
 export default function CrispChat() {
-  if (!CRISP_WEBSITE_ID) {
-    return null;
-  }
+  useEffect(() => {
+    if (!CRISP_WEBSITE_ID) return;
+    if (document.getElementById("crisp-chat-script")) return;
 
-  return (
-    <Script id="crisp-chat" strategy="afterInteractive">
-      {`
-        window.$crisp = [];
-        window.CRISP_WEBSITE_ID = "${CRISP_WEBSITE_ID}";
-        (function () {
-          var d = document;
-          var s = d.createElement("script");
-          s.src = "https://client.crisp.chat/l.js";
-          s.async = 1;
-          d.getElementsByTagName("head")[0].appendChild(s);
-        })();
-      `}
-    </Script>
-  );
+    window.$crisp = window.$crisp || [];
+    window.CRISP_WEBSITE_ID = CRISP_WEBSITE_ID;
+
+    const script = document.createElement("script");
+    script.id = "crisp-chat-script";
+    script.src = "https://client.crisp.chat/l.js";
+    script.async = true;
+    document.getElementsByTagName("head")[0].appendChild(script);
+  }, []);
+
+  return null;
 }
 
-export function isCrispEnabled() {
-  return Boolean(CRISP_WEBSITE_ID);
-}
+export { isCrispEnabled };

@@ -22,7 +22,7 @@ export async function getExercises(
   }
   const query = params.toString();
   const data = await apiRequest<ExerciseListResponse>(
-    `${EXERCISE_API}/exercises${query ? `?${query}` : ""}`
+    `${EXERCISE_API}/exercises${query ? `?${query}` : ""}`,
   );
   return data.data ?? [];
 }
@@ -39,7 +39,7 @@ export async function getExerciseById(
 
 export async function getEquipmentList(): Promise<EquipmentItem[]> {
   const data = await apiRequest<EquipmentListResponse>(
-    `${EXERCISE_API}/equipment`
+    `${EXERCISE_API}/equipment/`
   );
   return data.data ?? [];
 }

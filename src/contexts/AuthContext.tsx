@@ -19,12 +19,17 @@ import { invalidateCategoriesCache } from "@/lib/api/categories";
 import { invalidateDashboardCache } from "@/lib/api/products";
 import type { CustomerUser } from "@/lib/api/types";
 import {
+  isInvalidTokenPayload,
+  UNAUTHORIZED_EVENT,
+} from "@/lib/auth/forceLogout";
+import {
   clearSession,
   getAccessToken,
   getRefreshToken,
   getStoredUser,
   saveSession,
 } from "@/lib/auth/session";
+import { ApiError } from "@/lib/api/client";
 
 type AuthContextValue = {
   user: CustomerUser | null;
@@ -101,7 +106,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setUser(normalizeUser(stored));
       }
-    } catch {
+    } catch (error) {
+      // API clients already call forceLogout for invalid tokens.
+      if (
+        error instanceof ApiError &&
+        (error.status === 401 ||
+          error.status === 403 ||
+          isInvalidTokenPayload({ message: error.message }))
+      ) {
+        setUser(null);
+        return;
+      }
+
       setUser(normalizeUser(stored));
     }
   }, []);
@@ -117,6 +133,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false);
     void refreshProfile();
   }, [refreshProfile]);
+
+  useEffect(() => {
+    const onUnauthorized = () => {
+      setUser(null);
+      invalidateDashboardCache();
+      invalidateCategoriesCache();
+      invalidateCartCache();
+      setSessionVersion((value) => value + 1);
+    };
+
+    window.addEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
+    return () => window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
+  }, []);
 
   const handleAuthSuccess = useCallback((response: {
     access?: string;

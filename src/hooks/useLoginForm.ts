@@ -1,13 +1,15 @@
-"use client";
-
-import { useRouter, useSearchParams } from "next/navigation";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { validateLoginForm, type FieldErrors } from "@/lib/validation";
 
 export function useLoginForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const navigate = useNavigate();
+  const search = useSearch({ strict: false }) as {
+    reset?: string;
+    signup?: string;
+    next?: string;
+  };
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,13 +31,13 @@ export function useLoginForm() {
 
   const closeResetToast = useCallback(() => {
     setShowResetToast(false);
-    router.replace("/");
-  }, [router]);
+    void navigate({ to: "/login", search: {} });
+  }, [navigate]);
 
   const closeSignupToast = useCallback(() => {
     setShowSignupToast(false);
-    router.replace("/");
-  }, [router]);
+    void navigate({ to: "/login", search: {} });
+  }, [navigate]);
 
   useEffect(() => {
     const prefillEmail = sessionStorage.getItem("deepfit_login_email");
@@ -44,12 +46,12 @@ export function useLoginForm() {
       sessionStorage.removeItem("deepfit_login_email");
     }
 
-    if (searchParams.get("reset") === "success") {
+    if (search.reset === "success") {
       setShowResetToast(true);
-    } else if (searchParams.get("signup") === "success") {
+    } else if (search.signup === "success") {
       setShowSignupToast(true);
     }
-  }, [searchParams]);
+  }, [search.reset, search.signup]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,8 +71,10 @@ export function useLoginForm() {
       if (err) {
         setError(err);
       } else {
-        const next = searchParams.get("next");
-        router.replace(next && next.startsWith("/") ? next : "/home");
+        const next = search.next;
+        void navigate({
+          to: next && next.startsWith("/") ? next : "/",
+        });
       }
     } catch {
       setError("Something went wrong. Please try again.");

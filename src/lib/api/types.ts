@@ -8,6 +8,9 @@ export type ApiProduct = {
   productShortDescription?: string;
   productGallery?: string | string[];
   price?: string | number;
+  regularPrice?: string | number | null;
+  salePrice?: string | number | null;
+  mrp?: string | number | null;
   isProductHasDiscount?: boolean;
   isDiscountApplicable?: string | boolean;
   discountedPercentage?: string | number;
@@ -23,6 +26,9 @@ export type ApiProduct = {
   variants?: Array<{
     id: number;
     price: string;
+    regularPrice?: string | number | null;
+    salePrice?: string | number | null;
+    mrp?: string | number | null;
     variantkey?: string;
     variantImageGallery?: string | string[];
     attributeDetails?: { id: number; name: string; value: string };
@@ -64,6 +70,7 @@ export type ApiProduct = {
       }>;
   additionalInformation?: Array<{ id: number; title: string; value: string }>;
   expectedDeliveryTime?: string;
+  related_products?: ApiProduct[];
 };
 
 export type MainCategory = {

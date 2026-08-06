@@ -1,7 +1,5 @@
-"use client";
-
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "@tanstack/react-router";
 import {
   CUSTOMER_OTP_LENGTH,
   sendCustomerOtp,
@@ -18,7 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const RESEND_SECONDS = 30;
 
 export function useVerifyOtpForm() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { loginWithResponse } = useAuth();
   const [otp, setOtp] = useState(() =>
     Array.from({ length: CUSTOMER_OTP_LENGTH }, () => "")
@@ -27,18 +25,24 @@ export function useVerifyOtpForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [statusText, setStatusText] = useState("");
-  const [pendingSignup, setPendingSignup] = useState<PendingSignup | null>(null);
+  const [pendingSignup, setPendingSignup] = useState<PendingSignup | null>(
+    null
+  );
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const verifyingRef = useRef(false);
+
+  const goBack = () => {
+    void navigate({ to: "/signup" });
+  };
 
   useEffect(() => {
     const pending = getPendingSignup();
     if (!pending) {
-      router.replace("/signup");
+      void navigate({ to: "/signup" });
       return;
     }
     setPendingSignup(pending);
-  }, [router]);
+  }, [navigate]);
 
   useEffect(() => {
     if (countdown <= 0) return;
@@ -99,7 +103,7 @@ export function useVerifyOtpForm() {
           }
 
           clearPendingSignup();
-          router.replace("/home");
+          void navigate({ to: "/" });
           return;
         }
 
@@ -122,7 +126,7 @@ export function useVerifyOtpForm() {
             }
 
             clearPendingSignup();
-            router.replace("/home");
+            void navigate({ to: "/" });
             return;
           }
         } catch {
@@ -145,7 +149,7 @@ export function useVerifyOtpForm() {
         setStatusText("");
       }
     },
-    [loginWithResponse, pendingSignup, router]
+    [loginWithResponse, navigate, pendingSignup]
   );
 
   const handleChange = (index: number, value: string) => {
@@ -219,7 +223,7 @@ export function useVerifyOtpForm() {
   };
 
   return {
-    router,
+    goBack,
     otp,
     countdown,
     error,

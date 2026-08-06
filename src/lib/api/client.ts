@@ -1,3 +1,4 @@
+import { forceLogout, shouldForceLogout } from "@/lib/auth/forceLogout";
 import { getAccessToken } from "@/lib/auth/session";
 
 type RequestOptions = {
@@ -15,6 +16,14 @@ export class ApiError extends Error {
     this.name = "ApiError";
     this.status = status;
   }
+}
+
+function responseMessage(data: unknown, status: number) {
+  return (
+    (data && typeof data === "object" && "message" in data
+      ? String((data as { message: string }).message)
+      : null) ?? `Request failed (${status})`
+  );
 }
 
 export async function apiRequest<T>(
@@ -41,12 +50,13 @@ export async function apiRequest<T>(
 
   const data = await response.json().catch(() => null);
 
+  if (shouldForceLogout(response.status, data, auth)) {
+    forceLogout();
+    throw new ApiError(responseMessage(data, response.status), response.status);
+  }
+
   if (!response.ok) {
-    const message =
-      (data && typeof data === "object" && "message" in data
-        ? String((data as { message: string }).message)
-        : null) ?? `Request failed (${response.status})`;
-    throw new ApiError(message, response.status);
+    throw new ApiError(responseMessage(data, response.status), response.status);
   }
 
   return data as T;

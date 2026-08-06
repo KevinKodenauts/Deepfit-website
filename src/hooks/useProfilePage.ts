@@ -1,6 +1,4 @@
-"use client";
-
-import { useRouter } from "next/navigation";
+import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCustomerReferralTree } from "@/lib/api/auth";
@@ -19,10 +17,8 @@ export function getProfileInitials(name: string) {
 }
 
 export function useProfilePage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { user, isAuthenticated, isLoading, logout, refreshProfile } = useAuth();
-  const [showUpdateProfile, setShowUpdateProfile] = useState(false);
-  const [showChangePassword, setShowChangePassword] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
   const [copyMessage, setCopyMessage] = useState("");
   const [referralStats, setReferralStats] = useState({
@@ -63,14 +59,14 @@ export function useProfilePage() {
   }, [loadProfile]);
 
   const requireAuth = useCallback(
-    (href: string) => {
+    (to: string) => {
       if (!isAuthenticated) {
-        router.replace("/login");
+        void navigate({ to: "/login" });
         return;
       }
-      router.push(href);
+      void navigate({ to: to as "/profile" });
     },
-    [isAuthenticated, router]
+    [isAuthenticated, navigate]
   );
 
   const handleCopyReferral = async () => {
@@ -105,18 +101,14 @@ export function useProfilePage() {
 
   const handleLogout = () => {
     logout();
-    router.replace("/login");
+    void navigate({ to: "/login" });
   };
 
   return {
-    router,
+    navigate,
     user,
     isAuthenticated,
     isLoading,
-    showUpdateProfile,
-    setShowUpdateProfile,
-    showChangePassword,
-    setShowChangePassword,
     profileLoading,
     copyMessage,
     referralStats,
@@ -126,7 +118,6 @@ export function useProfilePage() {
     referralCode,
     totalRewards,
     initials,
-    loadProfile,
     requireAuth,
     handleCopyReferral,
     handleShareReferral,

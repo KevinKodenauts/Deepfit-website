@@ -1,7 +1,5 @@
-"use client";
-
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { resetForgottenPassword } from "@/lib/api/auth";
 import {
@@ -11,7 +9,7 @@ import {
 } from "@/lib/auth/forgotPasswordFlow";
 
 export function useResetPasswordForm() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { logout } = useAuth();
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -22,18 +20,22 @@ export function useResetPasswordForm() {
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
 
+  const goBack = () => {
+    window.history.back();
+  };
+
   useEffect(() => {
     const verified = sessionStorage.getItem(FORGOT_VERIFIED_KEY);
     const storedEmail = sessionStorage.getItem(FORGOT_EMAIL_KEY) ?? "";
 
     if (!verified || !storedEmail) {
-      router.replace("/forgot-password");
+      void navigate({ to: "/forgot-password", replace: true });
       return;
     }
 
     setEmail(storedEmail);
     setReady(true);
-  }, [router]);
+  }, [navigate]);
 
   const isFormValid = useMemo(() => {
     return (
@@ -64,7 +66,7 @@ export function useResetPasswordForm() {
         logout();
         clearForgotPasswordSession();
         sessionStorage.setItem("deepfit_login_email", email);
-        router.push("/login?reset=success");
+        void navigate({ to: "/login", search: { reset: "success" } });
       } else {
         setError(res.message ?? "Failed to update password.");
       }
@@ -80,7 +82,7 @@ export function useResetPasswordForm() {
   };
 
   return {
-    router,
+    goBack,
     email,
     ready,
     newPassword,

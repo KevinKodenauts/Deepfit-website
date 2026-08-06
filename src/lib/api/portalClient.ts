@@ -1,5 +1,6 @@
-import { portalUrl, PORTAL_CLIENT_ID } from "./config";
+import { forceLogout, shouldForceLogout } from "@/lib/auth/forceLogout";
 import { getAccessToken } from "@/lib/auth/session";
+import { portalUrl, PORTAL_CLIENT_ID } from "./config";
 import { ApiError } from "./client";
 
 type PortalRequestOptions = {
@@ -70,12 +71,17 @@ export async function portalRequest<T>(
   });
 
   const data = await response.json().catch(() => null);
+  const message =
+    (data && typeof data === "object" && "message" in data
+      ? String((data as { message: string }).message)
+      : null) ?? `Request failed (${response.status})`;
+
+  if (shouldForceLogout(response.status, data, auth)) {
+    forceLogout();
+    throw new ApiError(message, response.status);
+  }
 
   if (!response.ok) {
-    const message =
-      (data && typeof data === "object" && "message" in data
-        ? String((data as { message: string }).message)
-        : null) ?? `Request failed (${response.status})`;
     throw new ApiError(message, response.status);
   }
 

@@ -1,7 +1,5 @@
-"use client";
-
+import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { forgotPassword } from "@/lib/api/auth";
 import {
   FORGOT_EMAIL_KEY,
@@ -10,7 +8,7 @@ import {
 } from "@/lib/auth/forgotPasswordFlow";
 
 export function useForgotPasswordForm() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,6 +17,10 @@ export function useForgotPasswordForm() {
     () => isValidForgotPasswordEmail(email),
     [email]
   );
+
+  const goBack = () => {
+    window.history.back();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +43,7 @@ export function useForgotPasswordForm() {
       if (res.status) {
         sessionStorage.removeItem(FORGOT_VERIFIED_KEY);
         sessionStorage.setItem(FORGOT_EMAIL_KEY, trimmedEmail);
-        router.push("/forgot-password/verify");
+        void navigate({ to: "/forgot-password/verify" });
       } else {
         setError(res.message ?? "Failed to send OTP. Please try again.");
       }
@@ -57,7 +59,7 @@ export function useForgotPasswordForm() {
   };
 
   return {
-    router,
+    goBack,
     email,
     setEmail,
     error,
