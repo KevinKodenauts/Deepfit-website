@@ -457,13 +457,21 @@ export async function getShippingCharge(customerId: number, pincode: string) {
   return data.shippingCharge ?? 0;
 }
 
-export async function validateCoupon(customerId: number, couponCode: string) {
-  return apiRequest<{ status: boolean; message?: string }>(
-    portalUrl("/checkoffercouponvalidity"),
-    {
-      method: "POST",
-      body: { customerId, couponCode },
-      auth: true,
-    }
-  );
+export async function validateCoupon(
+  customerId: number,
+  couponCode: string,
+  totalAmount: number,
+) {
+  return apiRequest<{
+    status: boolean;
+    message?: string;
+    discountAmount?: string | number;
+    couponCode?: string;
+    discountType?: string;
+    discountValue?: string | number;
+  }>(portalUrl("/checkoffercouponvalidity"), {
+    method: "POST",
+    body: { customerId, couponCode, totalAmount, purchaseAmount: totalAmount },
+    auth: true,
+  });
 }

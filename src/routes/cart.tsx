@@ -11,7 +11,7 @@ import {
   Banknote,
   Pencil,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAddresses } from "@/contexts/AddressContext";
@@ -59,6 +59,7 @@ function Cart() {
   const [deliveryFee, setDeliveryFee] = useState(0);
   const [coupon, setCoupon] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [couponDiscount, setCouponDiscount] = useState(0);
   const [couponMessage, setCouponMessage] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("ziina");
   const [placing, setPlacing] = useState(false);
@@ -67,10 +68,25 @@ function Cart() {
     null,
   );
 
-  const grandTotal = useMemo(
-    () => subtotal + deliveryFee,
-    [subtotal, deliveryFee],
+  const discount = useMemo(
+    () => Math.min(Math.max(couponDiscount, 0), subtotal),
+    [couponDiscount, subtotal],
   );
+
+  const grandTotal = useMemo(
+    () => Math.max(subtotal - discount + deliveryFee, 0),
+    [subtotal, discount, deliveryFee],
+  );
+
+  const prevSubtotalRef = useRef(subtotal);
+  useEffect(() => {
+    if (prevSubtotalRef.current === subtotal) return;
+    prevSubtotalRef.current = subtotal;
+    if (!appliedCoupon) return;
+    setAppliedCoupon(null);
+    setCouponDiscount(0);
+    setCouponMessage("");
+  }, [subtotal, appliedCoupon]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -109,17 +125,28 @@ function Cart() {
     const customerId = getCustomerId();
     if (!customerId || !coupon.trim()) return;
     try {
-      const result = await validateCoupon(customerId, coupon.trim());
+      const result = await validateCoupon(customerId, coupon.trim(), subtotal);
       if (!result.status) {
         setCouponMessage(result.message ?? "Invalid coupon");
         setAppliedCoupon(null);
+        setCouponDiscount(0);
         return;
       }
-      setAppliedCoupon(coupon.trim());
-      setCouponMessage("Coupon applied");
+      const amount = Number(result.discountAmount ?? 0);
+      setAppliedCoupon(result.couponCode ?? coupon.trim());
+      setCouponDiscount(Number.isFinite(amount) ? amount : 0);
+      setCouponMessage("");
     } catch {
+      setCouponDiscount(0);
       setCouponMessage("Could not validate coupon");
     }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponDiscount(0);
+    setCoupon("");
+    setCouponMessage("");
   };
 
   const handlePlaceOrder = useCallback(async () => {
@@ -150,6 +177,7 @@ function Cart() {
         platform: "web",
         subtotal,
         shippingCost: deliveryFee,
+        discountAmount: discount,
         grandTotal,
         items: items.map((item) => ({
           productId: item.productId,
@@ -216,6 +244,7 @@ function Cart() {
     grandTotal,
     subtotal,
     deliveryFee,
+    discount,
     appliedCoupon,
     refreshCart,
   ]);
@@ -455,7 +484,17 @@ function Cart() {
                 </button>
               </div>
 
-              <div className="mt-6 border-t border-border pt-6">
+              <div className="mt-6 space-y-3 border-t border-border pt-6 text-sm">
+                {appliedCoupon ? (
+                  <Row
+                    k={`Discount (${appliedCoupon})`}
+                    v={
+                      <span className="font-medium text-emerald-700">
+                        −AED {discount}
+                      </span>
+                    }
+                  />
+                ) : null}
                 <Row
                   k={<span className="font-medium">Total</span>}
                   v={
@@ -465,26 +504,61 @@ function Cart() {
                   }
                 />
               </div>
-              <div className="mt-6 flex gap-2">
-                <input
-                  value={coupon}
-                  onChange={(e) => setCoupon(e.target.value)}
-                  placeholder="Discount code"
-                  className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-foreground/40 focus:ring-2 focus:ring-ring/20"
-                />
-                <button
-                  type="button"
-                  onClick={() => void handleApplyCoupon()}
-                  className="rounded-lg border border-border px-4 text-xs font-medium uppercase tracking-wider transition hover:bg-foreground/5"
-                >
-                  Apply
-                </button>
+
+              <div className="mt-6">
+                {appliedCoupon ? (
+                  <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+                    <Gift size={16} className="shrink-0 text-emerald-700" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-medium text-emerald-900">
+                        {appliedCoupon}
+                      </div>
+                      <div className="text-xs text-emerald-700">
+                        {discount > 0
+                          ? `Saving AED ${discount}`
+                          : "Coupon applied"}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveCoupon}
+                      className="shrink-0 text-xs font-medium uppercase tracking-wider text-emerald-800 underline-offset-2 transition hover:underline"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex gap-2">
+                      <input
+                        value={coupon}
+                        onChange={(e) => {
+                          setCoupon(e.target.value);
+                          if (couponMessage) setCouponMessage("");
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            void handleApplyCoupon();
+                          }
+                        }}
+                        placeholder="Discount code"
+                        className="w-full rounded-lg border border-border bg-background px-4 py-3 text-sm outline-none transition focus:border-foreground/40 focus:ring-2 focus:ring-ring/20"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void handleApplyCoupon()}
+                        className="rounded-lg border border-border px-4 text-xs font-medium uppercase tracking-wider transition hover:bg-foreground/5"
+                      >
+                        Apply
+                      </button>
+                    </div>
+                    {couponMessage ? (
+                      <p className="mt-2 text-xs text-red-600">{couponMessage}</p>
+                    ) : null}
+                  </>
+                )}
               </div>
-              {couponMessage ? (
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {couponMessage}
-                </p>
-              ) : null}
               <button
                 type="button"
                 disabled={placing || items.length === 0}
