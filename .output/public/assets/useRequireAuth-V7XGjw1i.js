@@ -1,0 +1,1 @@
+import{i as e,l as t}from"./useRouter-WerVnHPr.js";import{k as n}from"./auth-DHFPErD3.js";import{n as r}from"./AuthContext-C_shKs6C.js";var i=t(e(),1);function a(e=`/login`){let t=r(),a=n();return(0,i.useEffect)(()=>{t.isLoading||t.isAuthenticated||a({to:e})},[t.isAuthenticated,t.isLoading,e,a]),t}export{a as t};
