@@ -10,6 +10,11 @@ const env = loadEnv(process.env.NODE_ENV ?? "development", process.cwd(), "");
 const API_HOST =
   env.VITE_API_URL || process.env.VITE_API_URL || "https://apideepfit.gaamferi.com";
 
+/** Amplify Hosting sets these during CI; use Nitro's aws_amplify SSR preset there. */
+const isAmplifyBuild = Boolean(
+  process.env.AWS_APP_ID || process.env.AWS_BRANCH || process.env.AWS_JOB_ID,
+);
+
 /** Django customer/exercise/blog routes require a trailing slash (same as Next rewrites). */
 function djangoApiTrailingSlashPlugin(): Plugin {
   return {
@@ -91,7 +96,14 @@ export default defineConfig({
       },
     }),
     nitro({
-      defaultPreset: "cloudflare-module",
+      defaultPreset: isAmplifyBuild ? "aws_amplify" : "cloudflare-module",
+      ...(isAmplifyBuild
+        ? {
+            awsAmplify: {
+              runtime: "nodejs22.x" as const,
+            },
+          }
+        : {}),
       routeRules: {
         "/api/customer/**": {
           proxy: `${API_HOST}/api/customer/**`,
