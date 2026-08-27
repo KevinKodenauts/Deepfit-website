@@ -438,3 +438,37 @@ export function HomeProductRowSkeleton({ count = 4 }: { count?: number }) {
     </div>
   );
 }
+
+export function HomeHubCardSkeleton() {
+  return (
+    <div
+      className="relative aspect-[3/4] overflow-hidden rounded-[2rem] bg-card shadow-soft ring-1 ring-border/50"
+      aria-hidden
+    >
+      <Skeleton className="absolute inset-0 rounded-none" />
+      <div className="absolute inset-x-0 bottom-0 space-y-3 p-7 sm:p-8">
+        <Skeleton className="h-3 w-8 bg-background/50" />
+        <div className="flex items-end justify-between gap-4">
+          <Skeleton className="h-8 w-36 bg-background/50" />
+          <Skeleton className="size-11 rounded-full bg-background/50" />
+        </div>
+        <Skeleton className="h-4 w-3/4 bg-background/50" />
+        <Skeleton className="h-4 w-1/2 bg-background/50" />
+      </div>
+    </div>
+  );
+}
+
+export function HomeHubGridSkeleton({ count = 3 }: { count?: number }) {
+  return (
+    <div
+      className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+      aria-busy
+      aria-label="Loading categories"
+    >
+      {Array.from({ length: count }).map((_, i) => (
+        <HomeHubCardSkeleton key={i} />
+      ))}
+    </div>
+  );
+}

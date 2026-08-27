@@ -1,6 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import { Instagram, Twitter, Youtube, Facebook } from "lucide-react";
+import { Facebook, Instagram } from "lucide-react";
 import { Logo } from "@/components/site/Logo";
+import { SITE_COMPANY, SITE_SOCIAL, SITE_WHATSAPP } from "@/lib/site";
+
+const socialIcons = {
+  Instagram,
+  Facebook,
+} as const;
 
 const shopLinks = [
   { label: "Strength", to: "/shop" },
@@ -44,12 +50,35 @@ export function Footer() {
             <p className="mt-4 max-w-sm text-sm text-white/60">
               Premium equipment, recovery gear and rituals for people who take their body seriously — and their aesthetic even more so.
             </p>
+            <a
+              href={SITE_WHATSAPP.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex min-h-11 items-center text-sm text-white/80 transition hover:text-white"
+            >
+              WhatsApp {SITE_WHATSAPP.display}
+            </a>
+            <p className="mt-3 max-w-sm text-sm leading-relaxed text-white/50">
+              {SITE_COMPANY.name}
+              <br />
+              {SITE_COMPANY.address}
+            </p>
             <div className="mt-8 flex gap-3">
-              {[Instagram, Twitter, Youtube, Facebook].map((Icon, i) => (
-                <a key={i} href="#" className="rounded-full border border-white/15 p-3 transition hover:border-white/40 hover:bg-white/5">
-                  <Icon size={16} />
-                </a>
-              ))}
+              {SITE_SOCIAL.map((social) => {
+                const Icon = socialIcons[social.label];
+                return (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.label}
+                    className="rounded-full border border-white/15 p-3 transition hover:border-white/40 hover:bg-white/5"
+                  >
+                    <Icon size={16} />
+                  </a>
+                );
+              })}
             </div>
           </div>
 

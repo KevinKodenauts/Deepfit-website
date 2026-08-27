@@ -1,17 +1,27 @@
-import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
+import { ProductsEmptyState } from "@/components/site/ProductsEmptyState";
 import { ProductGridSkeleton } from "@/components/skeleton/PageSkeletons";
 import { categories as fallbackCategories, type Product } from "@/lib/products";
-import { SlidersHorizontal, LayoutGrid, List } from "lucide-react";
+import { LayoutGrid, List, SlidersHorizontal } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { getMainCategories } from "@/lib/api/categories";
 import { getProductsByCategory } from "@/lib/api/products";
 import { mapToCategoryProduct } from "@/lib/api/mappers";
 import { categoryProductToCard } from "@/lib/catalog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 import type { ApiProduct, MainCategory } from "@/lib/api/types";
 
 const searchSchema = z.object({
@@ -25,36 +35,101 @@ type DisciplineItem = {
   subCategoryId?: number;
 };
 
+type PriceKey = "under-100" | "100-500" | "500-1000" | "1000-plus";
+type AvailabilityKey = "instock" | "preorder" | "new";
+
+const PRICE_OPTIONS: Array<{
+  key: PriceKey;
+  label: string;
+  matches: (price: number) => boolean;
+}> = [
+  { key: "under-100", label: "Under AED 100", matches: (price) => price < 100 },
+  {
+    key: "100-500",
+    label: "AED 100 – 500",
+    matches: (price) => price >= 100 && price <= 500,
+  },
+  {
+    key: "500-1000",
+    label: "AED 500 – 1,000",
+    matches: (price) => price > 500 && price <= 1000,
+  },
+  { key: "1000-plus", label: "AED 1,000+", matches: (price) => price > 1000 },
+];
+
+const AVAILABILITY_OPTIONS: Array<{ key: AvailabilityKey; label: string }> = [
+  { key: "instock", label: "In stock" },
+  { key: "preorder", label: "Pre-order" },
+  { key: "new", label: "New arrival" },
+];
+
+function formatLabel(name: string) {
+  return name
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 function buildDisciplineItems(main: MainCategory | undefined): DisciplineItem[] {
   if (!main) return [];
 
-  const nested = main.categories ?? [];
-  if (nested.length === 0) return [];
+  const fromTopLevel = (main.subCategories ?? []).filter(
+    (sub) => sub.subCategoryId && sub.subCategoryName
+  );
+  if (fromTopLevel.length > 0) {
+    return fromTopLevel.map((sub) => ({
+      key: `sub-${main.id}-${sub.subCategoryId}`,
+      name: formatLabel(sub.subCategoryName),
+      categoryId: main.id,
+      subCategoryId: sub.subCategoryId,
+    }));
+  }
 
+  const seen = new Set<number>();
   const items: DisciplineItem[] = [];
 
-  for (const category of nested) {
-    const subs = category.subCategories ?? [];
-    if (subs.length > 0) {
-      for (const sub of subs) {
-        items.push({
-          key: `sub-${category.categoryId}-${sub.subCategoryId}`,
-          name: sub.subCategoryName,
-          categoryId: category.categoryId,
-          subCategoryId: sub.subCategoryId,
-        });
-      }
-      continue;
+  for (const category of main.categories ?? []) {
+    for (const sub of category.subCategories ?? []) {
+      if (!sub.subCategoryId || seen.has(sub.subCategoryId)) continue;
+      seen.add(sub.subCategoryId);
+      items.push({
+        key: `sub-${main.id}-${sub.subCategoryId}`,
+        name: formatLabel(sub.subCategoryName),
+        categoryId: main.id,
+        subCategoryId: sub.subCategoryId,
+      });
     }
-
-    items.push({
-      key: `cat-${category.categoryId}`,
-      name: category.categoryName,
-      categoryId: category.categoryId,
-    });
   }
 
   return items;
+}
+
+function toggleSetValue<T>(prev: Set<T>, value: T) {
+  const next = new Set(prev);
+  if (next.has(value)) next.delete(value);
+  else next.add(value);
+  return next;
+}
+
+function isInStock(product: ApiProduct) {
+  const status = String(product.stockStatus ?? "").toLowerCase();
+  if (status === "outofstock" || product.productStatus === "Out of stock") {
+    return false;
+  }
+  if (product.inStock === false || product.inStock === "false") return false;
+  return true;
+}
+
+function isPreorder(product: ApiProduct) {
+  return String(product.stockStatus ?? "").toLowerCase() === "onbackorder";
+}
+
+function isNewArrival(product: ApiProduct) {
+  return (
+    product.isFeaturedProduct === true ||
+    product.isFeaturedProduct === "true" ||
+    product.isFeaturedProduct === "1"
+  );
 }
 
 export const Route = createFileRoute("/shop")({
@@ -65,13 +140,12 @@ export const Route = createFileRoute("/shop")({
       {
         name: "description",
         content:
-          "Explore Deepfit's full catalog of premium strength, cardio, recovery, and yoga equipment.",
+          "Explore Deepfit's full catalog across Move Hub, Fuel Hub and Mind Hub.",
       },
-      { property: "og:title", content: "Shop premium fitness equipment — DEEPFIT" },
+      { property: "og:title", content: "Shop premium wellness — DEEPFIT" },
       {
         property: "og:description",
-        content:
-          "The full Deepfit catalog: strength, cardio, recovery and wellness essentials.",
+        content: "The full Deepfit catalog: Move, Fuel and Mind.",
       },
     ],
   }),
@@ -79,6 +153,7 @@ export const Route = createFileRoute("/shop")({
 });
 
 function Shop() {
+  const navigate = useNavigate({ from: "/shop" });
   const { main: mainFromUrl } = useSearch({ from: "/shop" });
   const [rawProducts, setRawProducts] = useState<ApiProduct[]>([]);
   const [mainCategories, setMainCategories] = useState<MainCategory[]>([]);
@@ -88,7 +163,12 @@ function Shop() {
   const [selectedDisciplineKeys, setSelectedDisciplineKeys] = useState<
     Set<string>
   >(new Set());
+  const [selectedPrices, setSelectedPrices] = useState<Set<PriceKey>>(new Set());
+  const [selectedAvailability, setSelectedAvailability] = useState<
+    Set<AvailabilityKey>
+  >(new Set());
   const [loading, setLoading] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -127,9 +207,10 @@ function Shop() {
     return fallbackCategories[0]?.name ?? "Shop";
   }, [selectedMain]);
 
-  // Reset discipline filters when main category changes
   useEffect(() => {
     setSelectedDisciplineKeys(new Set());
+    setSelectedPrices(new Set());
+    setSelectedAvailability(new Set());
   }, [selectedCategoryId]);
 
   useEffect(() => {
@@ -144,7 +225,6 @@ function Shop() {
       selectedDisciplineKeys.has(item.key)
     );
 
-    // When exactly one discipline is selected, narrow the API request by categoryId
     const categoryIdForApi =
       selectedDisciplines.length === 1
         ? selectedDisciplines[0].categoryId
@@ -183,57 +263,82 @@ function Shop() {
           .map((d) => d.subCategoryId)
           .filter((id): id is number => id != null)
       );
-      const categoryIds = new Set(
-        selectedDisciplines.map((d) => d.categoryId)
-      );
 
       filtered = rawProducts.filter((product) => {
         const subId = product.subCategoryDetails?.id;
-        const catId = product.categoryDetails?.id;
+        return subId != null && subIds.has(subId);
+      });
+    }
 
-        if (subIds.size > 0 && subId != null && subIds.has(subId)) {
-          return true;
-        }
-
-        // Discipline items without subcategories filter by category
-        if (
-          subIds.size === 0 &&
-          catId != null &&
-          categoryIds.has(catId)
-        ) {
-          return true;
-        }
-
-        // Mixed: also match category when item has no sub id match path
-        if (
-          subIds.size > 0 &&
-          selectedDisciplines.some(
-            (d) => d.subCategoryId == null && d.categoryId === catId
-          )
-        ) {
-          return true;
-        }
-
+    if (selectedAvailability.size > 0) {
+      filtered = filtered.filter((product) => {
+        if (selectedAvailability.has("instock") && isInStock(product)) return true;
+        if (selectedAvailability.has("preorder") && isPreorder(product)) return true;
+        if (selectedAvailability.has("new") && isNewArrival(product)) return true;
         return false;
       });
     }
 
-    return filtered.map(mapToCategoryProduct).map(categoryProductToCard);
-  }, [rawProducts, selectedDisciplineKeys, disciplineItems]);
+    let mapped = filtered.map(mapToCategoryProduct).map(categoryProductToCard);
 
-  const toggleDiscipline = (key: string) => {
-    setSelectedDisciplineKeys((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
+    if (selectedPrices.size > 0) {
+      mapped = mapped.filter((product) =>
+        PRICE_OPTIONS.some(
+          (option) =>
+            selectedPrices.has(option.key) && option.matches(product.price)
+        )
+      );
+    }
+
+    return mapped;
+  }, [
+    rawProducts,
+    selectedDisciplineKeys,
+    disciplineItems,
+    selectedPrices,
+    selectedAvailability,
+  ]);
+
+  const selectCategory = (id: number) => {
+    if (id <= 0) return;
+    setSelectedCategoryId(id);
+    setFiltersOpen(false);
+    void navigate({ search: { main: id } });
   };
 
   const categoryList =
     mainCategories.length > 0
-      ? mainCategories.map((c) => ({ id: c.id, name: c.mainCategoryName }))
-      : fallbackCategories.map((c, i) => ({ id: -(i + 1), name: c.name }));
+      ? mainCategories.map((c) => ({
+          id: c.id,
+          name: c.mainCategoryName,
+          image: c.mainCategoryImage,
+        }))
+      : fallbackCategories.map((c, i) => ({
+          id: -(i + 1),
+          name: c.name,
+          image: "",
+        }));
+
+  const filterPanel = (
+    <ShopFilters
+      categoryList={categoryList}
+      selectedCategoryId={selectedCategoryId}
+      onSelectCategory={selectCategory}
+      disciplineItems={disciplineItems}
+      selectedDisciplineKeys={selectedDisciplineKeys}
+      onToggleDiscipline={(key) =>
+        setSelectedDisciplineKeys((prev) => toggleSetValue(prev, key))
+      }
+      selectedPrices={selectedPrices}
+      onTogglePrice={(key) =>
+        setSelectedPrices((prev) => toggleSetValue(prev, key))
+      }
+      selectedAvailability={selectedAvailability}
+      onToggleAvailability={(key) =>
+        setSelectedAvailability((prev) => toggleSetValue(prev, key))
+      }
+    />
+  );
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -249,93 +354,37 @@ function Shop() {
             to last a lifetime.
           </h1>
           <p className="mt-6 max-w-xl text-muted-foreground">
-            Filter by category, discipline or price. Everything ships with a
-            60-day home trial and lifetime frame warranty.
+            Filter by hub, discipline or price. Everything ships with a 60-day
+            home trial.
           </p>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-12 lg:px-10">
-        <div className="grid gap-10 lg:grid-cols-[260px_1fr]">
+        <div className="grid gap-10 lg:grid-cols-[280px_1fr]">
           <aside className="hidden lg:block">
-            <div className="sticky top-28 space-y-8">
-              <div>
-                <div className="mb-4 text-xs uppercase tracking-[0.22em] text-muted-foreground">
-                  Category
-                </div>
-                <ul className="space-y-2 text-sm">
-                  {categoryList.map((c) => (
-                    <li key={c.id}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (c.id > 0) setSelectedCategoryId(c.id);
-                        }}
-                        className={`flex w-full cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 text-left transition hover:bg-foreground/5 ${
-                          selectedCategoryId === c.id
-                            ? "bg-foreground/5 font-medium"
-                            : ""
-                        }`}
-                      >
-                        {c.name}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div>
-                <div className="mb-4 text-xs uppercase tracking-[0.22em] text-muted-foreground">
-                  Discipline
-                </div>
-                {disciplineItems.length > 0 ? (
-                  <ul className="space-y-2 text-sm">
-                    {disciplineItems.map((item) => {
-                      const checked = selectedDisciplineKeys.has(item.key);
-                      return (
-                        <li key={item.key}>
-                          <label className="flex cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 transition hover:bg-foreground/5">
-                            <span className="flex items-center gap-3">
-                              <input
-                                type="checkbox"
-                                className="accent-foreground"
-                                checked={checked}
-                                onChange={() => toggleDiscipline(item.key)}
-                              />
-                              {item.name}
-                            </span>
-                          </label>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : (
-                  <p className="px-2 text-sm text-muted-foreground">
-                    No subcategories for this category.
-                  </p>
-                )}
-              </div>
-
-              <FilterGroup
-                title="Price"
-                items={[
-                  "Under $100",
-                  "$100 – $500",
-                  "$500 – $1000",
-                  "$1000+",
-                ]}
-              />
-              <FilterGroup
-                title="Availability"
-                items={["In stock", "Pre-order", "New arrival"]}
-              />
+            <div className="sticky top-28 rounded-[1.75rem] bg-card p-5 shadow-soft ring-1 ring-border/60">
+              {filterPanel}
             </div>
           </aside>
           <div>
-            <div className="mb-8 flex items-center justify-between rounded-2xl bg-card p-4 shadow-soft ring-1 ring-border/60">
-              <button className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-xs uppercase tracking-widest lg:hidden">
-                <SlidersHorizontal size={14} /> Filters
-              </button>
+            <div className="mb-8 flex items-center justify-between gap-3 rounded-2xl bg-card p-4 shadow-soft ring-1 ring-border/60">
+              <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+                <SheetTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-border px-4 text-xs uppercase tracking-widest lg:hidden"
+                  >
+                    <SlidersHorizontal size={14} /> Filters
+                  </button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[min(100%,320px)] overflow-y-auto">
+                  <SheetHeader>
+                    <SheetTitle>Filters</SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-6">{filterPanel}</div>
+                </SheetContent>
+              </Sheet>
               <div className="text-sm text-muted-foreground">
                 {loading ? (
                   <Skeleton className="h-4 w-36" />
@@ -349,11 +398,21 @@ function Shop() {
                   </>
                 )}
               </div>
-              <div className="flex items-center gap-2">
-                <button className="rounded-full bg-foreground p-2 text-background">
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  aria-pressed="true"
+                  aria-label="Grid view"
+                  className="inline-flex size-11 cursor-pointer items-center justify-center rounded-full bg-foreground text-background"
+                >
                   <LayoutGrid size={14} />
                 </button>
-                <button className="rounded-full p-2 text-muted-foreground">
+                <button
+                  type="button"
+                  aria-label="List view unavailable"
+                  disabled
+                  className="inline-flex size-11 items-center justify-center rounded-full text-muted-foreground/50"
+                >
                   <List size={14} />
                 </button>
               </div>
@@ -361,12 +420,10 @@ function Shop() {
             {loading ? (
               <ProductGridSkeleton count={6} />
             ) : items.length === 0 ? (
-              <div className="rounded-3xl bg-card p-10 text-center text-muted-foreground shadow-soft ring-1 ring-border/60">
-                No products found.{" "}
-                <Link to="/" className="underline">
-                  Back home
-                </Link>
-              </div>
+              <ProductsEmptyState
+                title="Product not found"
+                description={`We couldn't find products in ${selectedName} yet. Try another hub or browse the full catalog.`}
+              />
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {items.map((p) => (
@@ -382,24 +439,150 @@ function Shop() {
   );
 }
 
-function FilterGroup({ title, items }: { title: string; items: string[] }) {
+function ShopFilters({
+  categoryList,
+  selectedCategoryId,
+  onSelectCategory,
+  disciplineItems,
+  selectedDisciplineKeys,
+  onToggleDiscipline,
+  selectedPrices,
+  onTogglePrice,
+  selectedAvailability,
+  onToggleAvailability,
+}: {
+  categoryList: Array<{ id: number; name: string; image?: string }>;
+  selectedCategoryId: number | null;
+  onSelectCategory: (id: number) => void;
+  disciplineItems: DisciplineItem[];
+  selectedDisciplineKeys: Set<string>;
+  onToggleDiscipline: (key: string) => void;
+  selectedPrices: Set<PriceKey>;
+  onTogglePrice: (key: PriceKey) => void;
+  selectedAvailability: Set<AvailabilityKey>;
+  onToggleAvailability: (key: AvailabilityKey) => void;
+}) {
   return (
-    <div>
-      <div className="mb-4 text-xs uppercase tracking-[0.22em] text-muted-foreground">
-        {title}
+    <div className="space-y-8">
+      <div>
+        <div className="mb-3 text-xs uppercase tracking-[0.22em] text-muted-foreground">
+          Category
+        </div>
+        <ul className="space-y-2">
+          {categoryList.map((category) => {
+            const selected = selectedCategoryId === category.id;
+            return (
+              <li key={category.id}>
+                <button
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => onSelectCategory(category.id)}
+                  className={cn(
+                    "flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-2xl px-2 py-1.5 text-left text-sm transition",
+                    selected
+                      ? "bg-foreground/[0.06] font-medium shadow-soft ring-1 ring-foreground/15"
+                      : "hover:bg-foreground/5"
+                  )}
+                >
+                  <span className="size-10 shrink-0 overflow-hidden rounded-xl bg-muted ring-1 ring-border/60">
+                    {category.image ? (
+                      <img
+                        src={category.image}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+                        {category.name.charAt(0)}
+                      </span>
+                    )}
+                  </span>
+                  <span className="leading-snug">{category.name}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
       </div>
-      <ul className="space-y-2 text-sm">
-        {items.map((i) => (
-          <li key={i}>
-            <label className="flex cursor-pointer items-center justify-between rounded-lg px-2 py-1.5 transition hover:bg-foreground/5">
-              <span className="flex items-center gap-3">
-                <input type="checkbox" className="accent-foreground" />
-                {i}
-              </span>
-            </label>
-          </li>
-        ))}
-      </ul>
+
+      {disciplineItems.length > 0 ? (
+        <div>
+          <div className="mb-3 text-xs uppercase tracking-[0.22em] text-muted-foreground">
+            Discipline
+          </div>
+          <ul className="space-y-1">
+            {disciplineItems.map((item) => (
+              <FilterCheckRow
+                key={item.key}
+                label={item.name}
+                checked={selectedDisciplineKeys.has(item.key)}
+                onToggle={() => onToggleDiscipline(item.key)}
+              />
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      <div>
+        <div className="mb-3 text-xs uppercase tracking-[0.22em] text-muted-foreground">
+          Price
+        </div>
+        <ul className="space-y-1">
+          {PRICE_OPTIONS.map((option) => (
+            <FilterCheckRow
+              key={option.key}
+              label={option.label}
+              checked={selectedPrices.has(option.key)}
+              onToggle={() => onTogglePrice(option.key)}
+            />
+          ))}
+        </ul>
+      </div>
+
+      <div>
+        <div className="mb-3 text-xs uppercase tracking-[0.22em] text-muted-foreground">
+          Availability
+        </div>
+        <ul className="space-y-1">
+          {AVAILABILITY_OPTIONS.map((option) => (
+            <FilterCheckRow
+              key={option.key}
+              label={option.label}
+              checked={selectedAvailability.has(option.key)}
+              onToggle={() => onToggleAvailability(option.key)}
+            />
+          ))}
+        </ul>
+      </div>
     </div>
+  );
+}
+
+function FilterCheckRow({
+  label,
+  checked,
+  onToggle,
+}: {
+  label: string;
+  checked: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-pressed={checked}
+        className="flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-xl px-2 text-left text-sm transition hover:bg-foreground/5"
+      >
+        <Checkbox
+          checked={checked}
+          tabIndex={-1}
+          className="pointer-events-none size-5"
+          aria-hidden="true"
+        />
+        <span className={cn(checked && "font-medium")}>{label}</span>
+      </button>
+    </li>
   );
 }

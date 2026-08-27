@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { ProductsEmptyState } from "@/components/site/ProductsEmptyState";
 import AddAddressModal from "@/components/profile/AddAddressModal";
 import {
   Minus,
@@ -276,14 +277,13 @@ function Cart() {
         ) : isLoading ? (
           <CartSkeleton />
         ) : items.length === 0 ? (
-          <div className="mt-12 rounded-lg bg-card p-10 text-center shadow-soft ring-1 ring-border/60">
-            <p className="text-muted-foreground">Your bag is empty.</p>
-            <Link
-              to="/shop"
-              className="mt-6 inline-flex rounded-lg bg-foreground px-6 py-3 text-sm font-medium text-background"
-            >
-              Shop the collection
-            </Link>
+          <div className="mt-12">
+            <ProductsEmptyState
+              title="Your bag is empty."
+              description="Add something you love, then come back to check out."
+              actionLabel="Shop the collection"
+              actionTo="/shop"
+            />
           </div>
         ) : (
           <div className="mt-12 grid gap-8 lg:grid-cols-[1.4fr_1fr]">

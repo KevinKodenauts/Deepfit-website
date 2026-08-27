@@ -77,6 +77,11 @@ export type MainCategory = {
   id: number;
   mainCategoryName: string;
   mainCategoryImage: string;
+  subCategories?: Array<{
+    subCategoryId: number;
+    subCategoryName: string;
+    subCategoryImage?: string;
+  }>;
   categories?: Array<{
     categoryId: number;
     categoryName: string;

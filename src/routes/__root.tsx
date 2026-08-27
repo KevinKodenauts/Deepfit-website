@@ -12,6 +12,7 @@ import { type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
 import CrispChat from "@/components/analytics/CrispChat";
+import { FloatingWhatsApp } from "@/components/site/FloatingWhatsApp";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { AddressProvider } from "@/contexts/AddressContext";
@@ -130,6 +131,7 @@ function RootComponent() {
             <WishlistProvider>
               <CartProvider>
                 <Outlet />
+                <FloatingWhatsApp />
               </CartProvider>
             </WishlistProvider>
           </AddressProvider>

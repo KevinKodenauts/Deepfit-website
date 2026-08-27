@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, ArrowUpRight, Sparkles, Truck, ShieldCheck, Timer, PlayCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Sparkles, PlayCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
@@ -10,7 +10,7 @@ import Autoplay from "embla-carousel-autoplay";
 import { getDashboardData, getProductsByCategory } from "@/lib/api/products";
 import { mapToCategoryProduct, mapToHomeProduct } from "@/lib/api/mappers";
 import { categoryProductToCard, homeProductToCard } from "@/lib/catalog";
-import { HomeProductRowSkeleton } from "@/components/skeleton/PageSkeletons";
+import { HomeHubGridSkeleton, HomeProductRowSkeleton } from "@/components/skeleton/PageSkeletons";
 import { mapDashboardCategoriesToMain } from "@/lib/api/dashboard";
 import {
   getTestimonialAvatarColor,
@@ -90,10 +90,25 @@ const FALLBACK_SLIDES: DashboardSlider[] = [
 ];
 
 const FALLBACK_CATEGORY_TILES = [
-  { id: 0, name: "Strength", img: lifestyleStrength, desc: "Precision-cast iron for the modern lifter." },
-  { id: 1, name: "Yoga & Mobility", img: lifestyleYoga, desc: "Quieter mats. Deeper stretches." },
-  { id: 2, name: "Cardio Studios", img: lifestyleGym, desc: "Silent decks, panoramic screens." },
+  { id: 0, name: "Move Hub", img: lifestyleStrength, desc: "Mindful movement for the life you live every day." },
+  { id: 1, name: "Fuel Hub", img: lifestyleGym, desc: "Nourishment that supports better habits over time." },
+  { id: 2, name: "Mind Hub", img: lifestyleYoga, desc: "A calmer mind — the foundation of lasting wellbeing." },
 ];
+
+const HUB_COPY: Record<string, { desc: string; fallback: string }> = {
+  "Move Hub": {
+    desc: "Mindful movement for the life you live every day.",
+    fallback: lifestyleStrength,
+  },
+  "Fuel Hub": {
+    desc: "Nourishment that supports better habits over time.",
+    fallback: lifestyleGym,
+  },
+  "Mind Hub": {
+    desc: "A calmer mind — the foundation of lasting wellbeing.",
+    fallback: lifestyleYoga,
+  },
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -159,7 +174,7 @@ function Home() {
       <Nav />
       <Hero sliders={sliders} />
       <Marquee />
-      <Categories categories={categories} />
+      <Categories categories={categories} loading={loading} />
       <Featured products={featured} categories={categories} loading={loading} />
       <ShopByGoal />
       <Story />
@@ -345,52 +360,113 @@ function Marquee() {
   );
 }
 
-function Categories({ categories }: { categories: MainCategory[] }) {
+function HubCard({
+  tile,
+  index,
+  categoryReady,
+}: {
+  tile: { id: number; name: string; img: string; desc: string };
+  index: number;
+  categoryReady: boolean;
+}) {
+  const [imageReady, setImageReady] = useState(false);
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    if (imageRef.current?.complete) setImageReady(true);
+  }, [tile.img]);
+
+  return (
+    <Link
+      to="/shop"
+      search={categoryReady ? { main: tile.id } : undefined}
+      aria-label={`${tile.name}. ${tile.desc}`}
+      className="group relative aspect-[3/4] cursor-pointer overflow-hidden rounded-[2rem] shadow-soft ring-1 ring-border/50 transition hover:-translate-y-1 hover:shadow-glass focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+    >
+      {!imageReady ? <Skeleton className="absolute inset-0 rounded-none" /> : null}
+      {tile.img ? (
+        <img
+          ref={imageRef}
+          src={tile.img}
+          alt=""
+          onLoad={() => setImageReady(true)}
+          onError={() => setImageReady(true)}
+          className={`absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100 ${
+            imageReady ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      ) : null}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/5" />
+      <div className="absolute inset-x-0 bottom-0 p-7 text-white sm:p-8">
+        <div className="text-[11px] uppercase tracking-[0.24em] text-white/70">0{index + 1}</div>
+        <div className="mt-2 flex items-end justify-between gap-4">
+          <h3 className="font-display text-3xl leading-tight text-white">{tile.name}</h3>
+          <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full glass-dark text-white transition group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0">
+            <ArrowUpRight size={18} aria-hidden="true" />
+          </span>
+        </div>
+        <p className="mt-3 max-w-xs text-sm leading-relaxed text-white/85">{tile.desc}</p>
+      </div>
+    </Link>
+  );
+}
+
+function Categories({
+  categories,
+  loading,
+}: {
+  categories: MainCategory[];
+  loading: boolean;
+}) {
   const tiles =
     categories.length > 0
-      ? categories.slice(0, 6).map((category) => ({
-          id: category.id,
-          name: category.mainCategoryName,
-          img: category.mainCategoryImage || lifestyleStrength,
-          desc: `Explore ${category.mainCategoryName} equipment and essentials.`,
-        }))
-      : FALLBACK_CATEGORY_TILES;
+      ? categories.slice(0, 6).map((category) => {
+          const hub = HUB_COPY[category.mainCategoryName];
+          return {
+            id: category.id,
+            name: category.mainCategoryName,
+            img: category.mainCategoryImage || hub?.fallback || "",
+            desc: hub?.desc ?? `Explore ${category.mainCategoryName}.`,
+          };
+        })
+      : loading
+        ? []
+        : FALLBACK_CATEGORY_TILES;
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-24 lg:px-10">
-      <div className="flex items-end justify-between gap-6">
-        <div>
-          <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">01 — Categories</div>
-          <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">Everything for the modern studio.</h2>
+      <div className="flex flex-wrap items-end justify-between gap-6">
+        <div className="max-w-2xl">
+          <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">01 — The hubs</div>
+          <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">
+            Move. Fuel. <span className="text-gradient italic">Mind.</span>
+          </h2>
+          <p className="mt-4 max-w-lg text-muted-foreground">
+            An integrated system designed to create lasting habits — not another one-off workout.
+          </p>
         </div>
-        <Link to="/shop" className="hidden items-center gap-2 text-sm font-medium hover:opacity-70 md:inline-flex">
+        <Link
+          to="/shop"
+          className="inline-flex min-h-11 items-center gap-2 text-sm font-medium transition hover:opacity-70"
+        >
           View all <ArrowUpRight size={16} />
         </Link>
       </div>
-      <div className="mt-12 grid gap-6 lg:grid-cols-3">
-        {tiles.map((t, i) => (
-          <Link
-            key={t.id}
-            to="/shop"
-            search={categories.length > 0 ? { main: t.id } : undefined}
-            className={`group relative overflow-hidden rounded-[2rem] shadow-soft ring-1 ring-border/50 transition hover:shadow-glass ${
-              i === 0 ? "lg:row-span-2 lg:aspect-auto lg:min-h-[560px]" : "aspect-[4/5]"
-            }`}
-          >
-            <img src={t.img} alt={t.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1200ms] group-hover:scale-105" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-            <div className="absolute bottom-8 left-8 right-8 text-white">
-              <div className="text-[11px] uppercase tracking-[0.24em] text-white/70">0{i + 1}</div>
-              <div className="mt-2 flex items-end justify-between gap-4">
-                <h3 className="font-display text-3xl leading-tight text-white">{t.name}</h3>
-                <div className="rounded-full glass-dark p-3 text-white transition group-hover:translate-x-1">
-                  <ArrowUpRight size={18} />
-                </div>
-              </div>
-              <p className="mt-2 max-w-xs text-sm text-white/80">{t.desc}</p>
-            </div>
-          </Link>
-        ))}
+      <div className="mt-12">
+        {loading ? (
+          <HomeHubGridSkeleton />
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {tiles.map((t, i) => (
+              <HubCard
+                key={t.id}
+                tile={t}
+                index={i}
+                categoryReady={categories.length > 0}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -555,25 +631,35 @@ function Story() {
       <div className="flex flex-col justify-center">
         <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">04 — Why Deepfit</div>
         <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">
-          Built for the <span className="text-gradient italic">quiet</span> athlete.
+          It&apos;s not about a <span className="text-gradient italic">workout</span>.
         </h2>
-        <p className="mt-6 max-w-lg text-muted-foreground">
-          We started Deepfit because gyms had gotten louder, harsher, and more disposable. So we designed the opposite: softer materials, silent mechanics, and objects that belong in your home — not in a warehouse.
+        <p className="mt-3 font-display text-2xl leading-snug text-foreground sm:text-3xl">
+          It&apos;s about what you do every day.
         </p>
-        <div className="mt-10 grid gap-6 sm:grid-cols-2">
-          {[
-            { icon: ShieldCheck, title: "Lifetime frames", body: "Backed by a forever warranty on every steel frame we cast." },
-            { icon: Truck, title: "Free white-glove", body: "Delivered, assembled and calibrated by our in-house team." },
-            { icon: Timer, title: "60-day trial", body: "Live with it. If it doesn't fit your practice, send it back." },
-            { icon: Sparkles, title: "Studio classes", body: "Every purchase includes a year of on-demand programming." },
-          ].map((f) => (
-            <div key={f.title} className="rounded-2xl bg-card p-5 shadow-soft ring-1 ring-border/60">
-              <f.icon size={20} className="text-[oklch(0.55_0.15_260)]" />
-              <div className="mt-3 font-medium">{f.title}</div>
-              <div className="mt-1 text-sm text-muted-foreground">{f.body}</div>
-            </div>
-          ))}
+        <div className="mt-6 max-w-lg space-y-4 text-muted-foreground">
+          <p>Wellbeing isn&apos;t created in one workout, one meal or one good week.</p>
+          <p>
+            It&apos;s created through the choices you make every day—and the habits you build over time.
+          </p>
         </div>
+        <ol className="mt-10 grid gap-3 sm:grid-cols-3">
+          {[
+            { n: "01", title: "Simple choices" },
+            { n: "02", title: "Better habits" },
+            { n: "03", title: "A healthier way of life" },
+          ].map((step) => (
+            <li key={step.n} className="rounded-2xl bg-card p-5 shadow-soft ring-1 ring-border/60">
+              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{step.n}</div>
+              <div className="mt-2 font-medium leading-snug">{step.title}</div>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-8 max-w-lg text-muted-foreground">
+          Simple choices are made through mindful movement and nourishment leading to a system that works for you and generations to come.
+        </p>
+        <p className="mt-6 max-w-lg font-medium">
+          That&apos;s DEEPFIT — an integrated system designed to create lasting habits.
+        </p>
       </div>
     </section>
   );

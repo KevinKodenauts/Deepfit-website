@@ -4,6 +4,7 @@ import { z } from "zod";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
+import { ProductsEmptyState } from "@/components/site/ProductsEmptyState";
 import { ProductGridSkeleton } from "@/components/skeleton/PageSkeletons";
 import { useSearchPage } from "@/hooks/useSearchPage";
 import { categoryProductToCard } from "@/lib/catalog";
@@ -127,13 +128,13 @@ function SearchPage() {
                     key={category.id}
                     to="/shop"
                     search={{ main: category.id }}
-                    className="group flex flex-col items-center gap-3 rounded-2xl bg-card p-4 shadow-soft ring-1 ring-border/50 transition hover:-translate-y-0.5"
+                    className="group flex cursor-pointer flex-col items-center gap-3 rounded-2xl bg-card p-4 shadow-soft ring-1 ring-border/50 transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-xl bg-white">
+                    <div className="h-16 w-16 overflow-hidden rounded-xl bg-muted">
                       <img
                         src={category.mainCategoryImage}
                         alt=""
-                        className="h-full w-full object-contain p-1"
+                        className="h-full w-full object-cover"
                       />
                     </div>
                     <span className="text-center text-sm font-medium">
@@ -149,16 +150,12 @@ function SearchPage() {
         ) : error ? (
           <div className="py-20 text-center text-muted-foreground">{error}</div>
         ) : results.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 py-20 text-center">
-            <Search size={48} className="text-muted-foreground/40" />
-            <p className="font-display text-xl">No products found</p>
-            <p className="text-sm text-muted-foreground">
-              Try a different keyword or browse categories
-            </p>
-            <Link to="/shop" className="mt-2 text-sm underline">
-              Browse shop
-            </Link>
-          </div>
+          <ProductsEmptyState
+            title="Product not found"
+            description="Try a different keyword or browse another hub."
+            actionLabel="Browse shop"
+            actionTo="/shop"
+          />
         ) : (
           <div>
             <div className="mb-8 flex flex-wrap items-end justify-between gap-4">

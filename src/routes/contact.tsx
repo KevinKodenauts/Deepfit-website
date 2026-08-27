@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { Mail, MapPin, Phone } from "lucide-react";
+import { SITE_COMPANY, SITE_EMAIL, SITE_WHATSAPP } from "@/lib/site";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -46,16 +47,58 @@ function Contact() {
         </form>
         <div className="space-y-6">
           {[
-            { icon: Mail, t: "Email", v: "support@deepfit.life" },
-            { icon: Phone, t: "Phone", v: "+1 (800) 000-0000" },
-            { icon: MapPin, t: "Studio", v: "88 Grand Street, New York, NY" },
-          ].map((c) => (
-            <div key={c.t} className="rounded-3xl bg-card p-6 shadow-soft ring-1 ring-border/60">
-              <div className="inline-flex rounded-2xl bg-brand p-3 text-white"><c.icon size={18} /></div>
-              <div className="mt-4 text-xs uppercase tracking-widest text-muted-foreground">{c.t}</div>
-              <div className="mt-1 font-display text-2xl">{c.v}</div>
-            </div>
-          ))}
+            {
+              icon: Mail,
+              t: "Email",
+              v: SITE_EMAIL,
+              href: `mailto:${SITE_EMAIL}`,
+            },
+            {
+              icon: Phone,
+              t: "WhatsApp",
+              v: SITE_WHATSAPP.display,
+              href: SITE_WHATSAPP.href,
+            },
+            {
+              icon: MapPin,
+              t: "Office",
+              v: SITE_COMPANY.name,
+              sub: SITE_COMPANY.address,
+            },
+          ].map((c) => {
+            const body = (
+              <>
+                <div className="inline-flex rounded-2xl bg-brand p-3 text-white">
+                  <c.icon size={18} />
+                </div>
+                <div className="mt-4 text-xs uppercase tracking-widest text-muted-foreground">{c.t}</div>
+                <div className="mt-1 font-display text-2xl leading-snug">{c.v}</div>
+                {"sub" in c && c.sub ? (
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{c.sub}</p>
+                ) : null}
+              </>
+            );
+
+            const className =
+              "block rounded-3xl bg-card p-6 shadow-soft ring-1 ring-border/60 transition hover:shadow-glass";
+
+            return c.href ? (
+              <a
+                key={c.t}
+                href={c.href}
+                className={className}
+                {...(c.href.startsWith("http")
+                  ? { target: "_blank", rel: "noopener noreferrer" }
+                  : {})}
+              >
+                {body}
+              </a>
+            ) : (
+              <div key={c.t} className={className}>
+                {body}
+              </div>
+            );
+          })}
         </div>
       </section>
       <Footer />
