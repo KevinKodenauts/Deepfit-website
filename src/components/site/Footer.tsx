@@ -19,6 +19,7 @@ const shopLinks = [
 const companyLinks = [
   { label: "About", to: "/about" },
   { label: "Explore", to: "/explore" },
+  { label: "Blog", to: "/blog" },
   { label: "Contact", to: "/contact" },
 ] as const;
 

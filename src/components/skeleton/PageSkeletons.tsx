@@ -472,3 +472,68 @@ export function HomeHubGridSkeleton({ count = 3 }: { count?: number }) {
     </div>
   );
 }
+
+export function BlogCardSkeleton() {
+  return (
+    <div
+      className="flex flex-col overflow-hidden rounded-[2rem] bg-card shadow-soft ring-1 ring-border/50"
+      aria-hidden
+    >
+      <Skeleton className="aspect-[16/10] w-full rounded-none" />
+      <div className="flex flex-1 flex-col gap-3 p-6 sm:p-7">
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-7 w-4/5" />
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-2/3" />
+        <Skeleton className="mt-2 h-4 w-20" />
+      </div>
+    </div>
+  );
+}
+
+export function BlogGridSkeleton({ count = 3 }: { count?: number }) {
+  return (
+    <div
+      className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+      aria-busy
+      aria-label="Loading articles"
+    >
+      {Array.from({ length: count }).map((_, i) => (
+        <BlogCardSkeleton key={i} />
+      ))}
+    </div>
+  );
+}
+
+export function BlogDetailSkeleton() {
+  return (
+    <div className="w-full" aria-busy aria-label="Loading article">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)] lg:gap-16">
+        <div>
+          <Skeleton className="h-3 w-40" />
+          <Skeleton className="mt-5 h-12 w-full" />
+          <Skeleton className="mt-3 h-10 w-3/4" />
+        </div>
+        <div className="hidden space-y-3 lg:block">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-5/6" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+      </div>
+      <Skeleton className="mt-10 aspect-[16/9] w-full rounded-[2rem] lg:aspect-[2.2/1]" />
+      <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.8fr)]">
+        <div className="space-y-3 rounded-[2rem] bg-card p-8 ring-1 ring-border/50">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-5/6" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-2/3" />
+        </div>
+        <div className="hidden space-y-4 lg:block">
+          <Skeleton className="aspect-[16/10] w-full rounded-[1.5rem]" />
+          <Skeleton className="aspect-[16/10] w-full rounded-[1.5rem]" />
+        </div>
+      </div>
+    </div>
+  );
+}

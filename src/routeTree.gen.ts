@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as BlogRouteImport } from './routes/blog'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -25,6 +26,8 @@ import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as VerifyOtpRouteImport } from './routes/verify-otp'
 import { Route as WalletRouteImport } from './routes/wallet'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as ExerciseIndexRouteImport } from './routes/exercise.index'
 import { Route as ExerciseLibraryRouteImport } from './routes/exercise.library'
 import { Route as ExerciseMyEquipmentRouteImport } from './routes/exercise.my-equipment'
@@ -58,6 +61,11 @@ const IndexRoute = IndexRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CartRoute = CartRouteImport.update({
@@ -129,6 +137,16 @@ const WalletRoute = WalletRouteImport.update({
   id: '/wallet',
   path: '/wallet',
   getParentRoute: () => rootRouteImport,
+} as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BlogRoute,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => BlogRoute,
 } as any)
 const ExerciseIndexRoute = ExerciseIndexRouteImport.update({
   id: '/',
@@ -254,6 +272,7 @@ const ApiPaymentsZiinaVerifyRoute = ApiPaymentsZiinaVerifyRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/blog': typeof BlogRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
@@ -268,6 +287,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/verify-otp': typeof VerifyOtpRoute
   '/wallet': typeof WalletRouteWithChildren
+  '/blog/$slug': typeof BlogSlugRoute
   '/exercise/library': typeof ExerciseLibraryRoute
   '/exercise/my-equipment': typeof ExerciseMyEquipmentRoute
   '/explore/library': typeof ExploreLibraryRoute
@@ -284,6 +304,7 @@ export interface FileRoutesByFullPath {
   '/profile/referral': typeof ProfileReferralRoute
   '/profile/wishlist': typeof ProfileWishlistRoute
   '/wallet/add': typeof WalletAddRoute
+  '/blog/': typeof BlogIndexRoute
   '/exercise/': typeof ExerciseIndexRoute
   '/profile/': typeof ProfileIndexRoute
   '/exercise/active/$id': typeof ExerciseActiveIdRoute
@@ -308,6 +329,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/verify-otp': typeof VerifyOtpRoute
   '/wallet': typeof WalletRouteWithChildren
+  '/blog/$slug': typeof BlogSlugRoute
   '/exercise/library': typeof ExerciseLibraryRoute
   '/exercise/my-equipment': typeof ExerciseMyEquipmentRoute
   '/explore/library': typeof ExploreLibraryRoute
@@ -324,6 +346,7 @@ export interface FileRoutesByTo {
   '/profile/referral': typeof ProfileReferralRoute
   '/profile/wishlist': typeof ProfileWishlistRoute
   '/wallet/add': typeof WalletAddRoute
+  '/blog': typeof BlogIndexRoute
   '/exercise': typeof ExerciseIndexRoute
   '/profile': typeof ProfileIndexRoute
   '/exercise/active/$id': typeof ExerciseActiveIdRoute
@@ -337,6 +360,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/blog': typeof BlogRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
@@ -351,6 +375,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/verify-otp': typeof VerifyOtpRoute
   '/wallet': typeof WalletRouteWithChildren
+  '/blog/$slug': typeof BlogSlugRoute
   '/exercise/library': typeof ExerciseLibraryRoute
   '/exercise/my-equipment': typeof ExerciseMyEquipmentRoute
   '/explore/library': typeof ExploreLibraryRoute
@@ -367,6 +392,7 @@ export interface FileRoutesById {
   '/profile/referral': typeof ProfileReferralRoute
   '/profile/wishlist': typeof ProfileWishlistRoute
   '/wallet/add': typeof WalletAddRoute
+  '/blog/': typeof BlogIndexRoute
   '/exercise/': typeof ExerciseIndexRoute
   '/profile/': typeof ProfileIndexRoute
   '/exercise/active/$id': typeof ExerciseActiveIdRoute
@@ -381,6 +407,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/blog'
     | '/cart'
     | '/checkout'
     | '/contact'
@@ -395,6 +422,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify-otp'
     | '/wallet'
+    | '/blog/$slug'
     | '/exercise/library'
     | '/exercise/my-equipment'
     | '/explore/library'
@@ -411,6 +439,7 @@ export interface FileRouteTypes {
     | '/profile/referral'
     | '/profile/wishlist'
     | '/wallet/add'
+    | '/blog/'
     | '/exercise/'
     | '/profile/'
     | '/exercise/active/$id'
@@ -435,6 +464,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify-otp'
     | '/wallet'
+    | '/blog/$slug'
     | '/exercise/library'
     | '/exercise/my-equipment'
     | '/explore/library'
@@ -451,6 +481,7 @@ export interface FileRouteTypes {
     | '/profile/referral'
     | '/profile/wishlist'
     | '/wallet/add'
+    | '/blog'
     | '/exercise'
     | '/profile'
     | '/exercise/active/$id'
@@ -463,6 +494,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/blog'
     | '/cart'
     | '/checkout'
     | '/contact'
@@ -477,6 +509,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/verify-otp'
     | '/wallet'
+    | '/blog/$slug'
     | '/exercise/library'
     | '/exercise/my-equipment'
     | '/explore/library'
@@ -493,6 +526,7 @@ export interface FileRouteTypes {
     | '/profile/referral'
     | '/profile/wishlist'
     | '/wallet/add'
+    | '/blog/'
     | '/exercise/'
     | '/profile/'
     | '/exercise/active/$id'
@@ -506,6 +540,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  BlogRoute: typeof BlogRouteWithChildren
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   ContactRoute: typeof ContactRoute
@@ -542,6 +577,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cart': {
@@ -641,6 +683,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/wallet'
       preLoaderRoute: typeof WalletRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof BlogRoute
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof BlogRoute
     }
     '/exercise/': {
       id: '/exercise/'
@@ -813,6 +869,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface BlogRouteChildren {
+  BlogSlugRoute: typeof BlogSlugRoute
+  BlogIndexRoute: typeof BlogIndexRoute
+}
+
+const BlogRouteChildren: BlogRouteChildren = {
+  BlogSlugRoute: BlogSlugRoute,
+  BlogIndexRoute: BlogIndexRoute,
+}
+
+const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
+
 interface ExerciseRouteChildren {
   ExerciseLibraryRoute: typeof ExerciseLibraryRoute
   ExerciseMyEquipmentRoute: typeof ExerciseMyEquipmentRoute
@@ -898,6 +966,7 @@ const WalletRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  BlogRoute: BlogRouteWithChildren,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   ContactRoute: ContactRoute,

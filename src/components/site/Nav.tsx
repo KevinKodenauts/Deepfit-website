@@ -11,6 +11,7 @@ import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 const links = [
   { to: "/shop", label: "Shop" },
   { to: "/explore", label: "Explore" },
+  { to: "/blog", label: "Blog" },
   { to: "/about", label: "About" },
   { to: "/contact", label: "Contact" },
 ] as const;
@@ -92,7 +93,7 @@ export function Nav() {
           </Link>
         </div>
 
-        <nav className="hidden items-center gap-10 md:flex">
+        <nav className="hidden items-center gap-6 lg:gap-10 md:flex">
           {links.map((l) => (
             <Link
               key={l.to}

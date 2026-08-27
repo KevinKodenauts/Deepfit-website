@@ -68,6 +68,19 @@ export function formatBlogDate(iso?: string | null): string {
   });
 }
 
+const FEATURED_IMAGE_ALTS: Record<string, string> = {
+  "protein-beyond-the-gym":
+    "Protein shake and nutritious breakfast for everyday wellness",
+  "consistency-in-wellness":
+    "Adult walking at sunrise as a sustainable daily wellness habit",
+  "mindset-and-wellness-routine":
+    "Adult pausing mindfully on a yoga mat by a sunlit window",
+};
+
+export function blogImageAlt(post: Pick<BlogPostListItem, "slug" | "title">) {
+  return FEATURED_IMAGE_ALTS[post.slug] ?? post.title;
+}
+
 async function blogRequest<T>(
   path: string,
   query?: Record<string, string | number | boolean | undefined>
