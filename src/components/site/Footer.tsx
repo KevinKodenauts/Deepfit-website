@@ -19,7 +19,7 @@ const shopLinks = [
 const companyLinks = [
   { label: "About", to: "/about" },
   { label: "Explore", to: "/explore" },
-  { label: "Blog", to: "/blog" },
+  { label: "Blog", to: "/explore", search: { hub: "blog" as const } },
   { label: "Contact", to: "/contact" },
 ] as const;
 
@@ -101,7 +101,11 @@ export function Footer() {
             <ul className="mt-6 space-y-3">
               {companyLinks.map((link) => (
                 <li key={link.label}>
-                  <Link to={link.to} className="text-sm text-white/80 transition hover:text-white">
+                  <Link
+                    to={link.to}
+                    search={"search" in link ? link.search : undefined}
+                    className="text-sm text-white/80 transition hover:text-white"
+                  >
                     {link.label}
                   </Link>
                 </li>

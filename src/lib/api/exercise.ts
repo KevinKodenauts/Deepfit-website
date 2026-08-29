@@ -22,7 +22,7 @@ export async function getExercises(
   }
   const query = params.toString();
   const data = await apiRequest<ExerciseListResponse>(
-    `${EXERCISE_API}/exercises${query ? `?${query}` : ""}`,
+    `${EXERCISE_API}/exercises/${query ? `?${query}` : ""}`,
   );
   return data.data ?? [];
 }
@@ -33,7 +33,7 @@ export async function getExerciseById(
   const data = await apiRequest<{
     status: boolean;
     data: ExerciseItem;
-  }>(`${EXERCISE_API}/exercises/${exerciseId}`);
+  }>(`${EXERCISE_API}/exercises/${exerciseId}/`);
   return data.data ?? null;
 }
 
@@ -50,7 +50,7 @@ export async function getEquipmentById(
   const data = await apiRequest<{
     status: boolean;
     data: EquipmentItem;
-  }>(`${EXERCISE_API}/equipment/${equipmentId}`);
+  }>(`${EXERCISE_API}/equipment/${equipmentId}/`);
   return data.data ?? null;
 }
 

@@ -48,7 +48,7 @@ async function customerApiPost<T extends { status: boolean; message?: string }>(
 }
 
 /**
- * POST /api/customer/send-otp/ (Django requires trailing slash; proxy adds it)
+ * POST /api/customer/send-otp/
  * Backend: customer.views.send_otp
  */
 export async function sendCustomerOtp(payload: {
@@ -71,11 +71,11 @@ export async function sendCustomerOtp(payload: {
     body.phone = normalizePhone(phone);
   }
 
-  return customerApiPost<OtpResponse>("/send-otp", body);
+  return customerApiPost<OtpResponse>("/send-otp/", body);
 }
 
 /**
- * POST /api/customer/verify-otp/ (Django requires trailing slash; proxy adds it)
+ * POST /api/customer/verify-otp/
  * Backend: customer.views.verify_otp
  */
 export async function verifyCustomerOtp(payload: {
@@ -106,5 +106,5 @@ export async function verifyCustomerOtp(payload: {
     };
   }
 
-  return customerApiPost<OtpVerifyResponse>("/verify-otp", { email, otp });
+  return customerApiPost<OtpVerifyResponse>("/verify-otp/", { email, otp });
 }

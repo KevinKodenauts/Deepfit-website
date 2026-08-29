@@ -1,40 +1,49 @@
-import { useCallback, useState } from "react";
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useCallback, useEffect, useState } from "react";
+import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import {
   Brain,
   ChevronLeft,
   Dumbbell,
   type LucideIcon,
+  Newspaper,
   UtensilsCrossed,
 } from "lucide-react";
+import { z } from "zod";
 import ChooseEquipment from "@/components/explore/ChooseEquipment";
+import { ExploreBlog } from "@/components/explore/ExploreBlog";
 import { Nav } from "@/components/site/Nav";
 import styles from "@/styles/explore.module.css";
 
+const searchSchema = z.object({
+  hub: z.enum(["move", "fuel", "mind", "blog"]).optional(),
+});
+
 export const Route = createFileRoute("/explore")({
+  validateSearch: searchSchema,
   head: () => ({
     meta: [
       { title: "Explore — DEEPFIT" },
       {
         name: "description",
         content:
-          "Explore DeepFit hubs — Move, Fuel and Mind. Choose your equipment and discover exercises that fit your life.",
+          "Explore DeepFit hubs — Move, Fuel, Mind and Blog. Choose your equipment and read journal notes that fit your life.",
       },
       { property: "og:title", content: "Explore — DEEPFIT" },
       {
         property: "og:description",
-        content: "Move Hub, Fuel Hub and Mind Hub — explore wellness the DeepFit way.",
+        content: "Move Hub, Fuel Hub, Mind Hub and Blog — explore wellness the DeepFit way.",
       },
     ],
   }),
   component: ExplorePage,
 });
 
-type HubId = "move" | "fuel" | "mind";
+type HubId = "move" | "fuel" | "mind" | "blog";
 
 type Hub = {
   id: HubId;
   name: string;
+  shortName: string;
   icon: LucideIcon;
   description?: string;
 };
@@ -43,11 +52,13 @@ const HUBS: Hub[] = [
   {
     id: "move",
     name: "Move Hub",
+    shortName: "Move",
     icon: Dumbbell,
   },
   {
     id: "fuel",
     name: "Fuel Hub",
+    shortName: "Fuel",
     icon: UtensilsCrossed,
     description:
       "Nutrition plans, meal guides, and fueling tips are on the way.",
@@ -55,9 +66,16 @@ const HUBS: Hub[] = [
   {
     id: "mind",
     name: "Mind Hub",
+    shortName: "Mind",
     icon: Brain,
     description:
       "Mindfulness, recovery, and mental wellness content is coming soon.",
+  },
+  {
+    id: "blog",
+    name: "Learn Hub",
+    shortName: "Learn",
+    icon: Newspaper,
   },
 ];
 
@@ -78,11 +96,34 @@ function ComingSoonHub({ hub }: { hub: Hub }) {
 
 function ExplorePage() {
   const router = useRouter();
-  const [activeHub, setActiveHub] = useState(0);
+  const navigate = useNavigate();
+  const { hub: hubParam } = Route.useSearch();
+  const initialHub = Math.max(
+    0,
+    HUBS.findIndex((item) => item.id === hubParam),
+  );
+  const [activeHub, setActiveHub] = useState(initialHub >= 0 ? initialHub : 0);
   const [hasEquipmentSelection, setHasEquipmentSelection] = useState(false);
 
   const hub = HUBS[activeHub];
   const showHubNav = activeHub !== 0 || !hasEquipmentSelection;
+
+  useEffect(() => {
+    const index = HUBS.findIndex((item) => item.id === hubParam);
+    if (index >= 0) setActiveHub(index);
+  }, [hubParam]);
+
+  const selectHub = useCallback(
+    (index: number) => {
+      setActiveHub(index);
+      void navigate({
+        to: "/explore",
+        search: { hub: HUBS[index].id },
+        replace: true,
+      });
+    },
+    [navigate],
+  );
 
   const handleSelectionChanged = useCallback((hasSelection: boolean) => {
     setHasEquipmentSelection(hasSelection);
@@ -118,7 +159,7 @@ function ExplorePage() {
                 className={`${styles.desktopHubTab} ${
                   isActive ? styles.desktopHubTabActive : ""
                 }`}
-                onClick={() => setActiveHub(index)}
+                onClick={() => selectHub(index)}
               >
                 <Icon size={16} strokeWidth={isActive ? 2.4 : 2} />
                 {item.name}
@@ -137,6 +178,8 @@ function ExplorePage() {
               hideHeader
               onSelectionChanged={handleSelectionChanged}
             />
+          ) : hub.id === "blog" ? (
+            <ExploreBlog />
           ) : (
             <ComingSoonHub hub={hub} />
           )}
@@ -156,11 +199,11 @@ function ExplorePage() {
                     className={`${styles.hubTab} ${
                       isActive ? styles.hubTabActive : ""
                     }`}
-                    onClick={() => setActiveHub(index)}
+                    onClick={() => selectHub(index)}
                     aria-current={isActive ? "page" : undefined}
                   >
                     <Icon size={20} strokeWidth={isActive ? 2.4 : 2} />
-                    <span className={styles.hubTabLabel}>{item.name}</span>
+                    <span className={styles.hubTabLabel}>{item.shortName}</span>
                   </button>
                 );
               })}

@@ -92,7 +92,7 @@ function BlogPostPage() {
 
       <div className="relative mx-auto max-w-7xl px-6 pb-24 lg:px-10">
         <Link
-          to="/blog"
+          to="/explore?hub=blog"
           className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground"
         >
           <ArrowLeft size={16} />

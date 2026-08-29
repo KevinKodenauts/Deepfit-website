@@ -8,13 +8,13 @@ function readEnv(name: string): string | undefined {
   return undefined;
 }
 
-const DEFAULT_API_HOST =
+const DEFAULT_API_HOST = (
   readEnv("VITE_API_URL") ??
   readEnv("NEXT_PUBLIC_API_URL") ??
-  "https://apideepfit.gaamferi.com";
+  "https://apideepfit.moonlightingwork.in"
+).replace(/\/$/, "");
 
-export const API_BASE_URL =
-  typeof window !== "undefined" ? "" : DEFAULT_API_HOST;
+export const API_BASE_URL = DEFAULT_API_HOST;
 
 export const REST_API = `${API_BASE_URL}/api`;
 export const CUSTOMER_API = `${API_BASE_URL}/api/customer`;

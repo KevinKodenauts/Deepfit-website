@@ -81,6 +81,13 @@ export function blogImageAlt(post: Pick<BlogPostListItem, "slug" | "title">) {
   return FEATURED_IMAGE_ALTS[post.slug] ?? post.title;
 }
 
+export function blogCategoryTone(slug?: string | null) {
+  if (slug === "fuel") return "bg-mint/50 text-foreground";
+  if (slug === "move") return "bg-aqua/50 text-foreground";
+  if (slug === "mind") return "bg-lavender/35 text-foreground";
+  return "bg-muted text-muted-foreground";
+}
+
 async function blogRequest<T>(
   path: string,
   query?: Record<string, string | number | boolean | undefined>

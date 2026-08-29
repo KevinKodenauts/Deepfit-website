@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
 import CrispChat from "@/components/analytics/CrispChat";
 import { FloatingWhatsApp } from "@/components/site/FloatingWhatsApp";
+import { OfferBannerPopup } from "@/components/site/OfferBannerPopup";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { AddressProvider } from "@/contexts/AddressContext";
@@ -132,6 +133,7 @@ function RootComponent() {
               <CartProvider>
                 <Outlet />
                 <FloatingWhatsApp />
+                <OfferBannerPopup />
               </CartProvider>
             </WishlistProvider>
           </AddressProvider>

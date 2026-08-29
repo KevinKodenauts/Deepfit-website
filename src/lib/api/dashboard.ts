@@ -3,6 +3,7 @@ import type {
   DashboardCategory,
   DashboardData,
   MainCategory,
+  OfferBanner,
 } from "./types";
 
 function mapSubCategory(sub: Record<string, unknown>) {
@@ -135,6 +136,25 @@ export function normalizeDashboardData(raw: DashboardData): DashboardData {
 
   const rawBrands = (payload.brandsList ?? []) as Record<string, unknown>[];
 
+  const mapOfferBanner = (item: Record<string, unknown>): OfferBanner => ({
+    id: (item.id as number) ?? 0,
+    productName: (item.productName as string) ?? "",
+    productImage:
+      (item.productImage as string) ?? (item.bannerImage as string) ?? "",
+    originalPrice: item.originalPrice != null ? String(item.originalPrice) : "",
+    offerPrice: item.offerPrice != null ? String(item.offerPrice) : "",
+    path: (item.path as string) ?? (item.bannerLink as string) ?? "",
+    startTime: (item.startTime as string | null) ?? null,
+    endTime: (item.endTime as string | null) ?? null,
+    updated_at: (item.updated_at as string | null) ?? null,
+  });
+
+  const rawOfferBanners = (
+    (payload.offerBannerList ??
+      payload.bannerList ??
+      []) as Record<string, unknown>[]
+  ).filter((item) => item.productImage || item.offerPrice || item.path);
+
   return {
     ...payload,
     categoryList: categories,
@@ -147,6 +167,7 @@ export function normalizeDashboardData(raw: DashboardData): DashboardData {
       payload.bannerList?.map((item) =>
         mapBanner(item as Record<string, unknown>)
       ) ?? [],
+    offerBannerList: rawOfferBanners.map(mapOfferBanner),
     popularCollectionList: payload.popularCollectionList ?? [],
     sliderList: payload.sliderList ?? [],
     featuredProductList: payload.featuredProductList ?? [],

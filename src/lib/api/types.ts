@@ -133,6 +133,18 @@ export type DashboardBanner = {
   offerPrice?: number;
 };
 
+export type OfferBanner = {
+  id: number;
+  productName?: string;
+  productImage?: string;
+  originalPrice?: string;
+  offerPrice?: string;
+  path?: string;
+  startTime?: string | null;
+  endTime?: string | null;
+  updated_at?: string | null;
+};
+
 export type PopularCollection = {
   id: number;
   mainCategoryName: string;
@@ -149,6 +161,7 @@ export type DashboardData = {
   brandsList?: DashboardBrand[];
   bannerList?: DashboardBanner[];
   advertiseBannerList?: DashboardBanner[];
+  offerBannerList?: OfferBanner[];
   categoryList?: DashboardCategory[];
   mainCategories?: MainCategory[];
 };

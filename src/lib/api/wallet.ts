@@ -1,4 +1,4 @@
-import { REST_API } from "./config";
+import { CUSTOMER_API } from "./config";
 import { apiRequest } from "./client";
 
 export type WalletTransaction = {
@@ -65,7 +65,7 @@ function mapTransaction(
 
 export async function getWalletTransactions(): Promise<WalletData> {
   const data = await apiRequest<WalletTransactionsResponse>(
-    `${REST_API}/wallet/transactions/`,
+    `${CUSTOMER_API}/wallet/transactions/`,
     { auth: true }
   );
 
@@ -77,7 +77,7 @@ export async function getWalletTransactions(): Promise<WalletData> {
 
 export async function addMoneyToWallet(amount: number) {
   return apiRequest<{ status: boolean; message?: string }>(
-    `${REST_API}/wallet/add-money/`,
+    `${CUSTOMER_API}/wallet/add-money/`,
     {
       method: "POST",
       body: { amount },
