@@ -1,4 +1,4 @@
-import { CUSTOMER_API, CUSTOMER_PORTAL } from "./config";
+import { CUSTOMER_API } from "./config";
 import { apiRequest } from "./client";
 import { portalRequest } from "./portalClient";
 import type { OfferBanner } from "./types";
@@ -77,6 +77,72 @@ export function formatOfferPrice(value?: string) {
   if (/aed/i.test(trimmed)) return trimmed;
   if (/^\d+(\.\d+)?$/.test(trimmed)) return `AED ${trimmed}`;
   return trimmed;
+}
+
+export function offerHeadline(banner: OfferBanner) {
+  const name = banner.productName?.trim();
+  if (name) return name;
+
+  const percent = offerDiscountPercent(banner);
+  if (percent) return `${percent}% Off Next Order`;
+
+  return "A welcome offer for you";
+}
+
+export function offerDiscountPercent(banner: OfferBanner): number | null {
+  const fromName = banner.productName?.match(/(\d+)\s*%/);
+  if (fromName) {
+    const value = Number(fromName[1]);
+    if (value > 0 && value <= 90) return value;
+  }
+
+  const original = Number.parseFloat(banner.originalPrice ?? "");
+  const offer = Number.parseFloat(banner.offerPrice ?? "");
+  if (Number.isFinite(original) && Number.isFinite(offer) && original > offer && original > 0) {
+    const percent = Math.round(((original - offer) / original) * 100);
+    if (percent > 0 && percent <= 90) return percent;
+  }
+
+  const fromCode = banner.couponCode?.match(/(\d{1,2})/);
+  if (fromCode) {
+    const value = Number(fromCode[1]);
+    if (value > 0 && value <= 90) return value;
+  }
+
+  return null;
+}
+
+export type NewsletterSubscribeResponse = {
+  status?: boolean;
+  message?: string;
+  email?: string;
+  couponCode?: string;
+  alreadySubscribed?: boolean;
+};
+
+export async function subscribeToNewsletter(
+  email: string,
+  offerBannerId?: number,
+): Promise<NewsletterSubscribeResponse> {
+  const payload = {
+    email: email.trim().toLowerCase(),
+    offerBannerId: offerBannerId || undefined,
+  };
+
+  try {
+    const data = await portalRequest<NewsletterSubscribeResponse>("/subscribenewsletter", {
+      method: "POST",
+      body: payload,
+    });
+    if (data?.status || data?.message) return data;
+  } catch {
+    // Fall through to customer API.
+  }
+
+  return apiRequest<NewsletterSubscribeResponse>(
+    `${CUSTOMER_API}/subscribe_newsletter/`,
+    { method: "POST", body: payload },
+  );
 }
 
 export async function getActiveOfferBanners(): Promise<OfferBanner[]> {
