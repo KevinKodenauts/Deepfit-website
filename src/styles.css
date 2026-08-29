@@ -262,3 +262,7 @@
 @utility animate-float { animation: float-slow 8s ease-in-out infinite; }
 @utility animate-blob { animation: blob 18s ease-in-out infinite; }
 @utility animate-marquee { animation: marquee 40s linear infinite; }
+@utility animate-shimmer {
+  animation: shimmer 1.4s ease-in-out infinite;
+  background-size: 200% 100%;
+}

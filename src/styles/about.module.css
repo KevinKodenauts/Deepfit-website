@@ -52,16 +52,83 @@
 
 .hero {
   position: relative;
-  min-height: min(72vh, 640px);
+  overflow: hidden;
+  margin-bottom: 56px;
+  background: #f8fafc;
+}
+
+.sectionImageWrap {
+  position: relative;
+  width: 100%;
+}
+
+.sectionImage {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: top;
+}
+
+.heroLoader {
+  position: absolute;
+  inset: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  color: #0f172a;
-  margin-bottom: 56px;
-  background: #ffffff;
-  border-bottom: 1px solid #eef2f7;
+}
+
+.heroLoaderShimmer {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    90deg,
+    #f1f5f9 0%,
+    color-mix(in oklab, var(--lavender, #c4b5fd) 22%, white) 45%,
+    #f1f5f9 100%
+  );
+  background-size: 200% 100%;
+  animation: aboutHeroShimmer 1.4s ease-in-out infinite;
+}
+
+.heroLoaderContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #64748b;
+}
+
+.heroLoaderLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.heroLoaderSpin {
+  animation: aboutHeroSpin 0.9s linear infinite;
+}
+
+@keyframes aboutHeroShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes aboutHeroSpin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroLoaderShimmer,
+  .heroLoaderSpin {
+    animation: none;
+  }
 }
 
 .heroBg {
@@ -355,6 +422,13 @@
 
 /* ── Method (light band) ── */
 
+.methodBand .sectionImageWrap {
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
 .methodBand {
   position: relative;
   margin: 0 -16px 72px;
@@ -393,14 +467,15 @@
 .methodHead {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-  margin-bottom: 36px;
+  margin-bottom: 28px;
 }
 
 .methodHeadLeft {
   max-width: 520px;
+}
+
+.methodHeadLeft h2 {
+  margin: 0;
 }
 
 .methodTitle {
@@ -1054,8 +1129,7 @@
   }
 
   .methodHead {
-    grid-template-columns: 1fr 1fr;
-    align-items: end;
+    grid-template-columns: 1fr;
   }
 
   .methodBand {

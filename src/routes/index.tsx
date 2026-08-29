@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, ArrowUpRight, Sparkles, PlayCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Loader2 } from "lucide-react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import { goals, products as fallbackProducts, type Product } from "@/lib/products";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+// import { AnimatePresence, motion } from "framer-motion";
 import Autoplay from "embla-carousel-autoplay";
 import { getDashboardData, getProductsByCategory } from "@/lib/api/products";
 import { mapToCategoryProduct, mapToHomeProduct } from "@/lib/api/mappers";
@@ -27,7 +27,6 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
-import hero from "@/assets/hero-athlete.jpg";
 import lifestyleGym from "@/assets/lifestyle-gym.jpg";
 import lifestyleStrength from "@/assets/lifestyle-strength.jpg";
 import lifestyleYoga from "@/assets/lifestyle-yoga.jpg";
@@ -67,6 +66,7 @@ const FALLBACK_TESTIMONIALS: Testimonial[] = [
   },
 ];
 
+/*
 const FALLBACK_SLIDES: DashboardSlider[] = [
   {
     id: -1,
@@ -88,6 +88,7 @@ const FALLBACK_SLIDES: DashboardSlider[] = [
     sliderImage: lifestyleGym,
   },
 ];
+*/
 
 const FALLBACK_CATEGORY_TILES = [
   { id: 0, name: "Move Hub", img: lifestyleStrength, desc: "Mindful movement for the life you live every day." },
@@ -125,7 +126,7 @@ export const Route = createFileRoute("/")({
 function Home() {
   const [featured, setFeatured] = useState<Product[]>([]);
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
-  const [sliders, setSliders] = useState<DashboardSlider[]>(FALLBACK_SLIDES);
+  const [sliders, setSliders] = useState<DashboardSlider[]>([]);
   const [categories, setCategories] = useState<MainCategory[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -172,7 +173,7 @@ function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
-      <Hero sliders={sliders} />
+      <Hero sliders={sliders} loading={loading} />
       <Marquee />
       <Categories categories={categories} loading={loading} />
       <Featured products={featured} categories={categories} loading={loading} />
@@ -187,7 +188,120 @@ function Home() {
   );
 }
 
-function Hero({ sliders }: { sliders: DashboardSlider[] }) {
+function Hero({
+  sliders,
+  loading,
+}: {
+  sliders: DashboardSlider[];
+  loading: boolean;
+}) {
+  const slides = sliders.filter((slide) => Boolean(slide.sliderImage));
+  const [index, setIndex] = useState(0);
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
+  const pendingRef = useRef<HTMLImageElement>(null);
+
+  const active = slides.length > 0 ? slides[index % slides.length] : undefined;
+  const headline =
+    active?.title?.trim() || "Transform your home into a premium fitness studio.";
+  const pendingSrc =
+    active?.sliderImage && active.sliderImage !== loadedSrc
+      ? active.sliderImage
+      : null;
+  const showSkeleton = loading || !loadedSrc;
+
+  const goNext = useCallback(() => {
+    setIndex((current) => (current + 1) % slides.length);
+  }, [slides.length]);
+
+  useEffect(() => {
+    setIndex(0);
+    setLoadedSrc(null);
+  }, [sliders]);
+
+  useEffect(() => {
+    const img = pendingRef.current;
+    if (pendingSrc && img?.complete && img.naturalWidth > 0) {
+      setLoadedSrc(pendingSrc);
+    }
+  }, [pendingSrc]);
+
+  useEffect(() => {
+    if (slides.length <= 1) return;
+    const timer = window.setInterval(goNext, SLIDER_INTERVAL_MS);
+    return () => window.clearInterval(timer);
+  }, [slides.length, goNext]);
+
+  return (
+    <section
+      className="relative w-full overflow-hidden bg-muted pt-[4.5rem]"
+      aria-busy={showSkeleton}
+      aria-label={headline}
+    >
+      <h1 className="sr-only">{headline}</h1>
+      <div
+        className={`relative w-full ${showSkeleton ? "min-h-[calc(100svh-4.5rem)]" : ""}`}
+      >
+        {showSkeleton ? <HeroBannerLoader /> : null}
+        {loadedSrc ? (
+          <img
+            src={loadedSrc}
+            alt={headline}
+            className="block h-auto w-full object-contain object-top"
+          />
+        ) : null}
+        {pendingSrc ? (
+          <img
+            ref={pendingRef}
+            src={pendingSrc}
+            alt=""
+            fetchPriority="high"
+            decoding="async"
+            className="pointer-events-none absolute inset-0 h-full w-full object-contain object-top opacity-0"
+            onLoad={() => setLoadedSrc(pendingSrc)}
+            onError={() => {
+              if (loadedSrc === pendingSrc) setLoadedSrc(null);
+            }}
+          />
+        ) : null}
+      </div>
+    </section>
+  );
+}
+
+function HeroBannerLoader() {
+  return (
+    <div
+      className="absolute inset-0 flex items-center justify-center overflow-hidden"
+      role="status"
+      aria-label="Loading banner"
+    >
+      <div
+        className="absolute inset-0 animate-shimmer motion-reduce:animate-none"
+        style={{
+          backgroundImage:
+            "linear-gradient(90deg, var(--muted) 0%, color-mix(in oklab, var(--lavender) 22%, white) 45%, var(--muted) 100%)",
+        }}
+        aria-hidden
+      />
+      <div className="relative z-10 flex flex-col items-center gap-3">
+        <Loader2
+          className="size-10 animate-spin text-[oklch(0.55_0.14_300)] motion-reduce:animate-none"
+          aria-hidden
+        />
+        <span className="text-xs font-medium uppercase tracking-[0.22em] text-muted-foreground">
+          Loading
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/*
+ * Previous two-column hero — restore this function (and the lucide icons
+ * Sparkles, PlayCircle, ChevronLeft, ChevronRight) to bring back copy, CTAs,
+ * stats, and the framed slider.
+ *
+function HeroPrevious({ sliders }: { sliders: DashboardSlider[] }) {
   const slides = sliders.length > 0 ? sliders : FALLBACK_SLIDES;
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -220,7 +334,7 @@ function Hero({ sliders }: { sliders: DashboardSlider[] }) {
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Ambient blobs */}
+      // Ambient blobs
       <div className="pointer-events-none absolute -left-40 top-20 h-[520px] w-[520px] rounded-full opacity-60 blur-3xl [background:radial-gradient(circle,var(--mint),transparent_60%)] animate-blob" />
       <div className="pointer-events-none absolute right-[-10%] top-40 h-[600px] w-[600px] rounded-full opacity-50 blur-3xl [background:radial-gradient(circle,var(--lavender),transparent_60%)] animate-blob" />
       <div className="pointer-events-none absolute bottom-0 left-1/3 h-[400px] w-[400px] rounded-full opacity-40 blur-3xl [background:radial-gradient(circle,var(--aqua),transparent_60%)]" />
@@ -275,7 +389,7 @@ function Hero({ sliders }: { sliders: DashboardSlider[] }) {
           </div>
         </div>
 
-        {/* Visual stage */}
+        // Visual stage
         <div className="relative isolate">
           <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[2.5rem] shadow-glass ring-1 ring-white/40">
             <AnimatePresence mode="wait">
@@ -344,6 +458,7 @@ function Hero({ sliders }: { sliders: DashboardSlider[] }) {
     </section>
   );
 }
+*/
 
 function Marquee() {
   const words = ["Wellness Inside Out", "Precision-cast steel", "Silent decks", "Studio-grade recovery", "Made to last", "Handcrafted"];

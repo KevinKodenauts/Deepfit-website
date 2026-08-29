@@ -1,11 +1,10 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+// import { motion } from "framer-motion";
 import {
-  Activity,
-  Brain,
   ChevronLeft,
   Heart,
-  Leaf,
+  Loader2,
   Sparkles,
   Target,
   Eye,
@@ -13,6 +12,8 @@ import {
 import AnimatedSection from "@/components/premium/AnimatedSection";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import aboutUsBanner from "@/assets/about-us.png";
+import mindMoveFuelBanner from "@/assets/Mind-Move-Fuel.png";
 import styles from "@/styles/about.module.css";
 
 export const Route = createFileRoute("/about")({
@@ -35,7 +36,7 @@ export const Route = createFileRoute("/about")({
   component: AboutPage,
 });
 
-const STORY_CHIPS = ["The way we think", "The way we move", "The way we nourish"] as const;
+// const STORY_CHIPS = ["The way we think", "The way we move", "The way we nourish"] as const;
 
 const VALUES = [
   {
@@ -66,6 +67,7 @@ const VALUES = [
   },
 ] as const;
 
+/*
 const METHOD_PILLARS = [
   {
     icon: Brain,
@@ -89,6 +91,7 @@ const METHOD_PILLARS = [
     accent: "fuel",
   },
 ] as const;
+*/
 
 const PILLARS = [
   {
@@ -113,6 +116,60 @@ const PILLARS = [
 
 const FIT_TRAITS = ["Strong", "Capable", "Confident", "Energised", "Balanced"] as const;
 
+function AboutSectionImage({
+  src,
+  alt,
+  width,
+  height,
+  priority = false,
+}: {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  priority?: boolean;
+}) {
+  const [imageReady, setImageReady] = useState(false);
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    const img = imageRef.current;
+    if (img?.complete && img.naturalWidth > 0) {
+      setImageReady(true);
+    }
+  }, [src]);
+
+  return (
+    <div
+      className={styles.sectionImageWrap}
+      style={{ aspectRatio: `${width} / ${height}` }}
+    >
+      {!imageReady ? (
+        <div className={styles.heroLoader} role="status" aria-label="Loading banner">
+          <div className={styles.heroLoaderShimmer} aria-hidden />
+          <div className={styles.heroLoaderContent}>
+            <Loader2 className={styles.heroLoaderSpin} size={40} aria-hidden />
+            <span className={styles.heroLoaderLabel}>Loading</span>
+          </div>
+        </div>
+      ) : null}
+      <img
+        ref={imageRef}
+        src={src}
+        alt={alt}
+        className={styles.sectionImage}
+        width={width}
+        height={height}
+        fetchPriority={priority ? "high" : "auto"}
+        decoding="async"
+        onLoad={() => setImageReady(true)}
+        onError={() => setImageReady(false)}
+        style={{ opacity: imageReady ? 1 : 0 }}
+      />
+    </div>
+  );
+}
+
 function AboutPage() {
   const router = useRouter();
 
@@ -132,7 +189,20 @@ function AboutPage() {
           <h1 className={styles.headerTitle}>About Us</h1>
         </header>
 
-        <section className={styles.hero}>
+        <section className={styles.hero} aria-label="About Deepfit">
+          <h1 className="sr-only">About Us — Wellness Inside Out</h1>
+          <AboutSectionImage
+            src={aboutUsBanner}
+            alt="Wellness Inside Out — the way we think, move, and nourish"
+            width={1933}
+            height={814}
+            priority
+          />
+
+          {/*
+          Previous text hero — restore this block (and the motion import +
+          STORY_CHIPS constant) to bring back the badge, heading, lead, and chips.
+
           <div className={styles.heroBg} aria-hidden />
           <div className={styles.heroMesh} aria-hidden />
           <div className={styles.heroGrid} aria-hidden />
@@ -185,6 +255,7 @@ function AboutPage() {
           <div className={styles.heroScroll} aria-hidden>
             <span />
           </div>
+          */}
         </section>
 
         <div className={styles.content}>
@@ -274,146 +345,22 @@ function AboutPage() {
             <div className={styles.methodHead}>
               <div className={styles.methodHeadLeft}>
                 <span className={styles.sectionNumDark}>03</span>
-                <span className={styles.sectionLabelLight}>The DeepFit Method</span>
-                <h2 className={styles.methodTitle}>
-                  <span className={styles.methodWordMind}>Mind</span>
-                  <span className={styles.methodDot} aria-hidden>
-                    ·
-                  </span>
-                  <span className={styles.methodWordMove}>Move</span>
-                  <span className={styles.methodDot} aria-hidden>
-                    ·
-                  </span>
-                  <span className={styles.methodWordFuel}>Fuel</span>
-                </h2>
-              </div>
-              <p className={styles.methodIntro}>
-                Everything we create is guided by one simple belief: wellness works
-                best when it&apos;s connected. We&apos;ve called this The DEEPFIT
-                Method—our integrated approach to helping people build healthier,
-                more sustainable lives.
-              </p>
-            </div>
 
-            <div className={styles.methodBody}>
-              <div className={styles.methodDiagram} aria-hidden>
-                <svg
-                  className={styles.diagramSvg}
-                  viewBox="0 0 360 320"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <defs>
-                    <linearGradient id="lineMind" x1="180" y1="160" x2="180" y2="52">
-                      <stop stopColor="#a78bfa" stopOpacity="0.8" />
-                      <stop offset="1" stopColor="#a78bfa" stopOpacity="0" />
-                    </linearGradient>
-                    <linearGradient id="lineMove" x1="180" y1="160" x2="68" y2="252">
-                      <stop stopColor="#6ee7b7" stopOpacity="0.8" />
-                      <stop offset="1" stopColor="#6ee7b7" stopOpacity="0" />
-                    </linearGradient>
-                    <linearGradient id="lineFuel" x1="180" y1="160" x2="292" y2="252">
-                      <stop stopColor="#6faef7" stopOpacity="0.8" />
-                      <stop offset="1" stopColor="#6faef7" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-                  <circle
-                    cx="180"
-                    cy="160"
-                    r="108"
-                    stroke="rgba(15,23,42,0.08)"
-                    strokeWidth="1"
-                    strokeDasharray="6 8"
-                  />
-                  <line
-                    x1="180"
-                    y1="160"
-                    x2="180"
-                    y2="68"
-                    stroke="url(#lineMind)"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <line
-                    x1="180"
-                    y1="160"
-                    x2="76"
-                    y2="244"
-                    stroke="url(#lineMove)"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <line
-                    x1="180"
-                    y1="160"
-                    x2="284"
-                    y2="244"
-                    stroke="url(#lineFuel)"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-
-                <div className={styles.diagramCenter}>
-                  <span className={styles.diagramCenterGlow} />
-                  <span className={styles.diagramCenterText}>Better Life</span>
-                </div>
-
-                {METHOD_PILLARS.map((pillar, i) => {
-                  const Icon = pillar.icon;
-                  return (
-                    <div
-                      key={pillar.title}
-                      className={`${styles.diagramNode} ${styles[pillar.accent]}`}
-                      data-position={i + 1}
-                    >
-                      <span className={styles.diagramNodeIcon}>
-                        <Icon size={16} strokeWidth={2.2} />
-                      </span>
-                      <span>{pillar.title}</span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className={styles.methodCards}>
-                {METHOD_PILLARS.map((pillar, i) => {
-                  const Icon = pillar.icon;
-                  return (
-                    <article
-                      key={pillar.title}
-                      className={`${styles.methodCard} ${styles[pillar.accent]}`}
-                    >
-                      <div className={styles.methodCardGlow} aria-hidden />
-                      <div className={styles.methodCardInner}>
-                        <div className={styles.methodCardTop}>
-                          <span className={styles.methodCardIcon}>
-                            <Icon size={20} strokeWidth={2.2} />
-                          </span>
-                          <span className={styles.methodCardMeta}>
-                            <span className={styles.methodCardNum}>
-                              {String(i + 1).padStart(2, "0")}
-                            </span>
-                            <span className={styles.methodCardTag}>{pillar.tag}</span>
-                          </span>
-                        </div>
-                        <h3>{pillar.title}</h3>
-                        <p>{pillar.text}</p>
-                      </div>
-                    </article>
-                  );
-                })}
               </div>
             </div>
 
-            <p className={styles.methodClosing}>
-              <span className={styles.methodClosingIcon} aria-hidden>
-                ✦
-              </span>
-              Together, these three elements create a balanced approach to wellness
-              that&apos;s practical, sustainable and designed for real life.
-            </p>
+            <AboutSectionImage
+              src={mindMoveFuelBanner}
+              alt="The DEEPFIT Method — Mind, Move and Fuel working together for a better life"
+              width={1659}
+              height={948}
+            />
           </AnimatedSection>
+
+          {/*
+          Previous diagram and cards — restore METHOD_PILLARS plus Brain,
+          Activity, and Leaf icons, then replace the image with methodBody.
+          */}
 
           <div className={styles.pillarStack}>
             {PILLARS.map((pillar, i) => {

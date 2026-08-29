@@ -10,7 +10,7 @@ import {
 import { getActiveOfferBanners, offerBannerHref } from "@/lib/api/offers";
 import type { OfferBanner } from "@/lib/api/types";
 
-const STORAGE_PREFIX = "deepfit-offer-banner-v3:";
+const STORAGE_PREFIX = "deepfit-offer-seen:";
 const HIDDEN_PATHS = [
   "/checkout",
   "/login",
@@ -20,7 +20,7 @@ const HIDDEN_PATHS = [
 ];
 
 function dismissKey(banner: OfferBanner) {
-  return `${STORAGE_PREFIX}${banner.id}:${banner.updated_at ?? ""}`;
+  return `${STORAGE_PREFIX}${banner.id}`;
 }
 
 function wasDismissed(banner: OfferBanner) {
@@ -68,6 +68,7 @@ export function OfferBannerPopup() {
           setOpen(false);
           return;
         }
+        markDismissed(next);
         setBanner(next);
         setCopied(false);
         setOpen(true);
@@ -119,6 +120,7 @@ export function OfferBannerPopup() {
           <a
             href={href}
             className="flex h-full w-full items-center justify-center bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            onClick={() => markDismissed(banner)}
           >
             <img
               src={banner.productImage}
