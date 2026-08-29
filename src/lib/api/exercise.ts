@@ -96,6 +96,7 @@ export async function getEquipmentForProduct({
   const allEquipment = await getEquipmentList();
   return matchEquipmentForProduct({
     equipment: allEquipment,
+    productId,
     productName,
     productSku,
   });

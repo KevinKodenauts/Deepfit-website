@@ -75,14 +75,21 @@ function sortMatched(items: EquipmentItem[]): EquipmentItem[] {
 
 export function matchEquipmentForProduct({
   equipment,
+  productId,
   productName,
   productSku,
 }: {
   equipment: EquipmentItem[];
+  productId?: number;
   productName?: string;
   productSku?: string;
 }): EquipmentItem[] {
   if (equipment.length === 0) return [];
+
+  if (productId) {
+    const byProductId = equipment.filter((item) => item.productId === productId);
+    if (byProductId.length > 0) return sortMatched(byProductId);
+  }
 
   const sku = productSku?.trim();
   if (sku) {

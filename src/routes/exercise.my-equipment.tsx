@@ -115,12 +115,6 @@ function MyEquipmentMobile({
                   src={item.equipmentImage || "/images/dumbbells.png"}
                   alt={item.name}
                   className={mobileStyles.equipImage}
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                  }}
                 />
               </div>
               <div className={mobileStyles.cardBody}>
@@ -253,13 +247,6 @@ function MyEquipmentDesktop({
                     src={item.equipmentImage || "/images/dumbbells.png"}
                     alt={item.name}
                     className={desktopStyles.image}
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
                   />
                 </div>
 

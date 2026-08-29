@@ -138,12 +138,7 @@ export default function ChooseEquipment({
                       src={item.equipmentImage || "/images/dumbbells.png"}
                       alt={item.name}
                       className={styles.equipImage}
-                      style={{
-                        position: "absolute",
-                        inset: 0,
-                        width: "100%",
-                        height: "100%",
-                      }}
+                      loading="lazy"
                     />
                   </div>
                   <div className={styles.cardContent}>

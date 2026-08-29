@@ -139,6 +139,7 @@ export type OfferBanner = {
   productImage?: string;
   originalPrice?: string;
   offerPrice?: string;
+  couponCode?: string;
   path?: string;
   startTime?: string | null;
   endTime?: string | null;
@@ -256,6 +257,7 @@ export type EquipmentInstruction = {
 export type EquipmentItem = {
   id: number;
   name: string;
+  productId?: number | null;
   category?: string;
   description?: string;
   equipmentImage?: string;

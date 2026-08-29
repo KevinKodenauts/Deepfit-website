@@ -31,6 +31,9 @@ function mapOfferBanner(item: Record<string, unknown>): OfferBanner | null {
     offerPrice: isBlank(item.offerPrice as string)
       ? ""
       : String(item.offerPrice),
+    couponCode: isBlank(item.couponCode as string)
+      ? ""
+      : String(item.couponCode).trim().toUpperCase(),
     path: isBlank(item.path as string)
       ? String(item.bannerLink ?? "")
       : String(item.path),

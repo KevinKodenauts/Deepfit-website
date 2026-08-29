@@ -1,19 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouterState } from "@tanstack/react-router";
+import { Check, Copy } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  formatOfferPrice,
-  getActiveOfferBanners,
-  offerBannerHref,
-} from "@/lib/api/offers";
+import { getActiveOfferBanners, offerBannerHref } from "@/lib/api/offers";
 import type { OfferBanner } from "@/lib/api/types";
 
-const STORAGE_PREFIX = "deepfit-offer-banner:";
+const STORAGE_PREFIX = "deepfit-offer-banner-v3:";
 const HIDDEN_PATHS = [
   "/checkout",
   "/login",
@@ -27,7 +24,7 @@ function dismissKey(banner: OfferBanner) {
 }
 
 function wasDismissed(banner: OfferBanner) {
-  if (typeof window === "undefined") return true;
+  if (typeof window === "undefined") return false;
   try {
     return window.localStorage.getItem(dismissKey(banner)) === "1";
   } catch {
@@ -47,6 +44,7 @@ export function OfferBannerPopup() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [banner, setBanner] = useState<OfferBanner | null>(null);
   const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const hidden = useMemo(
     () => HIDDEN_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`)),
@@ -71,9 +69,10 @@ export function OfferBannerPopup() {
           return;
         }
         setBanner(next);
+        setCopied(false);
         setOpen(true);
       })();
-    }, 700);
+    }, 400);
 
     return () => {
       cancelled = true;
@@ -86,59 +85,71 @@ export function OfferBannerPopup() {
     setOpen(next);
   };
 
+  const couponCode = banner?.couponCode?.trim() ?? "";
+
+  const copyCode = async () => {
+    if (!couponCode) return;
+    try {
+      await navigator.clipboard.writeText(couponCode);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  };
+
   if (!banner) return null;
 
   const href = offerBannerHref(banner);
-  const original = formatOfferPrice(banner.originalPrice);
-  const offer = formatOfferPrice(banner.offerPrice);
-  const title = banner.productName || "Limited offer";
+  const title = banner.productName?.trim() || "Offer";
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="max-w-[min(92vw,34rem)] gap-0 overflow-hidden border-0 bg-card p-0 shadow-glass sm:rounded-[2rem] [&>button]:right-3 [&>button]:top-3 [&>button]:z-10 [&>button]:flex [&>button]:size-9 [&>button]:items-center [&>button]:justify-center [&>button]:rounded-full [&>button]:bg-white/95 [&>button]:opacity-100 [&>button]:shadow-soft [&>button]:ring-0"
+        overlayClassName="z-[80] bg-ink/55 backdrop-blur-[8px]"
+        className="fixed left-1/2 top-1/2 z-[90] flex h-[min(92dvh,56rem)] w-[min(calc(100vw-1rem),88rem)] max-w-[88rem] -translate-x-1/2 -translate-y-1/2 flex-col gap-0 overflow-visible border-0 bg-transparent p-0 shadow-none ring-0 sm:rounded-none [&>button]:right-2 [&>button]:top-2 [&>button]:z-20 [&>button]:flex [&>button]:size-11 [&>button]:items-center [&>button]:justify-center [&>button]:rounded-full [&>button]:bg-white/90 [&>button]:opacity-100 [&>button]:shadow-soft [&>button]:ring-1 [&>button]:ring-black/10 sm:[&>button]:right-3 sm:[&>button]:top-3 sm:[&>button]:size-12 [&>button_svg]:size-5"
         aria-describedby={undefined}
       >
         <DialogTitle className="sr-only">{title}</DialogTitle>
         <DialogDescription className="sr-only">
-          {offer ? `Special offer at ${offer}` : "Current Deepfit offer"}
+          {couponCode ? `Use code ${couponCode}` : "Current Deepfit offer"}
         </DialogDescription>
-        <a
-          href={href}
-          className="block"
-          onClick={() => markDismissed(banner)}
-        >
-          <div className="aspect-[4/3] overflow-hidden bg-muted sm:aspect-[16/11]">
+
+        <div className="relative h-full w-full">
+          <a
+            href={href}
+            className="flex h-full w-full items-center justify-center bg-transparent outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
             <img
               src={banner.productImage}
               alt={title}
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain"
             />
+          </a>
+
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-start p-4 pr-16 sm:p-6 sm:pr-20">
+            <button
+              type="button"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                void copyCode();
+              }}
+              disabled={!couponCode}
+              className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full bg-foreground px-5 text-sm font-medium text-background shadow-soft transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-12 sm:px-6 sm:text-base"
+              aria-label={
+                !couponCode
+                  ? "No coupon code"
+                  : copied
+                    ? "Coupon code copied"
+                    : `Copy coupon code ${couponCode}`
+              }
+            >
+              {copied ? <Check size={16} /> : <Copy size={16} />}
+              {copied ? "Copied" : couponCode ? `Copy code ${couponCode}` : "Copy code"}
+            </button>
           </div>
-          <div className="px-6 py-5 sm:px-7 sm:py-6">
-            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              Offer
-            </div>
-            <h2 className="mt-2 font-display text-2xl leading-tight tracking-tight sm:text-3xl">
-              {title}
-            </h2>
-            {original || offer ? (
-              <p className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                {offer ? (
-                  <span className="text-lg font-semibold">{offer}</span>
-                ) : null}
-                {original && original !== offer ? (
-                  <span className="text-sm text-muted-foreground line-through">
-                    {original}
-                  </span>
-                ) : null}
-              </p>
-            ) : null}
-            <span className="mt-5 inline-flex min-h-11 items-center rounded-full bg-foreground px-5 text-sm font-medium text-background">
-              Shop the offer
-            </span>
-          </div>
-        </a>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -143,6 +143,7 @@ export function normalizeDashboardData(raw: DashboardData): DashboardData {
       (item.productImage as string) ?? (item.bannerImage as string) ?? "",
     originalPrice: item.originalPrice != null ? String(item.originalPrice) : "",
     offerPrice: item.offerPrice != null ? String(item.offerPrice) : "",
+    couponCode: item.couponCode != null ? String(item.couponCode) : "",
     path: (item.path as string) ?? (item.bannerLink as string) ?? "",
     startTime: (item.startTime as string | null) ?? null,
     endTime: (item.endTime as string | null) ?? null,
