@@ -179,7 +179,7 @@ function Home() {
       <Featured products={featured} categories={categories} loading={loading} />
       <ShopByGoal />
       <Story />
-      <Stats />
+      {/* <Stats /> */}
       <BestSellers products={bestSellers} loading={loading} />
       <Testimonials />
       <Newsletter />
@@ -780,6 +780,7 @@ function Story() {
   );
 }
 
+/*
 function Stats() {
   return (
     <section className="mx-auto max-w-7xl px-6 lg:px-10">
@@ -802,6 +803,7 @@ function Stats() {
     </section>
   );
 }
+*/
 
 function BestSellers({
   products,
