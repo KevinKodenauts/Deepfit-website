@@ -19,7 +19,7 @@ const shopLinks = [
 const companyLinks = [
   { label: "About", to: "/about" },
   { label: "Explore", to: "/explore" },
-  { label: "Blog", to: "/explore", search: { hub: "blog" as const } },
+  { label: "Learn", to: "/explore", search: { hub: "blog" as const } },
   { label: "Contact", to: "/contact" },
 ] as const;
 
@@ -44,12 +44,17 @@ export function Footer() {
       <div className="relative mx-auto max-w-7xl px-6 py-24 lg:px-10">
         <div className="grid gap-16 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
-            <Logo variant="white" height={56} className="max-h-16 sm:max-h-20" />
+            <Logo
+              variant="white"
+              height={56}
+              className="max-h-16 sm:max-h-20"
+            />
             <p className="mt-6 max-w-sm font-display text-2xl leading-snug tracking-tight text-white">
               Wellness, from the inside out.
             </p>
             <p className="mt-4 max-w-sm text-sm text-white/60">
-              Premium equipment, recovery gear and rituals for people who take their body seriously — and their aesthetic even more so.
+              Premium equipment, recovery gear and rituals for people who take
+              their body seriously — and their aesthetic even more so.
             </p>
             <a
               href={SITE_WHATSAPP.href}
@@ -84,11 +89,16 @@ export function Footer() {
           </div>
 
           <div>
-            <div className="text-xs uppercase tracking-[0.2em] text-white/40">Shop</div>
+            <div className="text-xs uppercase tracking-[0.2em] text-white/40">
+              Shop
+            </div>
             <ul className="mt-6 space-y-3">
               {shopLinks.map((link) => (
                 <li key={link.label}>
-                  <Link to={link.to} className="text-sm text-white/80 transition hover:text-white">
+                  <Link
+                    to={link.to}
+                    className="text-sm text-white/80 transition hover:text-white"
+                  >
                     {link.label}
                   </Link>
                 </li>
@@ -97,7 +107,9 @@ export function Footer() {
           </div>
 
           <div>
-            <div className="text-xs uppercase tracking-[0.2em] text-white/40">Company</div>
+            <div className="text-xs uppercase tracking-[0.2em] text-white/40">
+              Company
+            </div>
             <ul className="mt-6 space-y-3">
               {companyLinks.map((link) => (
                 <li key={link.label}>
@@ -114,7 +126,9 @@ export function Footer() {
           </div>
 
           <div>
-            <div className="text-xs uppercase tracking-[0.2em] text-white/40">Support</div>
+            <div className="text-xs uppercase tracking-[0.2em] text-white/40">
+              Support
+            </div>
             <ul className="mt-6 space-y-3">
               {supportLinks.map((link) => (
                 <li key={link.label}>
@@ -127,7 +141,10 @@ export function Footer() {
                       {link.label}
                     </Link>
                   ) : (
-                    <Link to={link.to} className="text-sm text-white/80 transition hover:text-white">
+                    <Link
+                      to={link.to}
+                      className="text-sm text-white/80 transition hover:text-white"
+                    >
                       {link.label}
                     </Link>
                   )}
