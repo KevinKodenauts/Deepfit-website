@@ -138,3 +138,23 @@ export function matchEquipmentForProduct({
 
   return [];
 }
+
+export function pickPrimaryEquipmentForProduct(
+  items: EquipmentItem[],
+  product: { id: number; name?: string },
+): EquipmentItem | null {
+  if (items.length === 0) return null;
+
+  const byProductId = items.find((item) => item.productId === product.id);
+  if (byProductId) return byProductId;
+
+  const name = product.name?.trim().toLowerCase();
+  if (name) {
+    const exact = items.find(
+      (item) => item.name.trim().toLowerCase() === name,
+    );
+    if (exact) return exact;
+  }
+
+  return items.find((item) => item.isPrimary) ?? items[0];
+}

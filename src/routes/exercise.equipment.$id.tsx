@@ -1,10 +1,13 @@
-import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronLeft, Lightbulb } from "lucide-react";
 import { Nav } from "@/components/site/Nav";
 import { EquipmentCardSkeleton } from "@/components/skeleton/PageSkeletons";
-import { getEquipmentById } from "@/lib/api/exercise";
+import {
+  getEquipmentById,
+  resolveProductIdForEquipment,
+} from "@/lib/api/exercise";
 import { getSelectedEquipment } from "@/lib/exercise/selection";
 import type { EquipmentItem } from "@/lib/api/types";
 import styles from "@/styles/explore-equipment.module.css";
@@ -28,6 +31,7 @@ function EquipmentDetailsPage() {
   const { id } = Route.useParams();
   const equipmentId = Number(id);
   const [equipment, setEquipment] = useState<EquipmentItem | null>(null);
+  const [productId, setProductId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
 
@@ -38,23 +42,32 @@ function EquipmentDetailsPage() {
       return;
     }
 
+    let cancelled = false;
     setLoading(true);
     setLoadError(false);
+    setProductId(null);
 
     getEquipmentById(equipmentId)
-      .then((data) => {
+      .then(async (data) => {
+        if (cancelled) return;
         if (!data) {
           setLoadError(true);
           return;
         }
         setEquipment(data);
+        const resolved = await resolveProductIdForEquipment(data);
+        if (!cancelled) setProductId(resolved);
       })
       .catch(() => {
-        setLoadError(true);
+        if (!cancelled) setLoadError(true);
       })
       .finally(() => {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, [equipmentId]);
 
   const handleShowExercise = () => {
@@ -102,6 +115,7 @@ function EquipmentDetailsPage() {
         ) : (
           <EquipmentContent
             equipment={equipment}
+            productId={productId}
             onShowExercise={handleShowExercise}
           />
         )}
@@ -112,9 +126,11 @@ function EquipmentDetailsPage() {
 
 function EquipmentContent({
   equipment,
+  productId,
   onShowExercise,
 }: {
   equipment: EquipmentItem;
+  productId: number | null;
   onShowExercise: () => void;
 }) {
   const tags = equipment.tags?.length
@@ -207,6 +223,15 @@ function EquipmentContent({
           >
             Show Exercise
           </button>
+          {productId ? (
+            <Link
+              to="/product/$slug"
+              params={{ slug: String(productId) }}
+              className={styles.shopNowBtn}
+            >
+              Shop Now
+            </Link>
+          ) : null}
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { EXERCISE_API } from "./config";
 import { apiRequest, ApiError } from "./client";
-import type { EquipmentItem, ExerciseItem } from "./types";
+import { portalRequest } from "./portalClient";
+import type { ApiProduct, EquipmentItem, ExerciseItem } from "./types";
 import { matchEquipmentForProduct } from "@/lib/exercise/productEquipmentMatcher";
 
 type ExerciseListResponse = {
@@ -100,4 +101,39 @@ export async function getEquipmentForProduct({
     productName,
     productSku,
   });
+}
+
+export async function resolveProductIdForEquipment(
+  equipment: EquipmentItem,
+): Promise<number | null> {
+  if (equipment.productId && equipment.productId > 0) {
+    return equipment.productId;
+  }
+
+  try {
+    const data = await portalRequest<{ productList?: ApiProduct[] }>(
+      "/allproductlist",
+    );
+    const products = data.productList ?? [];
+    const name = equipment.name.trim().toLowerCase();
+    const byName = products.find(
+      (product) =>
+        (product.productName ?? "").trim().toLowerCase() === name,
+    );
+    if (byName?.id) return byName.id;
+
+    const tags = new Set(
+      (equipment.tags ?? [])
+        .map((tag) => tag.trim().toLowerCase())
+        .filter(Boolean),
+    );
+    const bySku = products.find(
+      (product) => product.sku && tags.has(product.sku.trim().toLowerCase()),
+    );
+    if (bySku?.id) return bySku.id;
+  } catch {
+    return null;
+  }
+
+  return null;
 }

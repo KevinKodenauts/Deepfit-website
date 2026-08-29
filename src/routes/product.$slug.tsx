@@ -3,16 +3,10 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import type { Product } from "@/lib/products";
-import {
-  Check,
-  ChevronDown,
-  Heart,
-  Minus,
-  Plus,
-  Star,
-} from "lucide-react";
+import { Check, ChevronDown, Heart, Minus, Plus, Star } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getProductDetails, getProductsByCategory } from "@/lib/api/products";
+import { getEquipmentForProduct } from "@/lib/api/exercise";
 import {
   mapToCategoryProduct,
   mapToProductDetail,
@@ -20,6 +14,12 @@ import {
 } from "@/lib/api/mappers";
 import { categoryProductToCard, productIdFromSlug } from "@/lib/catalog";
 import { ProductDetailSkeleton } from "@/components/skeleton/PageSkeletons";
+import {
+  ProductEquipmentGuide,
+  ProductEquipmentGuideSkeleton,
+} from "@/components/product/ProductEquipmentGuide";
+import { pickPrimaryEquipmentForProduct } from "@/lib/exercise/productEquipmentMatcher";
+import type { EquipmentItem } from "@/lib/api/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlistToggle } from "@/hooks/useWishlistToggle";
@@ -47,7 +47,13 @@ function stripHtml(value: string): string {
 const richTextClassName =
   "text-sm leading-relaxed text-muted-foreground [&_p]:mb-2 [&_p:last-child]:mb-0 [&_ul]:my-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-2 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1 [&_a]:underline";
 
-function RichText({ html, className = "" }: { html: string; className?: string }) {
+function RichText({
+  html,
+  className = "",
+}: {
+  html: string;
+  className?: string;
+}) {
   if (!html?.trim()) return null;
   return (
     <div
@@ -62,15 +68,12 @@ function ZoomableImage({ src, alt }: { src: string; alt: string }) {
   const [zoomed, setZoomed] = useState(false);
   const [origin, setOrigin] = useState("center center");
 
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      setOrigin(`${x}% ${y}%`);
-    },
-    []
-  );
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setOrigin(`${x}% ${y}%`);
+  }, []);
 
   return (
     <div
@@ -93,7 +96,11 @@ function ZoomableImage({ src, alt }: { src: string; alt: string }) {
   );
 }
 
-function ProductDescription({ productView }: { productView: ProductDetailView }) {
+function ProductDescription({
+  productView,
+}: {
+  productView: ProductDetailView;
+}) {
   const [expanded, setExpanded] = useState(false);
   const shortHtml = productView.subtitle?.trim() || "";
   const fullHtml = productView.description?.trim() || "";
@@ -185,8 +192,12 @@ function ProductPage() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { openAddToCart } = useCart();
-  const [productView, setProductView] = useState<ProductDetailView | null>(null);
+  const [productView, setProductView] = useState<ProductDetailView | null>(
+    null,
+  );
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [equipment, setEquipment] = useState<EquipmentItem | null>(null);
+  const [equipmentLoading, setEquipmentLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
@@ -209,6 +220,8 @@ function ProductPage() {
       setLoading(false);
       setProductView(null);
       setRelatedProducts([]);
+      setEquipment(null);
+      setEquipmentLoading(false);
       return;
     }
     let cancelled = false;
@@ -216,15 +229,42 @@ function ProductPage() {
     setSelectedVariantIndex(0);
     setActiveImageIndex(0);
     setRelatedProducts([]);
+    setEquipment(null);
+    setEquipmentLoading(true);
 
     getProductDetails(id)
       .then(async (details) => {
         if (cancelled || !details) {
-          if (!cancelled) setProductView(null);
+          if (!cancelled) {
+            setProductView(null);
+            setEquipment(null);
+            setEquipmentLoading(false);
+          }
           return;
         }
         const mapped = mapToProductDetail(details);
         setProductView(mapped);
+
+        void getEquipmentForProduct({
+          productId: mapped.id,
+          productName: mapped.title,
+          productSku: mapped.sku,
+        })
+          .then((items) => {
+            if (cancelled) return;
+            setEquipment(
+              pickPrimaryEquipmentForProduct(items, {
+                id: mapped.id,
+                name: mapped.title,
+              }),
+            );
+          })
+          .catch(() => {
+            if (!cancelled) setEquipment(null);
+          })
+          .finally(() => {
+            if (!cancelled) setEquipmentLoading(false);
+          });
 
         let related = mapped.related
           .map(categoryProductToCard)
@@ -235,7 +275,7 @@ function ProductPage() {
             const result = await getProductsByCategory(
               mapped.mainCategoryId,
               mapped.categoryId > 0 ? mapped.categoryId : undefined,
-              { limit: 8, offset: 0 }
+              { limit: 8, offset: 0 },
             );
             related = result.products
               .map(mapToCategoryProduct)
@@ -255,6 +295,8 @@ function ProductPage() {
         if (!cancelled) {
           setProductView(null);
           setRelatedProducts([]);
+          setEquipment(null);
+          setEquipmentLoading(false);
         }
       })
       .finally(() => {
@@ -268,22 +310,28 @@ function ProductPage() {
   const realVariants = (productView?.variants ?? []).filter((v) => v.id > 0);
   const isMultiVariant = realVariants.length > 1;
   const selectedVariant =
-    realVariants[selectedVariantIndex] ?? realVariants[0] ?? productView?.variants[0];
+    realVariants[selectedVariantIndex] ??
+    realVariants[0] ??
+    productView?.variants[0];
   const displayImages = isMultiVariant
-    ? (selectedVariant?.images.length ? selectedVariant.images : [selectedVariant?.image].filter(Boolean) as string[])
+    ? selectedVariant?.images.length
+      ? selectedVariant.images
+      : ([selectedVariant?.image].filter(Boolean) as string[])
     : productView?.images.length
       ? productView.images
       : [];
   const displayPrice =
     selectedVariant?.price && selectedVariant.price > 0
       ? selectedVariant.price
-      : productView?.price ?? 0;
+      : (productView?.price ?? 0);
   const displayOriginalPrice =
     productView?.originalPrice != null &&
     productView.price > 0 &&
     productView.originalPrice > productView.price
-      ? Math.round((displayPrice / productView.price) * productView.originalPrice)
-      : productView?.originalPrice ?? null;
+      ? Math.round(
+          (displayPrice / productView.price) * productView.originalPrice,
+        )
+      : (productView?.originalPrice ?? null);
   const displayImage =
     displayImages[activeImageIndex] ??
     displayImages[0] ??
@@ -330,7 +378,9 @@ function ProductPage() {
         slug: String(productView.id),
         name: productView.title,
         tagline: stripHtml(
-          productView.subtitle || productView.categoryName || productView.deliveryTime
+          productView.subtitle ||
+            productView.categoryName ||
+            productView.deliveryTime,
         ),
         price: displayPrice,
         compareAt:
@@ -348,7 +398,7 @@ function ProductPage() {
         specs: Object.fromEntries(
           productView.additionalInformation
             .filter((row) => row.title)
-            .map((row) => [row.title, row.value])
+            .map((row) => [row.title, row.value]),
         ),
       }
     : null;
@@ -446,7 +496,6 @@ function ProductPage() {
                 {Number(product.rating || 0).toFixed(1)} ({product.reviews})
               </span>
             </div>
-
             {isMultiVariant && (
               <div className="mt-6">
                 <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -470,7 +519,6 @@ function ProductPage() {
                 </div>
               </div>
             )}
-
             <div className="mt-8 flex items-center gap-4">
               <div className="flex items-center gap-4 rounded-full border border-border px-4 py-2">
                 <button
@@ -494,7 +542,9 @@ function ProductPage() {
               </button>
               <button
                 type="button"
-                aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                aria-label={
+                  wishlisted ? "Remove from wishlist" : "Add to wishlist"
+                }
                 aria-pressed={wishlisted}
                 disabled={wishlistPending || !productView}
                 onClick={() => void toggleWishlist()}
@@ -515,10 +565,11 @@ function ProductPage() {
             >
               Buy now
             </button>
-
-            {productView && (
-              <ProductDescription productView={productView} />
-            )}
+            {productView && <ProductDescription productView={productView} />}{" "}
+            {equipmentLoading ? <ProductEquipmentGuideSkeleton /> : null}
+            {!equipmentLoading && equipment ? (
+              <ProductEquipmentGuide equipment={equipment} />
+            ) : null}
           </div>
         </div>
 
