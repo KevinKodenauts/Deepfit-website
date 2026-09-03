@@ -29,6 +29,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import lifestyleGym from "@/assets/lifestyle-gym.jpg";
 import lifestyleStrength from "@/assets/lifestyle-strength.jpg";
+import lifestyleStrength2 from "@/assets/Why-Deepfit.png";
 import lifestyleYoga from "@/assets/lifestyle-yoga.jpg";
 
 const SLIDER_INTERVAL_MS = 5500;
@@ -741,7 +742,7 @@ function Story() {
   return (
     <section className="mx-auto grid max-w-7xl gap-12 px-6 py-24 lg:grid-cols-2 lg:gap-16 lg:px-10">
       <div className="relative aspect-[4/5] overflow-hidden rounded-[2.5rem] shadow-glass">
-        <img src={lifestyleStrength} alt="" className="h-full w-full object-cover" />
+        <img src={lifestyleStrength2} alt="" className="h-full w-full object-cover" />
       </div>
       <div className="flex flex-col justify-center">
         <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">04 — Why Deepfit</div>
