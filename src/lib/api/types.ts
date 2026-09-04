@@ -6,6 +6,7 @@ export type ApiProduct = {
   sku?: string;
   productDescription?: string;
   productShortDescription?: string;
+  certificate?: string;
   productGallery?: string | string[];
   price?: string | number;
   regularPrice?: string | number | null;

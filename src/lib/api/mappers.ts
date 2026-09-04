@@ -246,6 +246,7 @@ export type ProductDetailView = {
   sku: string;
   subtitle: string;
   description: string;
+  certificate: string;
   images: string[];
   price: number;
   originalPrice: number | null;
@@ -373,6 +374,7 @@ export function mapToProductDetail(product: ApiProduct): ProductDetailView {
       product.subCategoryDetails?.subCategoryName ??
       "",
     description: product.productDescription ?? "",
+    certificate: (product.certificate ?? "").trim(),
     images: images.length > 0 ? images : [resolveProductImage(product)],
     price,
     originalPrice: original,
