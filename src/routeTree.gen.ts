@@ -35,11 +35,11 @@ import { Route as ExploreLibraryRouteImport } from './routes/explore.library'
 import { Route as ExploreMyEquipmentRouteImport } from './routes/explore.my-equipment'
 import { Route as ForgotPasswordResetRouteImport } from './routes/forgot-password_.reset'
 import { Route as ForgotPasswordVerifyRouteImport } from './routes/forgot-password_.verify'
+import { Route as LabTestReportProductNameRouteImport } from './routes/lab-test-report.$productName'
 import { Route as OrdersDetailsRouteImport } from './routes/orders.details'
 import { Route as OrdersSuccessRouteImport } from './routes/orders.success'
 import { Route as PoliciesSlugRouteImport } from './routes/policies.$slug'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
-import { Route as LabTestReportProductNameRouteImport } from './routes/lab-test-report.$productName'
 import { Route as ProfileIndexRouteImport } from './routes/profile.index'
 import { Route as ProfileAddressesRouteImport } from './routes/profile.addresses'
 import { Route as ProfileChangePasswordRouteImport } from './routes/profile.change-password'
@@ -184,6 +184,12 @@ const ForgotPasswordVerifyRoute = ForgotPasswordVerifyRouteImport.update({
   path: '/forgot-password/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LabTestReportProductNameRoute =
+  LabTestReportProductNameRouteImport.update({
+    id: '/lab-test-report/$productName',
+    path: '/lab-test-report/$productName',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const OrdersDetailsRoute = OrdersDetailsRouteImport.update({
   id: '/details',
   path: '/details',
@@ -202,11 +208,6 @@ const PoliciesSlugRoute = PoliciesSlugRouteImport.update({
 const ProductSlugRoute = ProductSlugRouteImport.update({
   id: '/product/$slug',
   path: '/product/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LabTestReportProductNameRoute = LabTestReportProductNameRouteImport.update({
-  id: '/lab-test-report/$productName',
-  path: '/lab-test-report/$productName',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileIndexRoute = ProfileIndexRouteImport.update({
@@ -300,11 +301,11 @@ export interface FileRoutesByFullPath {
   '/explore/my-equipment': typeof ExploreMyEquipmentRoute
   '/forgot-password/reset': typeof ForgotPasswordResetRoute
   '/forgot-password/verify': typeof ForgotPasswordVerifyRoute
+  '/lab-test-report/$productName': typeof LabTestReportProductNameRoute
   '/orders/details': typeof OrdersDetailsRoute
   '/orders/success': typeof OrdersSuccessRoute
   '/policies/$slug': typeof PoliciesSlugRoute
   '/product/$slug': typeof ProductSlugRoute
-  '/lab-test-report/$productName': typeof LabTestReportProductNameRoute
   '/profile/addresses': typeof ProfileAddressesRoute
   '/profile/change-password': typeof ProfileChangePasswordRoute
   '/profile/edit': typeof ProfileEditRoute
@@ -343,11 +344,11 @@ export interface FileRoutesByTo {
   '/explore/my-equipment': typeof ExploreMyEquipmentRoute
   '/forgot-password/reset': typeof ForgotPasswordResetRoute
   '/forgot-password/verify': typeof ForgotPasswordVerifyRoute
+  '/lab-test-report/$productName': typeof LabTestReportProductNameRoute
   '/orders/details': typeof OrdersDetailsRoute
   '/orders/success': typeof OrdersSuccessRoute
   '/policies/$slug': typeof PoliciesSlugRoute
   '/product/$slug': typeof ProductSlugRoute
-  '/lab-test-report/$productName': typeof LabTestReportProductNameRoute
   '/profile/addresses': typeof ProfileAddressesRoute
   '/profile/change-password': typeof ProfileChangePasswordRoute
   '/profile/edit': typeof ProfileEditRoute
@@ -390,11 +391,11 @@ export interface FileRoutesById {
   '/explore/my-equipment': typeof ExploreMyEquipmentRoute
   '/forgot-password_/reset': typeof ForgotPasswordResetRoute
   '/forgot-password_/verify': typeof ForgotPasswordVerifyRoute
+  '/lab-test-report/$productName': typeof LabTestReportProductNameRoute
   '/orders/details': typeof OrdersDetailsRoute
   '/orders/success': typeof OrdersSuccessRoute
   '/policies/$slug': typeof PoliciesSlugRoute
   '/product/$slug': typeof ProductSlugRoute
-  '/lab-test-report/$productName': typeof LabTestReportProductNameRoute
   '/profile/addresses': typeof ProfileAddressesRoute
   '/profile/change-password': typeof ProfileChangePasswordRoute
   '/profile/edit': typeof ProfileEditRoute
@@ -438,11 +439,11 @@ export interface FileRouteTypes {
     | '/explore/my-equipment'
     | '/forgot-password/reset'
     | '/forgot-password/verify'
+    | '/lab-test-report/$productName'
     | '/orders/details'
     | '/orders/success'
     | '/policies/$slug'
     | '/product/$slug'
-    | '/lab-test-report/$productName'
     | '/profile/addresses'
     | '/profile/change-password'
     | '/profile/edit'
@@ -481,11 +482,11 @@ export interface FileRouteTypes {
     | '/explore/my-equipment'
     | '/forgot-password/reset'
     | '/forgot-password/verify'
+    | '/lab-test-report/$productName'
     | '/orders/details'
     | '/orders/success'
     | '/policies/$slug'
     | '/product/$slug'
-    | '/lab-test-report/$productName'
     | '/profile/addresses'
     | '/profile/change-password'
     | '/profile/edit'
@@ -527,11 +528,11 @@ export interface FileRouteTypes {
     | '/explore/my-equipment'
     | '/forgot-password_/reset'
     | '/forgot-password_/verify'
+    | '/lab-test-report/$productName'
     | '/orders/details'
     | '/orders/success'
     | '/policies/$slug'
     | '/product/$slug'
-    | '/lab-test-report/$productName'
     | '/profile/addresses'
     | '/profile/change-password'
     | '/profile/edit'
@@ -569,9 +570,9 @@ export interface RootRouteChildren {
   WalletRoute: typeof WalletRouteWithChildren
   ForgotPasswordResetRoute: typeof ForgotPasswordResetRoute
   ForgotPasswordVerifyRoute: typeof ForgotPasswordVerifyRoute
+  LabTestReportProductNameRoute: typeof LabTestReportProductNameRoute
   PoliciesSlugRoute: typeof PoliciesSlugRoute
   ProductSlugRoute: typeof ProductSlugRoute
-  LabTestReportProductNameRoute: typeof LabTestReportProductNameRoute
   ApiPaymentsZiinaCreateRoute: typeof ApiPaymentsZiinaCreateRoute
   ApiPaymentsZiinaVerifyRoute: typeof ApiPaymentsZiinaVerifyRoute
 }
@@ -760,6 +761,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForgotPasswordVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lab-test-report/$productName': {
+      id: '/lab-test-report/$productName'
+      path: '/lab-test-report/$productName'
+      fullPath: '/lab-test-report/$productName'
+      preLoaderRoute: typeof LabTestReportProductNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/orders/details': {
       id: '/orders/details'
       path: '/details'
@@ -786,13 +794,6 @@ declare module '@tanstack/react-router' {
       path: '/product/$slug'
       fullPath: '/product/$slug'
       preLoaderRoute: typeof ProductSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lab-test-report/$productName': {
-      id: '/lab-test-report/$productName'
-      path: '/lab-test-report/$productName'
-      fullPath: '/lab-test-report/$productName'
-      preLoaderRoute: typeof LabTestReportProductNameRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile/': {
@@ -1003,9 +1004,9 @@ const rootRouteChildren: RootRouteChildren = {
   WalletRoute: WalletRouteWithChildren,
   ForgotPasswordResetRoute: ForgotPasswordResetRoute,
   ForgotPasswordVerifyRoute: ForgotPasswordVerifyRoute,
+  LabTestReportProductNameRoute: LabTestReportProductNameRoute,
   PoliciesSlugRoute: PoliciesSlugRoute,
   ProductSlugRoute: ProductSlugRoute,
-  LabTestReportProductNameRoute: LabTestReportProductNameRoute,
   ApiPaymentsZiinaCreateRoute: ApiPaymentsZiinaCreateRoute,
   ApiPaymentsZiinaVerifyRoute: ApiPaymentsZiinaVerifyRoute,
 }

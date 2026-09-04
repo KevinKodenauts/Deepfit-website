@@ -154,7 +154,20 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-20 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-8 text-xs text-white/40 sm:flex-row sm:items-center">
-          <div>© {new Date().getFullYear()} DEEPFIT. Wellness Inside Out.</div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+            <span>© {new Date().getFullYear()} DEEPFIT. Wellness Inside Out.</span>
+            <span className="hidden text-white/20 sm:inline" aria-hidden="true">
+              ·
+            </span>
+            <a
+              href="https://kodenauts.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition hover:text-white"
+            >
+              Developed by Kodenauts
+            </a>
+          </div>
           <div className="flex gap-6">
             {legalLinks.map((link) => (
               <Link
