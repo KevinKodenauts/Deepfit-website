@@ -247,6 +247,7 @@ export type ProductDetailView = {
   subtitle: string;
   description: string;
   certificate: string;
+  certificates: Array<{ id: number; name: string; url: string }>;
   images: string[];
   price: number;
   originalPrice: number | null;
@@ -375,6 +376,20 @@ export function mapToProductDetail(product: ApiProduct): ProductDetailView {
       "",
     description: product.productDescription ?? "",
     certificate: (product.certificate ?? "").trim(),
+    certificates: (() => {
+      const mapped = (product.certificates ?? [])
+        .map((item, index) => ({
+          id: item.id ?? index,
+          name: (item.name ?? "").trim() || `Lab test report ${index + 1}`,
+          url: (item.url ?? item.file ?? "").trim(),
+        }))
+        .filter((item) => item.url);
+      if (mapped.length > 0) return mapped;
+      const fallback = (product.certificate ?? "").trim();
+      return fallback
+        ? [{ id: 0, name: "Lab test report", url: fallback }]
+        : [];
+    })(),
     images: images.length > 0 ? images : [resolveProductImage(product)],
     price,
     originalPrice: original,

@@ -49,3 +49,12 @@ export function productIdFromSlug(slug: string): number | null {
   const id = Number(slug);
   return Number.isFinite(id) && id > 0 ? id : null;
 }
+
+export function productNameSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}

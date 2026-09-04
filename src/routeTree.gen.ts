@@ -39,6 +39,7 @@ import { Route as OrdersDetailsRouteImport } from './routes/orders.details'
 import { Route as OrdersSuccessRouteImport } from './routes/orders.success'
 import { Route as PoliciesSlugRouteImport } from './routes/policies.$slug'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
+import { Route as LabTestReportProductNameRouteImport } from './routes/lab-test-report.$productName'
 import { Route as ProfileIndexRouteImport } from './routes/profile.index'
 import { Route as ProfileAddressesRouteImport } from './routes/profile.addresses'
 import { Route as ProfileChangePasswordRouteImport } from './routes/profile.change-password'
@@ -203,6 +204,11 @@ const ProductSlugRoute = ProductSlugRouteImport.update({
   path: '/product/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LabTestReportProductNameRoute = LabTestReportProductNameRouteImport.update({
+  id: '/lab-test-report/$productName',
+  path: '/lab-test-report/$productName',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileIndexRoute = ProfileIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -298,6 +304,7 @@ export interface FileRoutesByFullPath {
   '/orders/success': typeof OrdersSuccessRoute
   '/policies/$slug': typeof PoliciesSlugRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/lab-test-report/$productName': typeof LabTestReportProductNameRoute
   '/profile/addresses': typeof ProfileAddressesRoute
   '/profile/change-password': typeof ProfileChangePasswordRoute
   '/profile/edit': typeof ProfileEditRoute
@@ -340,6 +347,7 @@ export interface FileRoutesByTo {
   '/orders/success': typeof OrdersSuccessRoute
   '/policies/$slug': typeof PoliciesSlugRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/lab-test-report/$productName': typeof LabTestReportProductNameRoute
   '/profile/addresses': typeof ProfileAddressesRoute
   '/profile/change-password': typeof ProfileChangePasswordRoute
   '/profile/edit': typeof ProfileEditRoute
@@ -386,6 +394,7 @@ export interface FileRoutesById {
   '/orders/success': typeof OrdersSuccessRoute
   '/policies/$slug': typeof PoliciesSlugRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/lab-test-report/$productName': typeof LabTestReportProductNameRoute
   '/profile/addresses': typeof ProfileAddressesRoute
   '/profile/change-password': typeof ProfileChangePasswordRoute
   '/profile/edit': typeof ProfileEditRoute
@@ -433,6 +442,7 @@ export interface FileRouteTypes {
     | '/orders/success'
     | '/policies/$slug'
     | '/product/$slug'
+    | '/lab-test-report/$productName'
     | '/profile/addresses'
     | '/profile/change-password'
     | '/profile/edit'
@@ -475,6 +485,7 @@ export interface FileRouteTypes {
     | '/orders/success'
     | '/policies/$slug'
     | '/product/$slug'
+    | '/lab-test-report/$productName'
     | '/profile/addresses'
     | '/profile/change-password'
     | '/profile/edit'
@@ -520,6 +531,7 @@ export interface FileRouteTypes {
     | '/orders/success'
     | '/policies/$slug'
     | '/product/$slug'
+    | '/lab-test-report/$productName'
     | '/profile/addresses'
     | '/profile/change-password'
     | '/profile/edit'
@@ -559,6 +571,7 @@ export interface RootRouteChildren {
   ForgotPasswordVerifyRoute: typeof ForgotPasswordVerifyRoute
   PoliciesSlugRoute: typeof PoliciesSlugRoute
   ProductSlugRoute: typeof ProductSlugRoute
+  LabTestReportProductNameRoute: typeof LabTestReportProductNameRoute
   ApiPaymentsZiinaCreateRoute: typeof ApiPaymentsZiinaCreateRoute
   ApiPaymentsZiinaVerifyRoute: typeof ApiPaymentsZiinaVerifyRoute
 }
@@ -775,6 +788,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lab-test-report/$productName': {
+      id: '/lab-test-report/$productName'
+      path: '/lab-test-report/$productName'
+      fullPath: '/lab-test-report/$productName'
+      preLoaderRoute: typeof LabTestReportProductNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile/': {
       id: '/profile/'
       path: '/'
@@ -985,6 +1005,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordVerifyRoute: ForgotPasswordVerifyRoute,
   PoliciesSlugRoute: PoliciesSlugRoute,
   ProductSlugRoute: ProductSlugRoute,
+  LabTestReportProductNameRoute: LabTestReportProductNameRoute,
   ApiPaymentsZiinaCreateRoute: ApiPaymentsZiinaCreateRoute,
   ApiPaymentsZiinaVerifyRoute: ApiPaymentsZiinaVerifyRoute,
 }

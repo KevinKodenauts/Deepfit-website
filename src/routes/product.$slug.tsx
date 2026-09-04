@@ -1,9 +1,9 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import type { Product } from "@/lib/products";
-import { Check, ChevronDown, ExternalLink, Heart, Minus, Plus, ShieldCheck, Star } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Heart, Minus, Plus, ShieldCheck, Star } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getProductDetails, getProductsByCategory } from "@/lib/api/products";
 import { getEquipmentForProduct } from "@/lib/api/exercise";
@@ -12,7 +12,7 @@ import {
   mapToProductDetail,
   type ProductDetailView,
 } from "@/lib/api/mappers";
-import { categoryProductToCard, productIdFromSlug } from "@/lib/catalog";
+import { categoryProductToCard, productIdFromSlug, productNameSlug } from "@/lib/catalog";
 import { ProductDetailSkeleton } from "@/components/skeleton/PageSkeletons";
 import {
   ProductEquipmentGuide,
@@ -180,15 +180,30 @@ function ProductDescription({
   );
 }
 
-function ProductCertificate({ url }: { url: string }) {
-  if (!url.trim()) return null;
+function ProductCertificate({ productName }: { productName: string }) {
+  const slug = productNameSlug(productName);
+  const router = useRouter();
+  if (!slug) return null;
+  const href = `/lab-test-report/${slug}`;
 
   return (
     <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Open product certificate in a new tab"
+      href={href}
+      aria-label="View lab test reports"
+      onClick={(event) => {
+        if (
+          event.defaultPrevented ||
+          event.button !== 0 ||
+          event.metaKey ||
+          event.altKey ||
+          event.ctrlKey ||
+          event.shiftKey
+        ) {
+          return;
+        }
+        event.preventDefault();
+        void router.history.push(href);
+      }}
       className="group mt-6 flex items-center gap-4 rounded-2xl border border-[#1A637B]/20 bg-[#E8F3F6]/80 px-4 py-3.5 shadow-[0_8px_24px_-12px_rgba(26,99,123,0.35)] transition duration-200 hover:border-[#1A637B]/40 hover:bg-[#E8F3F6] hover:shadow-[0_12px_28px_-10px_rgba(26,99,123,0.42)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A637B] focus-visible:ring-offset-2"
     >
       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#1A637B] text-white shadow-sm">
@@ -199,11 +214,11 @@ function ProductCertificate({ url }: { url: string }) {
           Product certificate
         </span>
         <span className="mt-0.5 block text-xs text-muted-foreground">
-          Verified lab report · Opens in a new tab
+          View lab test reports
         </span>
       </span>
       <span className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-[#1A637B] transition group-hover:bg-[#1A637B] group-hover:text-white">
-        <ExternalLink size={16} aria-hidden="true" />
+        <ChevronRight size={18} aria-hidden="true" />
       </span>
     </a>
   );
@@ -595,8 +610,8 @@ function ProductPage() {
               Buy now
             </button>
             {productView && <ProductDescription productView={productView} />}
-            {productView?.certificate ? (
-              <ProductCertificate url={productView.certificate} />
+            {productView && (productView.certificates.length > 0 || productView.certificate) ? (
+              <ProductCertificate productName={productView.title} />
             ) : null}
             {equipmentLoading ? <ProductEquipmentGuideSkeleton /> : null}
             {!equipmentLoading && equipment ? (

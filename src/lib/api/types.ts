@@ -7,6 +7,7 @@ export type ApiProduct = {
   productDescription?: string;
   productShortDescription?: string;
   certificate?: string;
+  certificates?: Array<{ id?: number; name?: string; url?: string; file?: string }>;
   productGallery?: string | string[];
   price?: string | number;
   regularPrice?: string | number | null;

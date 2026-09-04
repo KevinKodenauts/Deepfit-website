@@ -4,6 +4,7 @@ import { invalidateCache, withCache } from "./cache";
 import { normalizeDashboardData } from "./dashboard";
 import { portalRequest } from "./portalClient";
 import type { ApiProduct, DashboardData } from "./types";
+import { productNameSlug } from "@/lib/catalog";
 
 type ProductListResponse = {
   status: boolean;
@@ -160,4 +161,35 @@ export async function getProductDetails(
     }
   );
   return data.productDetails?.[0] ?? null;
+}
+
+export async function getProductByNameSlug(
+  slug: string
+): Promise<ApiProduct | null> {
+  const normalized = slug.trim().toLowerCase();
+  if (!normalized) return null;
+
+  const query = slug.replace(/-/g, " ").trim();
+  try {
+    const data = await apiRequest<ProductDetailsResponse>(
+      `${CUSTOMER_PORTAL}/productbyname`,
+      {
+        method: "POST",
+        body: { productName: query },
+      }
+    );
+    const match = (data.productDetails ?? []).find(
+      (item) => productNameSlug(item.productName) === normalized
+    );
+    if (match) return match;
+  } catch {
+    // Fall through to the full product list.
+  }
+
+  const products = await getAllProducts().catch(() => [] as ApiProduct[]);
+  const listed = products.find(
+    (item) => productNameSlug(item.productName) === normalized
+  );
+  if (!listed?.id) return null;
+  return getProductDetails(listed.id);
 }
