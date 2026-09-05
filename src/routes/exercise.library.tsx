@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronDown, X, Play, Eye } from "lucide-react";
 import { z } from "zod";
 import { Nav } from "@/components/site/Nav";
 import { EquipmentCardSkeleton } from "@/components/skeleton/PageSkeletons";
-import { getEquipmentList, getExercises } from "@/lib/api/exercise";
+import { getEquipmentById, getEquipmentList, getExercises } from "@/lib/api/exercise";
 import {
   getSelectedEquipment,
   parseEquipmentIds,
@@ -14,8 +14,8 @@ import type { EquipmentItem, ExerciseItem } from "@/lib/api/types";
 import styles from "@/styles/explore-library.module.css";
 
 const searchSchema = z.object({
-  equipment_ids: z.string().optional(),
-  focus: z.string().optional(),
+  equipment_ids: z.union([z.string(), z.number()]).optional(),
+  focus: z.union([z.string(), z.number()]).optional(),
 });
 
 export const Route = createFileRoute("/exercise/library")({
@@ -45,6 +45,14 @@ type ExerciseView = {
   equipmentNames: string[];
 };
 
+function stripPlain(value?: string) {
+  if (!value) return "";
+  return value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function mapExercise(item: ExerciseItem): ExerciseView {
   return {
     id: item.id,
@@ -62,6 +70,97 @@ function mapExercise(item: ExerciseItem): ExerciseView {
   };
 }
 
+function MaintenanceCard({
+  equipment,
+  index,
+}: {
+  equipment: EquipmentItem;
+  index: number;
+}) {
+  const steps = equipment.instructions ?? [];
+  const summary =
+    stripPlain(equipment.description) ||
+    "Keep this product in good condition with regular care and proper storage.";
+
+  return (
+    <motion.div
+      className={styles.exerciseCard}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: index * 0.1 }}
+    >
+      <div className={styles.imageWrap}>
+        <img
+          src={equipment.equipmentImage || "/images/dumbbells.png"}
+          alt={equipment.name}
+          className={styles.exerciseImage}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
+            background: "#fff",
+          }}
+        />
+        <div className={styles.imageOverlay} />
+        <div className={styles.imageContent}>
+          <span className={styles.targetBadge}>Maintenance</span>
+        </div>
+      </div>
+
+      <div className={styles.cardBody}>
+        <h2 className={styles.exerciseTitle}>Maintenance & Storage</h2>
+        <div className={styles.statsRow}>
+          <div className={styles.statBlock}>
+            <span className={styles.statLabel}>Product</span>
+            <span className={styles.statValue}>{equipment.name}</span>
+          </div>
+          <div className={styles.statBlock}>
+            <span className={styles.statLabel}>Guide</span>
+            <span className={styles.statValue}>
+              {steps.length > 0 ? `${steps.length} steps` : "Care"}
+            </span>
+          </div>
+        </div>
+
+        {steps.length > 0 ? (
+          <ol className={styles.guideSteps}>
+            {steps.map((step, stepIndex) => (
+              <li
+                key={step.id ?? stepIndex}
+                className={styles.guideStep}
+              >
+                <span className={styles.guideStepNumber}>
+                  {step.stepNumber ?? stepIndex + 1}
+                </span>
+                <div className={styles.guideStepBody}>
+                  {step.stepTitle ? (
+                    <span className={styles.guideStepTitle}>
+                      {step.stepTitle}
+                    </span>
+                  ) : null}
+                  {step.stepDescription ? (
+                    <p className={styles.guideStepDesc}>
+                      {step.stepDescription}
+                    </p>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className={styles.guideStepDesc}>{summary}</p>
+        )}
+
+        {equipment.proTip ? (
+          <p className={styles.guideTip}>{equipment.proTip}</p>
+        ) : null}
+      </div>
+    </motion.div>
+  );
+}
+
 function EquippedLibraryPage() {
   const router = useRouter();
   const search = Route.useSearch();
@@ -70,8 +169,12 @@ function EquippedLibraryPage() {
   const [equipmentOptions, setEquipmentOptions] = useState<EquipmentItem[]>(
     [],
   );
+  const [guideEquipment, setGuideEquipment] = useState<EquipmentItem | null>(
+    null,
+  );
   const [activeFilterIds, setActiveFilterIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
+  const [guideLoading, setGuideLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
 
@@ -85,6 +188,10 @@ function EquippedLibraryPage() {
   }, [search.equipment_ids, search.focus]);
 
   const focusEquipmentId = Number(search.focus);
+  const primaryEquipmentId =
+    !Number.isNaN(focusEquipmentId) && focusEquipmentId > 0
+      ? focusEquipmentId
+      : (availableEquipmentIds[0] ?? 0);
 
   useEffect(() => {
     const initialFilters =
@@ -105,6 +212,32 @@ function EquippedLibraryPage() {
         setEquipmentOptions([]);
       });
   }, [availableEquipmentIds]);
+
+  useEffect(() => {
+    if (!primaryEquipmentId) {
+      setGuideEquipment(null);
+      setGuideLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setGuideLoading(true);
+
+    getEquipmentById(primaryEquipmentId)
+      .then((data) => {
+        if (!cancelled) setGuideEquipment(data);
+      })
+      .catch(() => {
+        if (!cancelled) setGuideEquipment(null);
+      })
+      .finally(() => {
+        if (!cancelled) setGuideLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [primaryEquipmentId]);
 
   useEffect(() => {
     if (activeFilterIds.length === 0) {
@@ -148,9 +281,19 @@ function EquippedLibraryPage() {
   );
 
   const headline =
-    equipmentOptions.find((item) => item.id === focusEquipmentId)?.headline ??
-    equipmentOptions[0]?.headline ??
-    "Equipped Library";
+    guideEquipment?.name ??
+    equipmentOptions.find((item) => item.id === focusEquipmentId)?.name ??
+    equipmentOptions[0]?.name ??
+    "Exercise Library";
+
+  const guide =
+    guideEquipment ??
+    equipmentOptions.find((item) => item.id === primaryEquipmentId) ??
+    equipmentOptions[0] ??
+    null;
+
+  const showFilters = equipmentOptions.length > 1;
+  const showLoading = loading || guideLoading;
 
   const removeFilter = (equipmentId: number) => {
     setActiveFilterIds((prev) => {
@@ -189,90 +332,93 @@ function EquippedLibraryPage() {
           <div className={styles.headerMain}>
             <div>
               <h1 className={styles.pageTitle}>{headline}</h1>
-              <p className={styles.pageSubtitle}>Equipped Library</p>
+              <p className={styles.pageSubtitle}>Exercise Library</p>
             </div>
-            <div className={styles.filterDropdown} ref={filterRef}>
-              <button
-                type="button"
-                className={styles.filterTrigger}
-                onClick={() => setFiltersOpen((open) => !open)}
-                aria-expanded={filtersOpen}
-                aria-haspopup="true"
-              >
-                {activeFilterIds.length} Filters Active
-                <ChevronDown
-                  size={16}
-                  className={`${styles.filterChevron} ${
-                    filtersOpen ? styles.filterChevronOpen : ""
-                  }`}
-                />
-              </button>
-              {filtersOpen ? (
-                <div className={styles.filterMenu}>
-                  {activeFilters.map((filter) => (
-                    <button
-                      key={filter.id}
-                      type="button"
-                      className={styles.chip}
-                      onClick={() => removeFilter(filter.id)}
-                    >
-                      {filter.name}
-                      <X size={14} className={styles.chipClose} />
-                    </button>
-                  ))}
-                  {inactiveOptions.length > 0 ? (
-                    <div className={styles.moreFilters}>
-                      {inactiveOptions.map((option) => (
-                        <button
-                          key={option.id}
-                          type="button"
-                          className={styles.moreChip}
-                          onClick={() => addFilter(option.id)}
-                        >
-                          + {option.name}
-                        </button>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
-            </div>
+            {showFilters ? (
+              <div className={styles.filterDropdown} ref={filterRef}>
+                <button
+                  type="button"
+                  className={styles.filterTrigger}
+                  onClick={() => setFiltersOpen((open) => !open)}
+                  aria-expanded={filtersOpen}
+                  aria-haspopup="true"
+                >
+                  {activeFilterIds.length} Filters Active
+                  <ChevronDown
+                    size={16}
+                    className={`${styles.filterChevron} ${
+                      filtersOpen ? styles.filterChevronOpen : ""
+                    }`}
+                  />
+                </button>
+                {filtersOpen ? (
+                  <div className={styles.filterMenu}>
+                    {activeFilters.map((filter) => (
+                      <button
+                        key={filter.id}
+                        type="button"
+                        className={styles.chip}
+                        onClick={() => removeFilter(filter.id)}
+                      >
+                        {filter.name}
+                        <X size={14} className={styles.chipClose} />
+                      </button>
+                    ))}
+                    {inactiveOptions.length > 0 ? (
+                      <div className={styles.moreFilters}>
+                        {inactiveOptions.map((option) => (
+                          <button
+                            key={option.id}
+                            type="button"
+                            className={styles.moreChip}
+                            onClick={() => addFilter(option.id)}
+                          >
+                            + {option.name}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         </header>
 
         <div
           className={`${styles.listArea} ${
-            !loading && exercises.length < 2 ? styles.listAreaCompact : ""
+            !showLoading && exercises.length < 2 ? styles.listAreaCompact : ""
           }`}
         >
-          {loading ? (
-            <div className="grid gap-4 p-6 sm:grid-cols-2">
-              {Array.from({ length: 4 }).map((_, i) => (
+          {showLoading
+            ? Array.from({ length: 4 }).map((_, i) => (
                 <EquipmentCardSkeleton key={i} />
-              ))}
-            </div>
-          ) : null}
-          {!loading && loadError ? (
+              ))
+            : null}
+          {!showLoading && loadError ? (
             <p style={{ padding: "24px", color: "#64748b" }}>
               Could not load exercises. Please try again.
             </p>
           ) : null}
-          {!loading && !loadError && exercises.length === 0 ? (
+          {!showLoading && guide ? (
+            <MaintenanceCard equipment={guide} index={0} />
+          ) : null}
+          {!showLoading && !loadError && exercises.length === 0 ? (
             <p style={{ padding: "24px", color: "#64748b" }}>
               No exercises found for the selected equipment.{" "}
-              <Link to="/exercise" className="underline">
-                Choose equipment
+              <Link to="/explore" search={{ hub: "move" }} className="underline">
+                Choose a product
               </Link>
             </p>
           ) : null}
-          {!loading &&
+          {!showLoading &&
             exercises.map((exercise, i) => (
               <motion.div
                 key={exercise.id}
                 className={styles.exerciseCard}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
+                transition={{ duration: 0.4, delay: (i + 1) * 0.1 }}
               >
                 <div className={styles.imageWrap}>
                   <img

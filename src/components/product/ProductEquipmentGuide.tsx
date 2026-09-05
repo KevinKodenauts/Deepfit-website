@@ -32,8 +32,11 @@ export function ProductEquipmentGuide({
         How to use this equipment
       </h2>
       <Link
-        to="/exercise/equipment/$id"
-        params={{ id: String(equipment.id) }}
+        to="/exercise/library"
+        search={{
+          equipment_ids: String(equipment.id),
+          focus: String(equipment.id),
+        }}
         onClick={() => saveSelectedEquipment([equipment.id])}
         className="group mt-4 flex min-h-[88px] items-center gap-4 rounded-2xl border border-border bg-card p-3 shadow-soft ring-1 ring-border/40 transition-all duration-200 hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-glass focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
       >

@@ -19,11 +19,16 @@ export function getSelectedEquipment(): number[] {
   }
 }
 
-export function parseEquipmentIds(value?: string | string[] | null): number[] {
-  if (!value) return [];
-  const raw = Array.isArray(value) ? value.join(",") : value;
+export function parseEquipmentIds(
+  value?: string | string[] | number | null,
+): number[] {
+  if (value == null || value === "") return [];
+  if (typeof value === "number") {
+    return Number.isFinite(value) && value > 0 ? [value] : [];
+  }
+  const raw = Array.isArray(value) ? value.join(",") : String(value);
   return raw
     .split(",")
-    .map((id) => Number(id.trim()))
+    .map((id) => Number(id.trim().replace(/^["']|["']$/g, "")))
     .filter((id) => !Number.isNaN(id) && id > 0);
 }

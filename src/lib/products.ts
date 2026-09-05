@@ -138,14 +138,11 @@ export const categories = [
 ];
 
 export const goals = [
-  "Weight Loss",
-  "Muscle Building",
-  "Strength",
-  "Cardio",
-  "Recovery",
+  "Upper body",
+  "Lower body",
+  "Core",
+  "Power Cardio",
+  "Mobility",
   "Yoga",
-  "Home Gym",
-  "Women's Fitness",
-  "Men's Fitness",
-  "Senior Wellness",
+  "Mat Pilates",
 ];

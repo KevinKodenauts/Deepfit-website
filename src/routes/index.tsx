@@ -713,19 +713,20 @@ function ShopByGoal() {
       <div className="pointer-events-none absolute inset-0 opacity-40 [background:var(--gradient-soft)]" />
       <div className="relative mx-auto max-w-7xl px-6 lg:px-10">
         <div className="max-w-2xl">
-          <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">03 — Shop by goal</div>
+          <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">03 — Daily Movement</div>
           <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">
-            What are you <span className="text-gradient italic">building</span> today?
+            What&apos;s your workout <span className="text-gradient italic">focus</span> today?
           </h2>
           <p className="mt-4 text-muted-foreground">
-            From your first pull-up to your hundredth marathon, we've built a shelf of tools for every chapter of the practice.
+            From an upper-body session to a slow pilates flow, pick a focus and start today&apos;s practice.
           </p>
         </div>
         <div className="mt-12 flex flex-wrap gap-3">
           {goals.map((g) => (
             <Link
               key={g}
-              to="/shop"
+              to="/explore"
+              search={{ hub: "move" }}
               className="group rounded-full glass px-6 py-3 text-sm font-medium shadow-soft transition hover:shadow-glass hover:-translate-y-0.5"
             >
               {g}
