@@ -238,32 +238,42 @@ function Hero({
     const section = sectionRef.current;
     if (!header || !section) return;
 
+    const mq = window.matchMedia("(min-width: 1024px)");
     const syncOffset = () => {
-      section.style.paddingTop = `${header.getBoundingClientRect().height}px`;
+      if (mq.matches) {
+        section.style.paddingTop = `${header.getBoundingClientRect().height}px`;
+      } else {
+        section.style.paddingTop = "";
+      }
     };
 
     syncOffset();
     const observer = new ResizeObserver(syncOffset);
     observer.observe(header);
-    return () => observer.disconnect();
+    mq.addEventListener("change", syncOffset);
+    return () => {
+      observer.disconnect();
+      mq.removeEventListener("change", syncOffset);
+    };
   }, []);
 
   return (
     <section
       ref={sectionRef}
-      className="relative h-svh max-h-svh w-full overflow-hidden bg-muted"
-      style={{ paddingTop: "var(--desktop-nav-height)" }}
+      className="relative w-full overflow-hidden bg-muted pt-[4.5rem] lg:h-svh lg:max-h-svh lg:pt-[var(--desktop-nav-height)]"
       aria-busy={showSkeleton}
       aria-label={headline}
     >
       <h1 className="sr-only">{headline}</h1>
-      <div className="relative h-full min-h-0 w-full">
+      <div
+        className={`relative w-full lg:h-full lg:min-h-0 ${showSkeleton ? "min-h-[calc(100svh-4.5rem)] lg:min-h-0" : ""}`}
+      >
         {showSkeleton ? <HeroBannerLoader /> : null}
         {loadedSrc ? (
           <img
             src={loadedSrc}
             alt={headline}
-            className="absolute inset-0 h-full w-full object-contain object-center"
+            className="block h-auto w-full object-contain object-top lg:absolute lg:inset-0 lg:h-full lg:object-center"
           />
         ) : null}
         {pendingSrc ? (
@@ -273,7 +283,7 @@ function Hero({
             alt=""
             fetchPriority="high"
             decoding="async"
-            className="pointer-events-none absolute inset-0 h-full w-full object-contain object-center opacity-0"
+            className="pointer-events-none absolute inset-0 h-full w-full object-contain object-top opacity-0 lg:object-center"
             onLoad={() => setLoadedSrc(pendingSrc)}
             onError={() => {
               if (loadedSrc === pendingSrc) setLoadedSrc(null);
