@@ -11,7 +11,7 @@ function readEnv(name: string): string | undefined {
 const DEFAULT_API_HOST = (
   readEnv("VITE_API_URL") ??
   readEnv("NEXT_PUBLIC_API_URL") ??
-  "https://apideepfit.moonlightingwork.in"
+  "https://api.deepfit.life"
 ).replace(/\/$/, "");
 
 export const API_BASE_URL = DEFAULT_API_HOST;
