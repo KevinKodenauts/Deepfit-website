@@ -11,6 +11,7 @@ import {
 import { z } from "zod";
 import ChooseEquipment from "@/components/explore/ChooseEquipment";
 import { ExploreBlog } from "@/components/explore/ExploreBlog";
+import { Footer } from "@/components/site/Footer";
 import { Nav } from "@/components/site/Nav";
 import styles from "@/styles/explore.module.css";
 
@@ -210,6 +211,9 @@ function ExplorePage() {
             </nav>
           </div>
         ) : null}
+      </div>
+      <div className="hidden lg:block">
+        <Footer />
       </div>
     </div>
   );

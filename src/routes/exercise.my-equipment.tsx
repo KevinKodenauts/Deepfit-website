@@ -17,11 +17,11 @@ export const Route = createFileRoute("/exercise/my-equipment")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "My Equipment — DEEPFIT" },
+      { title: "My Product — DEEPFIT" },
       {
         name: "description",
         content:
-          "Manage your gym equipment and get personalized exercise recommendations.",
+          "Manage your products and get personalized exercise recommendations.",
       },
     ],
   }),
@@ -69,12 +69,12 @@ function MyEquipmentMobile({
         >
           <ChevronLeft size={24} />
         </button>
-        <h1 className={mobileStyles.pageTitle}>My Equipment</h1>
+        <h1 className={mobileStyles.pageTitle}>My Product</h1>
       </header>
 
       <div className={mobileStyles.subtitleBlock}>
         <p className={mobileStyles.subtitle}>
-          Gear currently in your arsenal for precision training.
+          Products currently in your arsenal for precision training.
         </p>
         <span className={mobileStyles.badge}>
           {equipmentList.length} Items Selected
@@ -176,9 +176,9 @@ function MyEquipmentDesktop({
       <div className={desktopStyles.inner}>
         <header className={desktopStyles.pageHeader}>
           <div className={desktopStyles.pageHeaderMain}>
-            <h1 className={desktopStyles.pageTitle}>My Equipment</h1>
+            <h1 className={desktopStyles.pageTitle}>My Product</h1>
             <p className={desktopStyles.pageSubtitle}>
-              Gear in your arsenal for precision training. Review usage guides
+              Products in your arsenal for precision training. Review usage guides
               and start your workout library.
             </p>
             {!loading && !loadError ? (

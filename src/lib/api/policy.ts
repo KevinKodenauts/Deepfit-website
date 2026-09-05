@@ -1,3 +1,4 @@
+import { sanitizeRichHtml } from "@/lib/sanitizeHtml";
 import { portalUrl } from "./config";
 
 export type PolicySlug = "terms" | "privacy" | "return" | "refund";
@@ -64,20 +65,20 @@ function extractHtmlContent(
     try {
       const parsed = JSON.parse(trimmed) as unknown;
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return String(parsed[0]);
+        return sanitizeRichHtml(String(parsed[0]));
       }
       if (typeof parsed === "string" && parsed.trim()) {
-        return parsed;
+        return sanitizeRichHtml(parsed);
       }
     } catch {
-      return content;
+      return sanitizeRichHtml(content);
     }
 
-    return content;
+    return sanitizeRichHtml(content);
   }
 
   if (Array.isArray(content) && content.length > 0) {
-    return String(content[0]);
+    return sanitizeRichHtml(String(content[0]));
   }
 
   return null;

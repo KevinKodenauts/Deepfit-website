@@ -24,7 +24,7 @@ function Contact() {
         <div className="pointer-events-none absolute -right-40 top-20 h-[500px] w-[500px] rounded-full opacity-40 blur-3xl [background:radial-gradient(circle,var(--mint),transparent_60%)]" />
         <div className="relative mx-auto max-w-7xl px-6 pb-16 lg:px-10">
           <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">Contact</div>
-          <h1 className="mt-4 max-w-3xl font-display text-5xl leading-[0.95] sm:text-7xl">
+          <h1 className="mt-4 max-w-3xl font-display text-5xl leading-[1.15] sm:text-7xl">
             We reply to every note, <span className="text-gradient italic">personally</span>.
           </h1>
         </div>

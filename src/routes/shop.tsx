@@ -9,8 +9,8 @@ import { LayoutGrid, List, SlidersHorizontal } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { getMainCategories } from "@/lib/api/categories";
-import { getProductsByCategory } from "@/lib/api/products";
-import { mapToCategoryProduct } from "@/lib/api/mappers";
+import { getAllProducts, getProductsByCategory } from "@/lib/api/products";
+import { mapToCategoryProduct, parseProductPrice } from "@/lib/api/mappers";
 import { categoryProductToCard } from "@/lib/catalog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -35,6 +35,9 @@ type DisciplineItem = {
   subCategoryId?: number;
 };
 
+const ALL_CATEGORY_ID = 0;
+
+type ViewMode = "grid" | "list";
 type PriceKey = "under-100" | "100-500" | "500-1000" | "1000-plus";
 type AvailabilityKey = "instock" | "preorder" | "new";
 
@@ -157,8 +160,8 @@ function Shop() {
   const { main: mainFromUrl } = useSearch({ from: "/shop" });
   const [rawProducts, setRawProducts] = useState<ApiProduct[]>([]);
   const [mainCategories, setMainCategories] = useState<MainCategory[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
-    null
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number>(
+    mainFromUrl ?? ALL_CATEGORY_ID
   );
   const [selectedDisciplineKeys, setSelectedDisciplineKeys] = useState<
     Set<string>
@@ -169,6 +172,7 @@ function Shop() {
   >(new Set());
   const [loading, setLoading] = useState(true);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [view, setView] = useState<ViewMode>("grid");
 
   useEffect(() => {
     let cancelled = false;
@@ -176,13 +180,11 @@ function Shop() {
       .then((list) => {
         if (cancelled) return;
         setMainCategories(list);
-        if (list.length) {
-          const preferredId =
-            mainFromUrl && list.some((c) => c.id === mainFromUrl)
-              ? mainFromUrl
-              : list[0].id;
-          setSelectedCategoryId(preferredId);
-        }
+        const preferredId =
+          mainFromUrl && list.some((c) => c.id === mainFromUrl)
+            ? mainFromUrl
+            : ALL_CATEGORY_ID;
+        setSelectedCategoryId(preferredId);
       })
       .catch(() => {
         /* keep empty — fall back UI below */
@@ -203,9 +205,10 @@ function Shop() {
   );
 
   const selectedName = useMemo(() => {
+    if (selectedCategoryId === ALL_CATEGORY_ID) return "All";
     if (selectedMain) return selectedMain.mainCategoryName;
     return fallbackCategories[0]?.name ?? "Shop";
-  }, [selectedMain]);
+  }, [selectedCategoryId, selectedMain]);
 
   useEffect(() => {
     setSelectedDisciplineKeys(new Set());
@@ -216,10 +219,6 @@ function Shop() {
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    if (selectedCategoryId == null) {
-      setLoading(false);
-      return;
-    }
 
     const selectedDisciplines = disciplineItems.filter((item) =>
       selectedDisciplineKeys.has(item.key)
@@ -230,10 +229,15 @@ function Shop() {
         ? selectedDisciplines[0].categoryId
         : undefined;
 
-    getProductsByCategory(selectedCategoryId, categoryIdForApi, {
-      limit: 48,
-      offset: 0,
-    })
+    const request =
+      selectedCategoryId === ALL_CATEGORY_ID
+        ? getAllProducts().then((products) => ({ products }))
+        : getProductsByCategory(selectedCategoryId, categoryIdForApi, {
+            limit: 48,
+            offset: 0,
+          });
+
+    request
       .then((result) => {
         if (cancelled) return;
         setRawProducts(result.products);
@@ -250,25 +254,42 @@ function Shop() {
     };
   }, [selectedCategoryId, selectedDisciplineKeys, disciplineItems]);
 
-  const items: Product[] = useMemo(() => {
+  const scopedProducts = useMemo(() => {
     const selectedDisciplines = disciplineItems.filter((item) =>
       selectedDisciplineKeys.has(item.key)
     );
 
-    let filtered = rawProducts;
+    if (selectedDisciplines.length === 0) return rawProducts;
 
-    if (selectedDisciplines.length > 0) {
-      const subIds = new Set(
-        selectedDisciplines
-          .map((d) => d.subCategoryId)
-          .filter((id): id is number => id != null)
-      );
+    const subIds = new Set(
+      selectedDisciplines
+        .map((d) => d.subCategoryId)
+        .filter((id): id is number => id != null)
+    );
 
-      filtered = rawProducts.filter((product) => {
-        const subId = product.subCategoryDetails?.id;
-        return subId != null && subIds.has(subId);
-      });
-    }
+    return rawProducts.filter((product) => {
+      const subId = product.subCategoryDetails?.id;
+      return subId != null && subIds.has(subId);
+    });
+  }, [rawProducts, selectedDisciplineKeys, disciplineItems]);
+
+  const availablePriceOptions = useMemo(() => {
+    const prices = scopedProducts.map(parseProductPrice);
+    return PRICE_OPTIONS.filter((option) =>
+      prices.some((price) => option.matches(price))
+    );
+  }, [scopedProducts]);
+
+  useEffect(() => {
+    const allowed = new Set(availablePriceOptions.map((option) => option.key));
+    setSelectedPrices((prev) => {
+      const next = new Set([...prev].filter((key) => allowed.has(key)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [availablePriceOptions]);
+
+  const items: Product[] = useMemo(() => {
+    let filtered = scopedProducts;
 
     if (selectedAvailability.size > 0) {
       filtered = filtered.filter((product) => {
@@ -291,23 +312,19 @@ function Shop() {
     }
 
     return mapped;
-  }, [
-    rawProducts,
-    selectedDisciplineKeys,
-    disciplineItems,
-    selectedPrices,
-    selectedAvailability,
-  ]);
+  }, [scopedProducts, selectedPrices, selectedAvailability]);
 
   const selectCategory = (id: number) => {
-    if (id <= 0) return;
     setSelectedCategoryId(id);
     setFiltersOpen(false);
-    void navigate({ search: { main: id } });
+    void navigate({
+      search: id === ALL_CATEGORY_ID ? {} : { main: id },
+    });
   };
 
-  const categoryList =
-    mainCategories.length > 0
+  const categoryList = [
+    { id: ALL_CATEGORY_ID, name: "All", image: "" },
+    ...(mainCategories.length > 0
       ? mainCategories.map((c) => ({
           id: c.id,
           name: c.mainCategoryName,
@@ -317,7 +334,8 @@ function Shop() {
           id: -(i + 1),
           name: c.name,
           image: "",
-        }));
+        }))),
+  ];
 
   const filterPanel = (
     <ShopFilters
@@ -329,6 +347,7 @@ function Shop() {
       onToggleDiscipline={(key) =>
         setSelectedDisciplineKeys((prev) => toggleSetValue(prev, key))
       }
+      priceOptions={availablePriceOptions}
       selectedPrices={selectedPrices}
       onTogglePrice={(key) =>
         setSelectedPrices((prev) => toggleSetValue(prev, key))
@@ -349,13 +368,12 @@ function Shop() {
           <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
             The catalog
           </div>
-          <h1 className="mt-3 max-w-3xl font-display text-5xl leading-[0.95] sm:text-7xl">
+          <h1 className="mt-3 max-w-3xl font-display text-5xl leading-[1.15] sm:text-7xl">
             Every piece, <span className="text-gradient italic">designed</span>{" "}
             to last a lifetime.
           </h1>
           <p className="mt-6 max-w-xl text-muted-foreground">
-            Filter by hub, discipline or price. Everything ships with a 60-day
-            home trial.
+            Filter by hub, discipline or price. 
           </p>
         </div>
       </section>
@@ -398,20 +416,32 @@ function Shop() {
                   </>
                 )}
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1" role="group" aria-label="Product view">
                 <button
                   type="button"
-                  aria-pressed="true"
+                  aria-pressed={view === "grid"}
                   aria-label="Grid view"
-                  className="inline-flex size-11 cursor-pointer items-center justify-center rounded-full bg-foreground text-background"
+                  onClick={() => setView("grid")}
+                  className={cn(
+                    "inline-flex size-11 cursor-pointer items-center justify-center rounded-full transition",
+                    view === "grid"
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground",
+                  )}
                 >
                   <LayoutGrid size={14} />
                 </button>
                 <button
                   type="button"
-                  aria-label="List view unavailable"
-                  disabled
-                  className="inline-flex size-11 items-center justify-center rounded-full text-muted-foreground/50"
+                  aria-pressed={view === "list"}
+                  aria-label="List view"
+                  onClick={() => setView("list")}
+                  className={cn(
+                    "inline-flex size-11 cursor-pointer items-center justify-center rounded-full transition",
+                    view === "list"
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground",
+                  )}
                 >
                   <List size={14} />
                 </button>
@@ -425,9 +455,15 @@ function Shop() {
                 description={`We couldn't find products in ${selectedName} yet. Try another hub or browse the full catalog.`}
               />
             ) : (
-              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              <div
+                className={
+                  view === "list"
+                    ? "flex flex-col gap-4"
+                    : "grid gap-6 sm:grid-cols-2 xl:grid-cols-3"
+                }
+              >
                 {items.map((p) => (
-                  <ProductCard key={p.slug} product={p} />
+                  <ProductCard key={p.slug} product={p} variant={view} />
                 ))}
               </div>
             )}
@@ -446,6 +482,7 @@ function ShopFilters({
   disciplineItems,
   selectedDisciplineKeys,
   onToggleDiscipline,
+  priceOptions,
   selectedPrices,
   onTogglePrice,
   selectedAvailability,
@@ -457,6 +494,7 @@ function ShopFilters({
   disciplineItems: DisciplineItem[];
   selectedDisciplineKeys: Set<string>;
   onToggleDiscipline: (key: string) => void;
+  priceOptions: typeof PRICE_OPTIONS;
   selectedPrices: Set<PriceKey>;
   onTogglePrice: (key: PriceKey) => void;
   selectedAvailability: Set<AvailabilityKey>;
@@ -493,7 +531,11 @@ function ShopFilters({
                       />
                     ) : (
                       <span className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
-                        {category.name.charAt(0)}
+                        {category.id === ALL_CATEGORY_ID ? (
+                          <LayoutGrid size={16} />
+                        ) : (
+                          category.name.charAt(0)
+                        )}
                       </span>
                     )}
                   </span>
@@ -523,21 +565,23 @@ function ShopFilters({
         </div>
       ) : null}
 
-      <div>
-        <div className="mb-3 text-xs uppercase tracking-[0.22em] text-muted-foreground">
-          Price
+      {priceOptions.length > 0 ? (
+        <div>
+          <div className="mb-3 text-xs uppercase tracking-[0.22em] text-muted-foreground">
+            Price
+          </div>
+          <ul className="space-y-1">
+            {priceOptions.map((option) => (
+              <FilterCheckRow
+                key={option.key}
+                label={option.label}
+                checked={selectedPrices.has(option.key)}
+                onToggle={() => onTogglePrice(option.key)}
+              />
+            ))}
+          </ul>
         </div>
-        <ul className="space-y-1">
-          {PRICE_OPTIONS.map((option) => (
-            <FilterCheckRow
-              key={option.key}
-              label={option.label}
-              checked={selectedPrices.has(option.key)}
-              onToggle={() => onTogglePrice(option.key)}
-            />
-          ))}
-        </ul>
-      </div>
+      ) : null}
 
       <div>
         <div className="mb-3 text-xs uppercase tracking-[0.22em] text-muted-foreground">

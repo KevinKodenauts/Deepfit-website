@@ -508,20 +508,13 @@ export function BlogGridSkeleton({ count = 3 }: { count?: number }) {
 export function BlogDetailSkeleton() {
   return (
     <div className="w-full" aria-busy aria-label="Loading article">
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)] lg:gap-16">
-        <div>
-          <Skeleton className="h-3 w-40" />
-          <Skeleton className="mt-5 h-12 w-full" />
-          <Skeleton className="mt-3 h-10 w-3/4" />
-        </div>
-        <div className="hidden space-y-3 lg:block">
-          <Skeleton className="h-4 w-full" />
-          <Skeleton className="h-4 w-5/6" />
-          <Skeleton className="h-4 w-2/3" />
-        </div>
-      </div>
+      <Skeleton className="h-3 w-40" />
+      <Skeleton className="mt-5 h-12 w-full max-w-3xl" />
+      <Skeleton className="mt-3 h-10 w-2/3 max-w-2xl" />
+      <Skeleton className="mt-4 h-5 w-full max-w-xl" />
+      <Skeleton className="mt-2 h-5 w-5/6 max-w-lg" />
       <Skeleton className="mt-10 aspect-[16/9] w-full rounded-[2rem] lg:aspect-[2.2/1]" />
-      <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.8fr)]">
+      <div className="mt-10 grid items-start gap-10 lg:grid-cols-[minmax(0,1.7fr)_minmax(16rem,0.8fr)] lg:gap-11">
         <div className="space-y-3 rounded-[2rem] bg-card p-8 ring-1 ring-border/50">
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-full" />

@@ -73,9 +73,9 @@ export default function ChooseEquipment({
     >
       {hideHeader ? (
         <div className={styles.embeddedIntro}>
-          <h2 className={styles.pageTitle}>Choose Your Equipment</h2>
+          <h2 className={styles.pageTitle}>Choose Your Product</h2>
           <p className={styles.embeddedSubtitle}>
-            Select one or more fitness tools to discover matching exercises.
+            Select one or more products to discover matching exercises.
           </p>
         </div>
       ) : null}
@@ -160,7 +160,7 @@ export default function ChooseEquipment({
             className={styles.viewBtn}
             onClick={handleViewSelected}
           >
-            View Selected Equipments
+            View Selected Products
           </button>
         </div>
       ) : null}
