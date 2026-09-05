@@ -200,7 +200,6 @@ function Hero({
   const [index, setIndex] = useState(0);
   const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
   const pendingRef = useRef<HTMLImageElement>(null);
-  const sectionRef = useRef<HTMLElement>(null);
 
   const active = slides.length > 0 ? slides[index % slides.length] : undefined;
   const headline =
@@ -233,47 +232,22 @@ function Hero({
     return () => window.clearInterval(timer);
   }, [slides.length, goNext]);
 
-  useEffect(() => {
-    const header = document.querySelector("header");
-    const section = sectionRef.current;
-    if (!header || !section) return;
-
-    const mq = window.matchMedia("(min-width: 1024px)");
-    const syncOffset = () => {
-      if (mq.matches) {
-        section.style.paddingTop = `${header.getBoundingClientRect().height}px`;
-      } else {
-        section.style.paddingTop = "";
-      }
-    };
-
-    syncOffset();
-    const observer = new ResizeObserver(syncOffset);
-    observer.observe(header);
-    mq.addEventListener("change", syncOffset);
-    return () => {
-      observer.disconnect();
-      mq.removeEventListener("change", syncOffset);
-    };
-  }, []);
-
   return (
     <section
-      ref={sectionRef}
-      className="relative w-full overflow-hidden bg-muted pt-[4.5rem] lg:h-svh lg:max-h-svh lg:pt-[var(--desktop-nav-height)]"
+      className="relative w-full overflow-hidden bg-muted pt-[4.5rem]"
       aria-busy={showSkeleton}
       aria-label={headline}
     >
       <h1 className="sr-only">{headline}</h1>
       <div
-        className={`relative w-full lg:h-full lg:min-h-0 ${showSkeleton ? "min-h-[calc(100svh-4.5rem)] lg:min-h-0" : ""}`}
+        className={`relative w-full ${showSkeleton ? "min-h-[calc(100svh-4.5rem)] lg:min-h-0" : ""}`}
       >
         {showSkeleton ? <HeroBannerLoader /> : null}
         {loadedSrc ? (
           <img
             src={loadedSrc}
             alt={headline}
-            className="block h-auto w-full object-contain object-top lg:absolute lg:inset-0 lg:h-full lg:object-center"
+            className="block h-auto w-full object-contain object-top lg:mx-auto lg:max-h-[calc(100svh-4.5rem)] lg:w-auto lg:max-w-full"
           />
         ) : null}
         {pendingSrc ? (
@@ -283,7 +257,7 @@ function Hero({
             alt=""
             fetchPriority="high"
             decoding="async"
-            className="pointer-events-none absolute inset-0 h-full w-full object-contain object-top opacity-0 lg:object-center"
+            className="pointer-events-none absolute inset-0 h-full w-full object-contain object-top opacity-0"
             onLoad={() => setLoadedSrc(pendingSrc)}
             onError={() => {
               if (loadedSrc === pendingSrc) setLoadedSrc(null);
