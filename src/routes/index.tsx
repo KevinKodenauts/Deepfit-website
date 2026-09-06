@@ -174,8 +174,10 @@ function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
-      <Hero sliders={sliders} loading={loading} />
-      <Marquee />
+      <div className="[--home-strip-height:5.5rem]">
+        <Hero sliders={sliders} loading={loading} />
+        <Marquee />
+      </div>
       <Categories categories={categories} loading={loading} />
       <Featured products={featured} categories={categories} loading={loading} />
       <ShopByGoal />
@@ -247,7 +249,7 @@ function Hero({
           <img
             src={loadedSrc}
             alt={headline}
-            className="block h-auto w-full object-contain object-top lg:mx-auto lg:max-h-[calc(100svh-4.5rem)] lg:w-auto lg:max-w-full"
+            className="block h-auto w-full object-contain object-top lg:mx-auto lg:max-h-[calc(100svh-4.5rem-var(--home-strip-height))] lg:w-auto lg:max-w-full"
           />
         ) : null}
         {pendingSrc ? (
@@ -464,7 +466,7 @@ function HeroPrevious({ sliders }: { sliders: DashboardSlider[] }) {
 function Marquee() {
   const words = ["Wellness Inside Out", "Precision-cast steel", "Silent decks", "Studio-grade recovery", "Made to last", "Handcrafted"];
   return (
-    <div className="border-y border-border/60 bg-background py-6 overflow-hidden">
+    <div className="overflow-hidden border-y border-border/60 bg-background py-6 lg:shrink-0">
       <div className="flex w-max animate-marquee gap-14 whitespace-nowrap">
         {[...words, ...words, ...words].map((w, i) => (
           <span key={i} className="font-display text-2xl italic text-muted-foreground">
