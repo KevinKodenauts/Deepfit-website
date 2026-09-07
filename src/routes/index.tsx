@@ -174,7 +174,7 @@ function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
-      <div className="[--home-strip-height:5.5rem]">
+      <div className="lg:flex lg:h-svh lg:max-h-svh lg:flex-col lg:overflow-hidden">
         <Hero sliders={sliders} loading={loading} />
         <Marquee />
       </div>
@@ -236,20 +236,20 @@ function Hero({
 
   return (
     <section
-      className="relative w-full overflow-hidden bg-muted pt-[4.5rem]"
+      className="relative w-full overflow-hidden bg-muted pt-[4.5rem] lg:flex lg:min-h-0 lg:flex-1 lg:flex-col"
       aria-busy={showSkeleton}
       aria-label={headline}
     >
       <h1 className="sr-only">{headline}</h1>
       <div
-        className={`relative w-full ${showSkeleton ? "min-h-[calc(100svh-4.5rem)] lg:min-h-0" : ""}`}
+        className={`relative w-full lg:min-h-0 lg:flex-1 ${showSkeleton ? "min-h-[calc(100svh-4.5rem)] lg:min-h-0" : ""}`}
       >
         {showSkeleton ? <HeroBannerLoader /> : null}
         {loadedSrc ? (
           <img
             src={loadedSrc}
             alt={headline}
-            className="block h-auto w-full object-contain object-top lg:mx-auto lg:max-h-[calc(100svh-4.5rem-var(--home-strip-height))] lg:w-auto lg:max-w-full"
+            className="block h-auto w-full object-contain object-top lg:absolute lg:inset-0 lg:h-full lg:w-full lg:object-cover lg:object-center"
           />
         ) : null}
         {pendingSrc ? (
