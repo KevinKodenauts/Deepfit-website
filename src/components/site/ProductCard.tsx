@@ -21,6 +21,7 @@ export function ProductCard({
   const handleAdd = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (product.comingSoon) return;
     if (!Number.isFinite(productId) || productId <= 0) return;
 
     if (!isAuthenticated) {
@@ -58,7 +59,11 @@ export function ProductCard({
     </button>
   );
 
-  const priceBlock = (
+  const priceBlock = product.comingSoon ? (
+    <span className="text-sm font-semibold uppercase tracking-[0.14em] text-[#1A637B]">
+      Coming soon
+    </span>
+  ) : (
     <div className="flex items-baseline gap-2">
       <span className="text-lg font-semibold">AED {product.price}</span>
       {product.compareAt ? (
@@ -69,7 +74,7 @@ export function ProductCard({
     </div>
   );
 
-  const addButton = (
+  const addButton = product.comingSoon ? null : (
     <button
       type="button"
       onClick={handleAdd}

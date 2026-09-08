@@ -169,7 +169,7 @@ export function HeaderSearch() {
                           {card.name}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          AED {card.price}
+                          {card.comingSoon ? "Coming soon" : `AED ${card.price}`}
                         </span>
                       </span>
                     </button>

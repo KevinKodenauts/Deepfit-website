@@ -145,6 +145,7 @@ export type HomeProductView = {
   reviewCount: number;
   categoryName?: string;
   mainCategoryName?: string;
+  sku?: string;
 };
 
 export type CategoryProductView = {
@@ -160,6 +161,9 @@ export type CategoryProductView = {
   reviewCount: number;
   deliveryTime: string;
   weight?: string;
+  sku?: string;
+  categoryName?: string;
+  mainCategoryName?: string;
 };
 
 export function mapToHomeProduct(product: ApiProduct): HomeProductView {
@@ -187,6 +191,7 @@ export function mapToHomeProduct(product: ApiProduct): HomeProductView {
     reviewCount: Number(ratings?.totalRatings ?? 0),
     categoryName: product.categoryDetails?.categoryName,
     mainCategoryName: product.mainCategoryDetails?.mainCategoryName,
+    sku: product.sku,
   };
 }
 
@@ -217,6 +222,9 @@ export function mapToCategoryProduct(product: ApiProduct): CategoryProductView {
       product.attributes?.[0]?.value ??
       product.productShortDescription ??
       undefined,
+    sku: product.sku,
+    categoryName: product.categoryDetails?.categoryName,
+    mainCategoryName: product.mainCategoryDetails?.mainCategoryName,
   };
 }
 

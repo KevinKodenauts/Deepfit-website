@@ -12,7 +12,7 @@ import {
   mapToProductDetail,
   type ProductDetailView,
 } from "@/lib/api/mappers";
-import { categoryProductToCard, productIdFromSlug, productNameSlug } from "@/lib/catalog";
+import { categoryProductToCard, isComingSoonProduct, productIdFromSlug, productNameSlug } from "@/lib/catalog";
 import { ProductDetailSkeleton } from "@/components/skeleton/PageSkeletons";
 import {
   ProductEquipmentGuide,
@@ -382,13 +382,20 @@ function ProductPage() {
     selectedVariant?.image ??
     productView?.images[0];
 
+  const comingSoon = isComingSoonProduct({
+    name: productView?.title,
+    sku: productView?.sku,
+    category: productView?.categoryName,
+    price: displayPrice,
+  });
+
   const selectVariant = (index: number) => {
     setSelectedVariantIndex(index);
     setActiveImageIndex(0);
   };
 
   const handleAdd = async (buyNow = false) => {
-    if (!productView) return;
+    if (!productView || comingSoon) return;
     if (!isAuthenticated) {
       void navigate({ to: "/login", search: { next: `/product/${slug}` } });
       return;
@@ -432,7 +439,7 @@ function ProductPage() {
             ? displayOriginalPrice
             : undefined,
         image: displayImage || "/images/dumbbells.png",
-        category: "Strength",
+        category: productView.categoryName || "Products",
         badge: productView.isTopSelling ? "Best Seller" : undefined,
         rating: productView.rating || 0,
         reviews: productView.ratingCount || 0,
@@ -444,6 +451,8 @@ function ProductPage() {
             .filter((row) => row.title)
             .map((row) => [row.title, row.value]),
         ),
+        sku: productView.sku,
+        comingSoon,
       }
     : null;
 
@@ -529,12 +538,20 @@ function ProductPage() {
               <p className="mt-4 text-muted-foreground">{product.tagline}</p>
             ) : null}
             <div className="mt-6 flex items-center gap-3">
-              <span className="font-display text-3xl">AED {product.price}</span>
-              {product.compareAt ? (
-                <span className="text-muted-foreground line-through">
-                  AED {product.compareAt}
+              {product.comingSoon ? (
+                <span className="font-display text-3xl text-[#1A637B]">
+                  Coming soon
                 </span>
-              ) : null}
+              ) : (
+                <>
+                  <span className="font-display text-3xl">AED {product.price}</span>
+                  {product.compareAt ? (
+                    <span className="text-muted-foreground line-through">
+                      AED {product.compareAt}
+                    </span>
+                  ) : null}
+                </>
+              )}
               <span className="ml-auto flex items-center gap-1 text-sm text-muted-foreground">
                 <Star size={14} className="fill-foreground text-foreground" />
                 {Number(product.rating || 0).toFixed(1)} ({product.reviews})
@@ -563,6 +580,34 @@ function ProductPage() {
                 </div>
               </div>
             )}
+            {product.comingSoon ? (
+              <div className="mt-8 flex items-center gap-4">
+                <button
+                  type="button"
+                  disabled
+                  className="flex-1 rounded-full bg-[#1A637B] px-6 py-3 text-sm font-medium text-white opacity-80"
+                >
+                  Coming soon
+                </button>
+                <button
+                  type="button"
+                  aria-label={
+                    wishlisted ? "Remove from wishlist" : "Add to wishlist"
+                  }
+                  aria-pressed={wishlisted}
+                  disabled={wishlistPending || !productView}
+                  onClick={() => void toggleWishlist()}
+                  className={`rounded-full border p-3 transition-colors disabled:opacity-60 ${
+                    wishlisted
+                      ? "border-red-200 bg-red-50 text-red-500"
+                      : "border-border text-foreground hover:border-foreground/40"
+                  }`}
+                >
+                  <Heart size={16} fill={wishlisted ? "currentColor" : "none"} />
+                </button>
+              </div>
+            ) : (
+              <>
             <div className="mt-8 flex items-center gap-4">
               <div className="flex items-center gap-4 rounded-full border border-border px-4 py-2">
                 <button
@@ -609,6 +654,8 @@ function ProductPage() {
             >
               Buy now
             </button>
+              </>
+            )}
             {productView && <ProductDescription productView={productView} />}
             {productView && (productView.certificates.length > 0 || productView.certificate) ? (
               <ProductCertificate productName={productView.title} />

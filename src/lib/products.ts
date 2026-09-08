@@ -18,6 +18,8 @@ export type Product = {
   description: string;
   features: string[];
   specs: Record<string, string>;
+  sku?: string;
+  comingSoon?: boolean;
 };
 
 export const products: Product[] = [
