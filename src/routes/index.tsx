@@ -724,17 +724,20 @@ function ShopByGoal() {
           </p>
         </div>
         <div className="mt-12 flex flex-wrap gap-3">
-          {goals.map((g) => (
-            <Link
-              key={g}
-              to="/explore"
-              search={{ hub: "move" }}
-              className="group rounded-full glass px-6 py-3 text-sm font-medium shadow-soft transition hover:shadow-glass hover:-translate-y-0.5"
-            >
-              {g}
-              <ArrowRight size={14} className="ml-2 inline transition-transform group-hover:translate-x-1" />
-            </Link>
-          ))}
+          {goals.map((g) => {
+            const search = { category: g };
+            return (
+              <Link
+                key={g}
+                to="/exercise/library"
+                search={search}
+                className="group rounded-full glass px-6 py-3 text-sm font-medium shadow-soft transition hover:shadow-glass hover:-translate-y-0.5"
+              >
+                {g}
+                <ArrowRight size={14} className="ml-2 inline transition-transform group-hover:translate-x-1" />
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>

@@ -147,4 +147,41 @@ export const goals = [
   "Mobility",
   "Yoga",
   "Mat Pilates",
+] as const;
+
+export type WorkoutGoal = (typeof goals)[number];
+
+export type WorkoutFocus = {
+  label: WorkoutGoal;
+  categories: string[];
+  equipmentMatch?: string;
+};
+
+export const workoutFocuses: WorkoutFocus[] = [
+  { label: "Upper body", categories: ["Upper Body"] },
+  { label: "Lower body", categories: ["Lower Body"] },
+  { label: "Core", categories: ["Core"] },
+  { label: "Power Cardio", categories: ["Power Cardio", "Cardio"] },
+  { label: "Mobility", categories: ["Whole Body", "Full Body"] },
+  { label: "Yoga", categories: [], equipmentMatch: "yoga mat" },
+  { label: "Mat Pilates", categories: ["Core"] },
 ];
+
+export function resolveWorkoutFocus(value?: string | number | null): WorkoutFocus | null {
+  if (value == null || value === "") return null;
+  const needle = String(value).trim().toLowerCase();
+  if (!needle) return null;
+
+  return (
+    workoutFocuses.find((focus) => {
+      if (focus.label.toLowerCase() === needle) return true;
+      if (focus.categories.some((category) => category.toLowerCase() === needle)) {
+        return true;
+      }
+      return focus.categories.join(",").toLowerCase() === needle;
+    }) ?? {
+      label: String(value).trim() as WorkoutGoal,
+      categories: [String(value).trim()],
+    }
+  );
+}

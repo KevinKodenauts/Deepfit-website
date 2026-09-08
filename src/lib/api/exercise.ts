@@ -14,12 +14,16 @@ type EquipmentListResponse = {
   data: EquipmentItem[];
 };
 
-export async function getExercises(
-  equipmentIds?: number[]
-): Promise<ExerciseItem[]> {
+export async function getExercises(options?: {
+  equipmentIds?: number[];
+  category?: string;
+}): Promise<ExerciseItem[]> {
   const params = new URLSearchParams();
-  if (equipmentIds && equipmentIds.length > 0) {
-    params.set("equipment_ids", equipmentIds.join(","));
+  if (options?.equipmentIds && options.equipmentIds.length > 0) {
+    params.set("equipment_ids", options.equipmentIds.join(","));
+  }
+  if (options?.category) {
+    params.set("category", options.category);
   }
   const query = params.toString();
   const data = await apiRequest<ExerciseListResponse>(

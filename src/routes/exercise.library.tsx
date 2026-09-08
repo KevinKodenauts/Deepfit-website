@@ -10,12 +10,14 @@ import {
   getSelectedEquipment,
   parseEquipmentIds,
 } from "@/lib/exercise/selection";
+import { resolveWorkoutFocus } from "@/lib/products";
 import type { EquipmentItem, ExerciseItem } from "@/lib/api/types";
 import styles from "@/styles/explore-library.module.css";
 
 const searchSchema = z.object({
   equipment_ids: z.union([z.string(), z.number()]).optional(),
   focus: z.union([z.string(), z.number()]).optional(),
+  category: z.string().optional(),
 });
 
 export const Route = createFileRoute("/exercise/library")({
@@ -26,7 +28,7 @@ export const Route = createFileRoute("/exercise/library")({
       {
         name: "description",
         content:
-          "Browse exercises matched to your selected Deepfit equipment.",
+          "Browse Deepfit exercises by workout focus or selected equipment.",
       },
     ],
   }),
@@ -180,18 +182,25 @@ function EquippedLibraryPage() {
   const [loading, setLoading] = useState(true);
   const [guideLoading, setGuideLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [equipmentLoading, setEquipmentLoading] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
 
   const availableEquipmentIds = useMemo(() => {
+    if (search.category) return [];
     const fromUrl = parseEquipmentIds(search.equipment_ids);
     if (fromUrl.length > 0) return fromUrl;
     const stored = getSelectedEquipment();
     if (stored.length > 0) return stored;
     const focus = Number(search.focus);
     return !Number.isNaN(focus) && focus > 0 ? [focus] : [];
-  }, [search.equipment_ids, search.focus]);
+  }, [search.equipment_ids, search.focus, search.category]);
 
   const focusEquipmentId = Number(search.focus);
+  const workoutFocus = useMemo(
+    () => resolveWorkoutFocus(search.category),
+    [search.category],
+  );
+  const isCategoryBrowse = Boolean(workoutFocus);
   const primaryEquipmentId =
     !Number.isNaN(focusEquipmentId) && focusEquipmentId > 0
       ? focusEquipmentId
@@ -206,18 +215,45 @@ function EquippedLibraryPage() {
   }, [availableEquipmentIds, focusEquipmentId]);
 
   useEffect(() => {
+    let cancelled = false;
+    setEquipmentLoading(true);
     getEquipmentList()
       .then((data) => {
-        setEquipmentOptions(
-          data.filter((item) => availableEquipmentIds.includes(item.id)),
-        );
+        if (cancelled) return;
+        if (availableEquipmentIds.length > 0) {
+          setEquipmentOptions(
+            data.filter((item) => availableEquipmentIds.includes(item.id)),
+          );
+          return;
+        }
+        if (workoutFocus?.equipmentMatch) {
+          const needle = workoutFocus.equipmentMatch.toLowerCase();
+          setEquipmentOptions(
+            data.filter((item) => item.name.toLowerCase().includes(needle)),
+          );
+          return;
+        }
+        setEquipmentOptions([]);
       })
       .catch(() => {
-        setEquipmentOptions([]);
+        if (!cancelled) setEquipmentOptions([]);
+      })
+      .finally(() => {
+        if (!cancelled) setEquipmentLoading(false);
       });
-  }, [availableEquipmentIds]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [availableEquipmentIds, workoutFocus]);
 
   useEffect(() => {
+    if (isCategoryBrowse && !workoutFocus?.equipmentMatch) {
+      setGuideEquipment(null);
+      setGuideLoading(false);
+      return;
+    }
+
     if (!primaryEquipmentId) {
       setGuideEquipment(null);
       setGuideLoading(false);
@@ -241,30 +277,65 @@ function EquippedLibraryPage() {
     return () => {
       cancelled = true;
     };
-  }, [primaryEquipmentId]);
+  }, [primaryEquipmentId, isCategoryBrowse, workoutFocus]);
 
   useEffect(() => {
-    if (activeFilterIds.length === 0) {
+    const categoryBrowse = Boolean(workoutFocus);
+    const equipmentMatchIds = workoutFocus?.equipmentMatch
+      ? equipmentOptions.map((item) => item.id)
+      : [];
+
+    if (
+      !categoryBrowse &&
+      activeFilterIds.length === 0
+    ) {
       setExercises([]);
       setLoading(false);
       return;
     }
 
+    if (workoutFocus?.equipmentMatch && equipmentMatchIds.length === 0) {
+      if (equipmentLoading) {
+        setLoading(true);
+        return;
+      }
+      setExercises([]);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
     setLoading(true);
     setLoadError(false);
 
-    getExercises(activeFilterIds)
+    getExercises({
+      equipmentIds: workoutFocus?.equipmentMatch
+        ? equipmentMatchIds
+        : categoryBrowse
+          ? undefined
+          : activeFilterIds,
+      category:
+        workoutFocus && !workoutFocus.equipmentMatch
+          ? workoutFocus.categories.join(",")
+          : undefined,
+    })
       .then((data) => {
-        setExercises(data.map(mapExercise));
+        if (!cancelled) setExercises(data.map(mapExercise));
       })
       .catch(() => {
-        setExercises([]);
-        setLoadError(true);
+        if (!cancelled) {
+          setExercises([]);
+          setLoadError(true);
+        }
       })
       .finally(() => {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       });
-  }, [activeFilterIds]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeFilterIds, workoutFocus, equipmentOptions, equipmentLoading]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -285,19 +356,22 @@ function EquippedLibraryPage() {
   );
 
   const headline =
+    workoutFocus?.label ??
     guideEquipment?.name ??
     equipmentOptions.find((item) => item.id === focusEquipmentId)?.name ??
     equipmentOptions[0]?.name ??
     "Exercise Library";
 
   const guide =
-    guideEquipment ??
-    equipmentOptions.find((item) => item.id === primaryEquipmentId) ??
-    equipmentOptions[0] ??
-    null;
+    isCategoryBrowse && !workoutFocus?.equipmentMatch
+      ? null
+      : guideEquipment ??
+        equipmentOptions.find((item) => item.id === primaryEquipmentId) ??
+        equipmentOptions[0] ??
+        null;
 
-  const showFilters = equipmentOptions.length > 1;
-  const showLoading = loading || guideLoading;
+  const showFilters = !isCategoryBrowse && equipmentOptions.length > 1;
+  const showLoading = loading || equipmentLoading || (!isCategoryBrowse && guideLoading);
 
   const removeFilter = (equipmentId: number) => {
     setActiveFilterIds((prev) => {
@@ -336,7 +410,9 @@ function EquippedLibraryPage() {
           <div className={styles.headerMain}>
             <div>
               <h1 className={styles.pageTitle}>{headline}</h1>
-              <p className={styles.pageSubtitle}>Exercise Library</p>
+              <p className={styles.pageSubtitle}>
+                {workoutFocus ? `${workoutFocus.label} exercises` : "Exercise Library"}
+              </p>
             </div>
             {showFilters ? (
               <div className={styles.filterDropdown} ref={filterRef}>
@@ -409,10 +485,18 @@ function EquippedLibraryPage() {
           ) : null}
           {!showLoading && !loadError && exercises.length === 0 ? (
             <p style={{ padding: "24px", color: "#64748b" }}>
-              No exercises found for the selected equipment.{" "}
-              <Link to="/explore" search={{ hub: "move" }} className="underline">
-                Choose a product
-              </Link>
+              {workoutFocus
+                ? `No ${workoutFocus.label.toLowerCase()} exercises found yet.`
+                : "No exercises found for the selected equipment."}{" "}
+              {!workoutFocus ? (
+                <Link to="/explore" search={{ hub: "move" }} className="underline">
+                  Choose a product
+                </Link>
+              ) : (
+                <Link to="/" className="underline">
+                  Choose another focus
+                </Link>
+              )}
             </p>
           ) : null}
           {!showLoading &&

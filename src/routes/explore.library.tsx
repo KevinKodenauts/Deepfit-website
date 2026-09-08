@@ -4,6 +4,7 @@ import { z } from "zod";
 const searchSchema = z.object({
   equipment_ids: z.union([z.string(), z.number()]).optional(),
   focus: z.union([z.string(), z.number()]).optional(),
+  category: z.string().optional(),
 });
 
 export const Route = createFileRoute("/explore/library")({
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/explore/library")({
       search: {
         equipment_ids: search.equipment_ids,
         focus: search.focus,
+        category: search.category,
       },
       replace: true,
     });
