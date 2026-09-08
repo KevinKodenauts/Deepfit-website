@@ -36,11 +36,13 @@ export const Route = createFileRoute("/exercise/library")({
 type ExerciseView = {
   id: number;
   title: string;
+  category: string;
   target: string;
   image: string;
   difficulty: string;
   standard: string;
   instructions: string;
+  steps: ExerciseItem["steps"];
   primaryAction: boolean;
   equipmentNames: string[];
 };
@@ -57,6 +59,7 @@ function mapExercise(item: ExerciseItem): ExerciseView {
   return {
     id: item.id,
     title: item.exerciseName,
+    category: (item.category ?? "General").toUpperCase(),
     target: (item.targetMuscle ?? "FULL BODY").toUpperCase(),
     image: item.exerciseImage || "/images/bicep-curl.png",
     difficulty: item.difficulty ?? "Beginner",
@@ -64,6 +67,7 @@ function mapExercise(item: ExerciseItem): ExerciseView {
       item.standardRecommendation ??
       `${item.sets ?? 3} sets, ${item.reps ?? 12} reps`,
     instructions: item.description ?? "",
+    steps: item.steps ?? [],
     primaryAction:
       !item.buttonType || item.buttonType === "START_EXERCISE",
     equipmentNames: (item.equipment ?? []).map((e) => e.name),
@@ -435,13 +439,19 @@ function EquippedLibraryPage() {
                   />
                   <div className={styles.imageOverlay} />
                   <div className={styles.imageContent}>
-                    <span className={styles.targetBadge}>{exercise.target}</span>
+                    <span className={styles.targetBadge}>{exercise.category}</span>
                   </div>
                 </div>
 
                 <div className={styles.cardBody}>
                   <h2 className={styles.exerciseTitle}>{exercise.title}</h2>
                   <div className={styles.statsRow}>
+                    <div className={styles.statBlock}>
+                      <span className={styles.statLabel}>Target</span>
+                      <span className={styles.statValue}>
+                        {exercise.target}
+                      </span>
+                    </div>
                     <div className={styles.statBlock}>
                       <span className={styles.statLabel}>Difficulty</span>
                       <span className={styles.statValue}>
@@ -456,7 +466,32 @@ function EquippedLibraryPage() {
                     </div>
                   </div>
 
-                  {exercise.instructions ? (
+                  {exercise.steps && exercise.steps.length > 0 ? (
+                    <ol className={styles.guideSteps}>
+                      {exercise.steps.map((step, stepIndex) => (
+                        <li
+                          key={step.id ?? stepIndex}
+                          className={styles.guideStep}
+                        >
+                          <span className={styles.guideStepNumber}>
+                            {step.stepNumber ?? stepIndex + 1}
+                          </span>
+                          <div className={styles.guideStepBody}>
+                            {step.stepTitle ? (
+                              <span className={styles.guideStepTitle}>
+                                {step.stepTitle}
+                              </span>
+                            ) : null}
+                            {step.stepDescription ? (
+                              <p className={styles.guideStepDesc}>
+                                {step.stepDescription}
+                              </p>
+                            ) : null}
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
+                  ) : exercise.instructions ? (
                     <p className={styles.instructions}>
                       {exercise.instructions}
                     </p>

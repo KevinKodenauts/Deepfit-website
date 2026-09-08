@@ -150,7 +150,8 @@ function ActiveWorkoutPage() {
 
   const totalSets = exercise.sets ?? 3;
   const reps = exercise.reps ?? 12;
-  const target = (exercise.targetMuscle ?? "FULL BODY").toUpperCase();
+  const category = (exercise.category ?? exercise.targetMuscle ?? "FULL BODY").toUpperCase();
+  const steps = exercise.steps ?? [];
 
   return (
     <div className="bg-background text-foreground">
@@ -225,7 +226,7 @@ function ActiveWorkoutPage() {
 
             <div className={styles.bottomImageInfo}>
               <div className={styles.bottomTextBlock}>
-                <span className={styles.exerciseBadge}>{target}</span>
+                <span className={styles.exerciseBadge}>{category}</span>
                 <h3 className={styles.exerciseName}>{exercise.exerciseName}</h3>
               </div>
 
@@ -253,6 +254,28 @@ function ActiveWorkoutPage() {
               <div className={styles.statData}>{reps}</div>
             </div>
           </div>
+
+          {steps.length > 0 ? (
+            <ol className={styles.stepList}>
+              {steps.map((step, stepIndex) => (
+                <li key={step.id ?? stepIndex} className={styles.stepItem}>
+                  <span className={styles.stepNumber}>
+                    {step.stepNumber ?? stepIndex + 1}
+                  </span>
+                  <div className={styles.stepBody}>
+                    {step.stepTitle ? (
+                      <span className={styles.stepTitle}>{step.stepTitle}</span>
+                    ) : null}
+                    {step.stepDescription ? (
+                      <p className={styles.stepDesc}>{step.stepDescription}</p>
+                    ) : null}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          ) : exercise.description ? (
+            <p className={styles.stepDesc}>{exercise.description}</p>
+          ) : null}
 
           <div className={styles.controlsContainer}>
             <button

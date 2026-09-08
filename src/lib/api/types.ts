@@ -232,9 +232,17 @@ export type OtpVerifyResponse = {
   email?: string;
 };
 
+export type ExerciseStep = {
+  id?: number;
+  stepNumber: number;
+  stepTitle: string;
+  stepDescription: string;
+};
+
 export type ExerciseItem = {
   id: number;
   exerciseName: string;
+  category?: string;
   workoutProgram?: string;
   targetMuscle?: string;
   exerciseImage?: string;
@@ -247,6 +255,7 @@ export type ExerciseItem = {
   description?: string;
   buttonType?: string;
   equipment?: Array<{ id: number; name: string; category?: string }>;
+  steps?: ExerciseStep[];
 };
 
 export type EquipmentInstruction = {

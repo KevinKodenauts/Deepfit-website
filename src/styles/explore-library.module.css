@@ -270,6 +270,12 @@
   align-items: start;
 }
 
+@media (min-width: 420px) {
+  .statsRow {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
 .statBlock {
   display: flex;
   flex-direction: column;
