@@ -1,8 +1,8 @@
 export const SITE_EMAIL = "support@deepfit.life";
 
 export const SITE_WHATSAPP = {
-  display: "+971 52 7512302",
-  href: "https://wa.me/971527512302",
+  display: "+971 50 114804",
+  href: "https://wa.me/971501148044",
 } as const;
 
 export const SITE_COMPANY = {
@@ -13,10 +13,10 @@ export const SITE_COMPANY = {
 export const SITE_SOCIAL = [
   {
     label: "Instagram",
-    href: "https://www.instagram.com/deepfit.wellness",
+    href: "https://www.instagram.com/deepfitwellness?igsi=MWp3dHIyZzVrbXJhbg==",
   },
   {
     label: "Facebook",
-    href: "https://www.facebook.com/deepfit.life",
+    href: "https://www.facebook.com/share/1Br6Abq2aK/?mibextid=wwXIfr",
   },
 ] as const;

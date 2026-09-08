@@ -86,15 +86,12 @@ function BlogPostPage() {
   }, [slug]);
 
   return (
-    <article className="relative overflow-hidden bg-soft pt-28 sm:pt-32">
-      <div className="pointer-events-none absolute -right-40 top-10 h-[520px] w-[520px] rounded-full opacity-35 blur-3xl [background:radial-gradient(circle,var(--lavender),transparent_60%)]" />
-      <div className="pointer-events-none absolute -left-32 top-40 h-[380px] w-[380px] rounded-full opacity-25 blur-3xl [background:radial-gradient(circle,var(--mint),transparent_60%)]" />
+    <article className={styles.page}>
+      <div className={`${styles.blob} ${styles.blobLavender}`} />
+      <div className={`${styles.blob} ${styles.blobMint}`} />
 
-      <div className="relative mx-auto max-w-7xl px-6 pb-24 lg:px-10">
-        <Link
-          to="/explore?hub=blog"
-          className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground"
-        >
+      <div className={styles.shell}>
+        <Link to="/explore?hub=blog" className={styles.backLink}>
           <ArrowLeft size={16} />
           All articles
         </Link>
@@ -104,7 +101,7 @@ function BlogPostPage() {
             <BlogDetailSkeleton />
           </div>
         ) : notFound ? (
-          <div className="mt-10 rounded-[2rem] bg-card px-6 py-16 text-center shadow-soft ring-1 ring-border/60">
+          <div className={styles.state}>
             <h1 className="font-display text-3xl">Article not found</h1>
             <p className="mt-2 text-sm text-muted-foreground">
               This journal note may have been moved or is no longer published.
@@ -117,91 +114,76 @@ function BlogPostPage() {
             </Link>
           </div>
         ) : error ? (
-          <div className="mt-10 rounded-[2rem] bg-card px-6 py-16 text-center shadow-soft ring-1 ring-border/60">
+          <div className={styles.state}>
             <p className="text-muted-foreground">{error}</p>
           </div>
         ) : post ? (
           <>
-            <header className="mt-8 grid items-end gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)] lg:gap-16">
-              <div>
-                <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
-                  {post.category?.name ? (
-                    <span
-                      className={cn(
-                        "rounded-full px-2.5 py-1 tracking-[0.12em]",
-                        categoryTone(post.category.slug),
-                      )}
-                    >
-                      {post.category.name}
-                    </span>
-                  ) : null}
-                  {post.publishedAt ? (
-                    <span>{formatBlogDate(post.publishedAt)}</span>
-                  ) : null}
-                  {post.authorName ? <span>{post.authorName}</span> : null}
-                </div>
-                <h1 className="mt-4 max-w-4xl font-display text-4xl leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
-                  {post.title}
-                </h1>
+            <header className={styles.hero}>
+              <div className={styles.meta}>
+                {post.category?.name ? (
+                  <span
+                    className={cn(
+                      "rounded-full px-2.5 py-1 tracking-[0.12em]",
+                      categoryTone(post.category.slug),
+                    )}
+                  >
+                    {post.category.name}
+                  </span>
+                ) : null}
+                {post.publishedAt ? (
+                  <span>{formatBlogDate(post.publishedAt)}</span>
+                ) : null}
+                {post.authorName ? <span>{post.authorName}</span> : null}
               </div>
+              <h1 className={styles.title}>{post.title}</h1>
               {post.excerpt ? (
-                <p className="max-w-xl text-lg leading-relaxed text-muted-foreground lg:pb-1">
-                  {post.excerpt}
-                </p>
+                <p className={styles.excerpt}>{post.excerpt}</p>
               ) : null}
             </header>
 
             {post.featuredImage ? (
-              <div className="mt-10 overflow-hidden rounded-[1.75rem] bg-muted shadow-soft sm:rounded-[2rem]">
+              <div className={styles.cover}>
                 <img
                   src={post.featuredImage}
                   alt={blogImageAlt(post)}
-                  className="aspect-[16/9] w-full object-cover lg:aspect-[2.2/1]"
                 />
               </div>
             ) : null}
 
-            <div className="mt-10 grid gap-10 lg:mt-14 lg:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.8fr)] lg:items-start lg:gap-14">
+            <div className={styles.layout}>
               <div
-                className={`${styles.article} rounded-[1.75rem] bg-card p-6 shadow-soft ring-1 ring-border/50 sm:p-10 lg:p-12`}
+                className={styles.article}
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
 
               {related.length > 0 ? (
-                <aside className="lg:sticky lg:top-28">
-                  <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
-                    Keep reading
-                  </div>
-                  <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                <aside className={styles.sidebar}>
+                  <div className={styles.sidebarLabel}>Keep reading</div>
+                  <div className={styles.relatedList}>
                     {related.map((item) => (
                       <Link
                         key={item.id}
                         to="/blog/$slug"
                         params={{ slug: item.slug }}
-                        className="group overflow-hidden rounded-[1.5rem] bg-card shadow-soft ring-1 ring-border/50 transition hover:-translate-y-0.5"
+                        className={styles.relatedCard}
                       >
                         {item.featuredImage ? (
-                          <div className="aspect-[16/10] overflow-hidden bg-muted">
+                          <div className={styles.relatedImage}>
                             <img
                               src={item.featuredImage}
                               alt={blogImageAlt(item)}
-                              className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                             />
                           </div>
                         ) : null}
-                        <div className="p-5">
-                          <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+                        <div className={styles.relatedBody}>
+                          <div className={styles.relatedCategory}>
                             {item.category?.name ?? "Journal"}
                           </div>
-                          <h2 className="mt-2 font-display text-xl leading-snug">
-                            {item.title}
-                          </h2>
-                          <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium">
+                          <h2 className={styles.relatedTitle}>{item.title}</h2>
+                          <span className={styles.relatedCta}>
                             Read article
-                            <ArrowUpRight
-                              size={15}
-                              className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                            />
+                            <ArrowUpRight size={15} />
                           </span>
                         </div>
                       </Link>

@@ -203,6 +203,7 @@
   }
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--desktop-nav-height, 76px) + 1.25rem);
   }
 }
 
@@ -211,6 +212,11 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  /* Keep italic glyphs inside the clip region without blocking wrap. */
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding-block: 0.12em 0.18em;
+  padding-inline: 0.04em 1em;
 }
 
 @utility bg-brand {

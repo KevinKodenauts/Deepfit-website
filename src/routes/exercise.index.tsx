@@ -40,7 +40,7 @@ function ExerciseIndexPage() {
           <h1 className={styles.pageTitle}>Choose Your Equipment</h1>
         </header>
         <p className={styles.subtitle}>
-          Select one or more fitness tools to discover matching exercises.
+          Select a product to discover matching exercises.
         </p>
         <ChooseEquipment />
       </div>

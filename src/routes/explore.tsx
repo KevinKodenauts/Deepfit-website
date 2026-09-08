@@ -11,6 +11,7 @@ import {
 import { z } from "zod";
 import ChooseEquipment from "@/components/explore/ChooseEquipment";
 import { ExploreBlog } from "@/components/explore/ExploreBlog";
+import { Footer } from "@/components/site/Footer";
 import { Nav } from "@/components/site/Nav";
 import styles from "@/styles/explore.module.css";
 
@@ -103,10 +104,8 @@ function ExplorePage() {
     HUBS.findIndex((item) => item.id === hubParam),
   );
   const [activeHub, setActiveHub] = useState(initialHub >= 0 ? initialHub : 0);
-  const [hasEquipmentSelection, setHasEquipmentSelection] = useState(false);
 
   const hub = HUBS[activeHub];
-  const showHubNav = activeHub !== 0 || !hasEquipmentSelection;
 
   useEffect(() => {
     const index = HUBS.findIndex((item) => item.id === hubParam);
@@ -124,10 +123,6 @@ function ExplorePage() {
     },
     [navigate],
   );
-
-  const handleSelectionChanged = useCallback((hasSelection: boolean) => {
-    setHasEquipmentSelection(hasSelection);
-  }, []);
 
   return (
     <div className="bg-background text-foreground">
@@ -168,16 +163,9 @@ function ExplorePage() {
           })}
         </div>
 
-        <div
-          className={`${styles.content} ${
-            !showHubNav ? styles.contentFlush : ""
-          }`}
-        >
+        <div className={styles.content}>
           {activeHub === 0 ? (
-            <ChooseEquipment
-              hideHeader
-              onSelectionChanged={handleSelectionChanged}
-            />
+            <ChooseEquipment hideHeader />
           ) : hub.id === "blog" ? (
             <ExploreBlog />
           ) : (
@@ -185,31 +173,32 @@ function ExplorePage() {
           )}
         </div>
 
-        {showHubNav ? (
-          <div className={styles.hubNavOuter}>
-            <nav className={styles.hubNav} aria-label="Explore hubs">
-              {HUBS.map((item, index) => {
-                const Icon = item.icon;
-                const isActive = activeHub === index;
+        <div className={styles.hubNavOuter}>
+          <nav className={styles.hubNav} aria-label="Explore hubs">
+            {HUBS.map((item, index) => {
+              const Icon = item.icon;
+              const isActive = activeHub === index;
 
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    className={`${styles.hubTab} ${
-                      isActive ? styles.hubTabActive : ""
-                    }`}
-                    onClick={() => selectHub(index)}
-                    aria-current={isActive ? "page" : undefined}
-                  >
-                    <Icon size={20} strokeWidth={isActive ? 2.4 : 2} />
-                    <span className={styles.hubTabLabel}>{item.shortName}</span>
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        ) : null}
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`${styles.hubTab} ${
+                    isActive ? styles.hubTabActive : ""
+                  }`}
+                  onClick={() => selectHub(index)}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  <Icon size={20} strokeWidth={isActive ? 2.4 : 2} />
+                  <span className={styles.hubTabLabel}>{item.shortName}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+      </div>
+      <div className="hidden lg:block">
+        <Footer />
       </div>
     </div>
   );

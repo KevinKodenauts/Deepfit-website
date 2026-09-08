@@ -1,3 +1,4 @@
+import { sanitizeRichHtml } from "@/lib/sanitizeHtml";
 import { ApiError } from "./client";
 import { blogUrl } from "./config";
 
@@ -114,6 +115,20 @@ async function blogRequest<T>(
   return data as T;
 }
 
+function sanitizeBlogPost<T extends BlogPostListItem>(post: T): T {
+  const next = {
+    ...post,
+    title: post.title ? sanitizeRichHtml(post.title) : post.title,
+    excerpt: post.excerpt ? sanitizeRichHtml(post.excerpt) : post.excerpt,
+  };
+
+  if ("content" in next && typeof next.content === "string") {
+    next.content = sanitizeRichHtml(next.content);
+  }
+
+  return next;
+}
+
 export async function getBlogPosts(options?: {
   category?: string;
   featured?: boolean;
@@ -130,14 +145,14 @@ export async function getBlogPosts(options?: {
   });
 
   return {
-    posts: data.data ?? [],
+    posts: (data.data ?? []).map(sanitizeBlogPost),
     pagination: data.pagination,
   };
 }
 
 export async function getFeaturedBlogPosts(): Promise<BlogPostListItem[]> {
   const data = await blogRequest<BlogFeaturedResponse>("/featured");
-  return data.data ?? [];
+  return (data.data ?? []).map(sanitizeBlogPost);
 }
 
 export async function getBlogCategories(): Promise<BlogCategory[]> {
@@ -153,5 +168,5 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPostDetail> {
     throw new ApiError("Blog post not found", 404);
   }
 
-  return data.data;
+  return sanitizeBlogPost(data.data);
 }

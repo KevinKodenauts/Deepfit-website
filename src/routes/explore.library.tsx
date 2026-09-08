@@ -2,8 +2,8 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { z } from "zod";
 
 const searchSchema = z.object({
-  equipment_ids: z.string().optional(),
-  focus: z.string().optional(),
+  equipment_ids: z.union([z.string(), z.number()]).optional(),
+  focus: z.union([z.string(), z.number()]).optional(),
 });
 
 export const Route = createFileRoute("/explore/library")({

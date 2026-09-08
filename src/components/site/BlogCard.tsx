@@ -35,7 +35,7 @@ export function BlogCard({
         </div>
         <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-14">
           <BlogMeta post={post} />
-          <h2 className="mt-4 font-display text-3xl leading-[1.05] tracking-tight sm:text-4xl lg:text-5xl">
+          <h2 className="mt-4 font-display text-3xl leading-[1.15] tracking-tight sm:text-4xl lg:text-5xl">
             {post.title}
           </h2>
           {post.excerpt ? (

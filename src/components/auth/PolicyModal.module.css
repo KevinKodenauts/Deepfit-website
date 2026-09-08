@@ -61,6 +61,8 @@
   color: #333333;
   font-size: 14px;
   line-height: 1.6;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .htmlContent h2,

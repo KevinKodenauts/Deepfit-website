@@ -73,7 +73,7 @@ function BlogIndexPage() {
           <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
             Journal
           </div>
-          <h1 className="mt-3 max-w-3xl font-display text-5xl leading-[0.95] sm:text-7xl">
+          <h1 className="mt-3 max-w-3xl font-display text-5xl leading-[1.15] sm:text-7xl">
             Notes for living well,{" "}
             <span className="text-gradient italic">every day</span>.
           </h1>

@@ -174,8 +174,10 @@ function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
-      <Hero sliders={sliders} loading={loading} />
-      <Marquee />
+      <div className="lg:flex lg:h-svh lg:max-h-svh lg:flex-col lg:overflow-hidden">
+        <Hero sliders={sliders} loading={loading} />
+        <Marquee />
+      </div>
       <Categories categories={categories} loading={loading} />
       <Featured products={featured} categories={categories} loading={loading} />
       <ShopByGoal />
@@ -234,20 +236,20 @@ function Hero({
 
   return (
     <section
-      className="relative w-full overflow-hidden bg-muted pt-[4.5rem]"
+      className="relative w-full overflow-hidden bg-muted pt-[4.5rem] lg:flex lg:min-h-0 lg:flex-1 lg:flex-col"
       aria-busy={showSkeleton}
       aria-label={headline}
     >
       <h1 className="sr-only">{headline}</h1>
       <div
-        className={`relative w-full ${showSkeleton ? "min-h-[calc(100svh-4.5rem)]" : ""}`}
+        className={`relative w-full lg:min-h-0 lg:flex-1 ${showSkeleton ? "min-h-[calc(100svh-4.5rem)] lg:min-h-0" : ""}`}
       >
         {showSkeleton ? <HeroBannerLoader /> : null}
         {loadedSrc ? (
           <img
             src={loadedSrc}
             alt={headline}
-            className="block h-auto w-full object-contain object-top"
+            className="block h-auto w-full object-contain object-top lg:absolute lg:inset-0 lg:h-full lg:w-full lg:object-cover lg:object-center"
           />
         ) : null}
         {pendingSrc ? (
@@ -464,7 +466,7 @@ function HeroPrevious({ sliders }: { sliders: DashboardSlider[] }) {
 function Marquee() {
   const words = ["Wellness Inside Out", "Precision-cast steel", "Silent decks", "Studio-grade recovery", "Made to last", "Handcrafted"];
   return (
-    <div className="border-y border-border/60 bg-background py-6 overflow-hidden">
+    <div className="overflow-hidden border-y border-border/60 bg-background py-6 lg:shrink-0">
       <div className="flex w-max animate-marquee gap-14 whitespace-nowrap">
         {[...words, ...words, ...words].map((w, i) => (
           <span key={i} className="font-display text-2xl italic text-muted-foreground">
@@ -713,19 +715,20 @@ function ShopByGoal() {
       <div className="pointer-events-none absolute inset-0 opacity-40 [background:var(--gradient-soft)]" />
       <div className="relative mx-auto max-w-7xl px-6 lg:px-10">
         <div className="max-w-2xl">
-          <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">03 — Shop by goal</div>
+          <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">03 — Daily Movement</div>
           <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">
-            What are you <span className="text-gradient italic">building</span> today?
+            What&apos;s your workout <span className="text-gradient italic">focus</span> today?
           </h2>
           <p className="mt-4 text-muted-foreground">
-            From your first pull-up to your hundredth marathon, we've built a shelf of tools for every chapter of the practice.
+            From an upper-body session to a slow pilates flow, pick a focus and start today&apos;s practice.
           </p>
         </div>
         <div className="mt-12 flex flex-wrap gap-3">
           {goals.map((g) => (
             <Link
               key={g}
-              to="/shop"
+              to="/explore"
+              search={{ hub: "move" }}
               className="group rounded-full glass px-6 py-3 text-sm font-medium shadow-soft transition hover:shadow-glass hover:-translate-y-0.5"
             >
               {g}
