@@ -305,6 +305,14 @@ function AboutPage() {
               <span className={styles.sectionNum}>02</span>
               <span className={styles.sectionLabel}>Founder</span>
               <h2 className={styles.storyHeading}>Meet Deepa</h2>
+              <figure className={styles.founderPortrait}>
+                <img
+                  src="/Deepa.jpeg"
+                  alt="Deepa, founder of DEEPFIT"
+                  width={640}
+                  height={793}
+                />
+              </figure>
             </div>
 
             <div className={styles.storyBody}>

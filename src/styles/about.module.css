@@ -341,6 +341,21 @@
   border-bottom: 1px solid #eef2f7;
 }
 
+.founderPortrait {
+  margin: 28px 0 0;
+  max-width: 300px;
+  overflow: hidden;
+  border-radius: 24px;
+  background: #f5c542;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.12);
+}
+
+.founderPortrait img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 .founderSignature {
   display: block;
   font-style: normal;
@@ -1121,6 +1136,10 @@
     grid-template-columns: 0.85fr 1.15fr;
     gap: 48px;
     align-items: start;
+  }
+
+  .founderPortrait {
+    max-width: 280px;
   }
 
   .storyAside {
