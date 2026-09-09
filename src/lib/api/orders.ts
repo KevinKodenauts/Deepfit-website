@@ -1,3 +1,4 @@
+import { getAccessToken } from "@/lib/auth/session";
 import { CUSTOMER_PORTAL, portalUrl } from "./config";
 import { apiRequest } from "./client";
 
@@ -28,6 +29,7 @@ export type OrderSummary = {
   grandTotal: number;
   isPaid: boolean;
   paymentStatus?: string;
+  paymentIntentId?: string;
   orderedProducts: OrderProduct[];
 };
 
@@ -60,6 +62,7 @@ type RawOrderProduct = {
 
 type RawOrder = {
   id: number;
+  orderId?: number;
   orderNo?: string;
   orderNumber?: string;
   orderStatus: string;
@@ -70,6 +73,7 @@ type RawOrder = {
   netAmount?: string | number;
   grandTotal?: string | number;
   paymentStatus?: string;
+  paymentIntentId?: string;
   isPaid?: boolean;
   products?: RawOrderProduct[];
   orderedProducts?: RawOrderProduct[];
@@ -166,6 +170,7 @@ function mapOrder(order: RawOrder): OrderSummary {
     grandTotal: Number(order.netAmount ?? order.grandTotal ?? 0),
     isPaid,
     paymentStatus: order.paymentStatus,
+    paymentIntentId: order.paymentIntentId || undefined,
     orderedProducts,
   };
 }
@@ -398,6 +403,36 @@ export async function verifyZiinaPayment(payload: {
   });
 }
 
+export async function refundZiinaPayment(payload: {
+  orderId?: number | string;
+  paymentIntentId?: string;
+  amount?: number | string;
+  cancelOrder?: boolean;
+  reason?: string;
+}) {
+  const response = await fetch("/api/payments/ziina/refund", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      ...payload,
+      accessToken: getAccessToken(),
+    }),
+  });
+  const data = (await response.json().catch(() => null)) as {
+    status?: boolean;
+    message?: string;
+    refundId?: string;
+    refundStatus?: string;
+    djangoSynced?: boolean;
+  } | null;
+
+  if (!response.ok || !data?.status) {
+    throw new Error(data?.message ?? "Could not refund payment");
+  }
+
+  return data;
+}
+
 /** Start Ziina checkout via the Next.js server (works even if Django is not updated yet). */
 export async function startZiinaPayment(payload: {
   orderId: number | string;
@@ -407,7 +442,10 @@ export async function startZiinaPayment(payload: {
   const response = await fetch("/api/payments/ziina/create", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      ...payload,
+      accessToken: getAccessToken(),
+    }),
   });
   const data = (await response.json().catch(() => null)) as {
     status?: boolean;

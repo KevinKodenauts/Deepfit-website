@@ -128,3 +128,98 @@ export async function getZiinaPaymentIntent(
 
   return data;
 }
+
+export type ZiinaRefund = {
+  id: string;
+  payment_intent_id: string;
+  amount: number;
+  currency_code: string;
+  status: string;
+  created_at?: string;
+  error?: { message?: string; code?: string } | null;
+};
+
+function ziinaTestMode(explicit?: boolean) {
+  if (explicit != null) return explicit;
+  return ["1", "true", "yes"].includes(
+    (
+      (typeof process !== "undefined" ? process.env.ZIINA_TEST_MODE : undefined) ??
+      "false"
+    ).toLowerCase(),
+  );
+}
+
+export async function createZiinaRefund(input: {
+  paymentIntentId: string;
+  amount: number | string;
+  refundId?: string;
+  test?: boolean;
+}): Promise<ZiinaRefund> {
+  const token = getAccessToken();
+  if (!token) {
+    throw new Error("Ziina is not configured on the website server");
+  }
+
+  const refundId = input.refundId || crypto.randomUUID();
+  const response = await fetch(`${ZIINA_API_BASE}/refund`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      id: refundId,
+      payment_intent_id: input.paymentIntentId,
+      amount: toMinorUnits(input.amount),
+      currency_code:
+        (typeof process !== "undefined" ? process.env.ZIINA_CURRENCY : undefined) ??
+        "AED",
+      test: ziinaTestMode(input.test),
+    }),
+  });
+
+  const data = (await response.json().catch(() => null)) as
+    | ZiinaRefund
+    | { message?: string }
+    | null;
+
+  if (!response.ok || !data || !("id" in data)) {
+    const message =
+      data && "message" in data && data.message
+        ? data.message
+        : `Ziina refund failed (${response.status})`;
+    throw new Error(message);
+  }
+
+  return data;
+}
+
+export async function getZiinaRefund(refundId: string): Promise<ZiinaRefund> {
+  const token = getAccessToken();
+  if (!token) {
+    throw new Error("Ziina is not configured on the website server");
+  }
+
+  const response = await fetch(`${ZIINA_API_BASE}/refund/${refundId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  });
+
+  const data = (await response.json().catch(() => null)) as
+    | ZiinaRefund
+    | { message?: string }
+    | null;
+
+  if (!response.ok || !data || !("id" in data)) {
+    const message =
+      data && "message" in data && data.message
+        ? data.message
+        : `Ziina refund fetch failed (${response.status})`;
+    throw new Error(message);
+  }
+
+  return data;
+}
