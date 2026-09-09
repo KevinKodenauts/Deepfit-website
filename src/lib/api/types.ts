@@ -100,6 +100,9 @@ export type DashboardSlider = {
   title: string;
   description: string;
   sliderImage: string;
+  sliderImageLaptop?: string;
+  sliderImageDesktop?: string;
+  sliderImageRetina?: string;
   link?: string;
 };
 

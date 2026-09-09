@@ -174,7 +174,7 @@ function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
-      <div className="lg:flex lg:h-svh lg:max-h-svh lg:flex-col lg:overflow-hidden">
+      <div className="flex flex-col lg:h-svh lg:max-h-svh">
         <Hero sliders={sliders} loading={loading} />
         <Marquee />
       </div>
@@ -191,6 +191,57 @@ function Home() {
   );
 }
 
+function firstSliderImage(slide: DashboardSlider) {
+  return (
+    slide.sliderImage ||
+    slide.sliderImageLaptop ||
+    slide.sliderImageDesktop ||
+    slide.sliderImageRetina ||
+    ""
+  );
+}
+
+function pickSliderImage(slide: DashboardSlider, width: number, dpr: number) {
+  if (width < 1024) {
+    return firstSliderImage(slide);
+  }
+  if (width < 1440) {
+    return slide.sliderImageLaptop || firstSliderImage(slide);
+  }
+  if (dpr >= 1.5) {
+    return (
+      slide.sliderImageRetina ||
+      slide.sliderImageDesktop ||
+      slide.sliderImageLaptop ||
+      firstSliderImage(slide)
+    );
+  }
+  return (
+    slide.sliderImageDesktop ||
+    slide.sliderImageRetina ||
+    slide.sliderImageLaptop ||
+    firstSliderImage(slide)
+  );
+}
+
+function useViewport() {
+  const [viewport, setViewport] = useState({ width: 0, dpr: 1 });
+
+  useEffect(() => {
+    const update = () => {
+      setViewport({
+        width: window.innerWidth,
+        dpr: window.devicePixelRatio || 1,
+      });
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  return viewport;
+}
+
 function Hero({
   sliders,
   loading,
@@ -198,18 +249,18 @@ function Hero({
   sliders: DashboardSlider[];
   loading: boolean;
 }) {
-  const slides = sliders.filter((slide) => Boolean(slide.sliderImage));
+  const slides = sliders.filter((slide) => Boolean(firstSliderImage(slide)));
   const [index, setIndex] = useState(0);
   const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
   const pendingRef = useRef<HTMLImageElement>(null);
+  const { width, dpr } = useViewport();
 
   const active = slides.length > 0 ? slides[index % slides.length] : undefined;
   const headline =
     active?.title?.trim() || "Transform your home into a premium fitness studio.";
+  const activeSrc = active ? pickSliderImage(active, width, dpr) : "";
   const pendingSrc =
-    active?.sliderImage && active.sliderImage !== loadedSrc
-      ? active.sliderImage
-      : null;
+    activeSrc && activeSrc !== loadedSrc ? activeSrc : null;
   const showSkeleton = loading || !loadedSrc;
 
   const goNext = useCallback(() => {
@@ -242,14 +293,14 @@ function Hero({
     >
       <h1 className="sr-only">{headline}</h1>
       <div
-        className={`relative w-full lg:min-h-0 lg:flex-1 ${showSkeleton ? "min-h-[calc(100svh-4.5rem)] lg:min-h-0" : ""}`}
+        className={`relative w-full lg:flex lg:h-full lg:min-h-0 lg:flex-1 lg:items-center lg:justify-center ${showSkeleton ? "min-h-[min(70svh,32rem)] lg:min-h-0" : ""}`}
       >
         {showSkeleton ? <HeroBannerLoader /> : null}
         {loadedSrc ? (
           <img
             src={loadedSrc}
             alt={headline}
-            className="block h-auto w-full object-contain object-top lg:absolute lg:inset-0 lg:h-full lg:w-full lg:object-cover lg:object-center"
+            className="block h-auto w-full object-contain object-top lg:h-auto lg:w-auto lg:max-h-full lg:max-w-full"
           />
         ) : null}
         {pendingSrc ? (

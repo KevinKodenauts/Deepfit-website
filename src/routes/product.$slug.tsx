@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
@@ -180,11 +180,17 @@ function ProductDescription({
   );
 }
 
-function ProductCertificate({ productName }: { productName: string }) {
+function ProductCertificate({
+  productName,
+  productId,
+}: {
+  productName: string;
+  productId: number;
+}) {
   const slug = productNameSlug(productName);
-  const router = useRouter();
+  const navigate = useNavigate();
   if (!slug) return null;
-  const href = `/lab-test-report/${slug}`;
+  const href = `/lab-test-report/${slug}?productId=${productId}`;
 
   return (
     <a
@@ -202,7 +208,11 @@ function ProductCertificate({ productName }: { productName: string }) {
           return;
         }
         event.preventDefault();
-        void router.history.push(href);
+        void navigate({
+          to: "/lab-test-report/$productName",
+          params: { productName: slug },
+          search: { productId },
+        });
       }}
       className="group mt-6 flex items-center gap-4 rounded-2xl border border-[#1A637B]/20 bg-[#E8F3F6]/80 px-4 py-3.5 shadow-[0_8px_24px_-12px_rgba(26,99,123,0.35)] transition duration-200 hover:border-[#1A637B]/40 hover:bg-[#E8F3F6] hover:shadow-[0_12px_28px_-10px_rgba(26,99,123,0.42)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A637B] focus-visible:ring-offset-2"
     >
@@ -658,7 +668,10 @@ function ProductPage() {
             )}
             {productView && <ProductDescription productView={productView} />}
             {productView && (productView.certificates.length > 0 || productView.certificate) ? (
-              <ProductCertificate productName={productView.title} />
+              <ProductCertificate
+                productName={productView.title}
+                productId={productView.id}
+              />
             ) : null}
             {equipmentLoading ? <ProductEquipmentGuideSkeleton /> : null}
             {!equipmentLoading && equipment ? (
