@@ -3,7 +3,11 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useAuth } from "@/contexts/AuthContext";
 import { socialLoginCustomer, pickAuthTokens } from "@/lib/api/auth";
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
+// Web OAuth client ID (same as Flutter googleWebClientId). Env can override.
+const GOOGLE_WEB_CLIENT_ID =
+  "12274574025-rkmdk3h8jr7egmnb24ht5722qdvgt0hc.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID =
+  import.meta.env.VITE_GOOGLE_CLIENT_ID || GOOGLE_WEB_CLIENT_ID;
 
 declare global {
   interface Window {
