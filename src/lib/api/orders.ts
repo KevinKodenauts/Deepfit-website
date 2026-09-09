@@ -34,14 +34,20 @@ export type OrderSummary = {
 type RawOrderProduct = {
   id: number;
   qty?: string | number;
+  quantity?: number;
   unitPrice?: string | number;
+  totalPrice?: string | number;
   finalAmount?: string | number;
   lastTrackedStatus?: string;
   isReturned?: boolean;
+  productName?: string;
+  productImage?: string;
+  productGallery?: string | string[];
   productDetail?: {
     id?: number;
     productname?: string;
     productName?: string;
+    productImage?: string;
     productGallery?: string | string[];
   };
   variantDetail?: {
@@ -66,13 +72,7 @@ type RawOrder = {
   paymentStatus?: string;
   isPaid?: boolean;
   products?: RawOrderProduct[];
-  orderedProducts?: Array<{
-    id: number;
-    productName: string;
-    quantity: number;
-    unitPrice: string;
-    totalPrice: string;
-  }>;
+  orderedProducts?: RawOrderProduct[];
 };
 
 type OrdersResponse = {
@@ -83,14 +83,20 @@ type OrdersResponse = {
 
 function parseGallery(gallery?: string | string[]): string | undefined {
   if (!gallery) return undefined;
-  if (Array.isArray(gallery)) return gallery[0] || undefined;
+  if (Array.isArray(gallery)) {
+    const first = gallery[0]?.trim();
+    return first || undefined;
+  }
 
   const trimmed = gallery.trim();
-  if (!trimmed) return undefined;
+  if (!trimmed || trimmed === "[]") return undefined;
 
   try {
     const parsed = JSON.parse(trimmed) as unknown;
-    if (Array.isArray(parsed)) return String(parsed[0] ?? "");
+    if (Array.isArray(parsed)) {
+      const first = String(parsed[0] ?? "").trim();
+      return first || undefined;
+    }
   } catch {
     // Fall through to comma-separated parsing.
   }
@@ -98,22 +104,40 @@ function parseGallery(gallery?: string | string[]): string | undefined {
   return trimmed.split(",")[0]?.trim() || undefined;
 }
 
+function firstNonEmptyImage(
+  ...candidates: Array<string | undefined>
+): string | undefined {
+  for (const candidate of candidates) {
+    const trimmed = candidate?.trim();
+    if (trimmed) return trimmed;
+  }
+  return undefined;
+}
+
 function mapOrderProduct(product: RawOrderProduct): OrderProduct {
   const productName =
     product.productDetail?.productName ??
     product.productDetail?.productname ??
+    product.productName ??
     "Product";
 
   const image =
-    parseGallery(product.variantDetail?.variantImageGallery) ??
-    parseGallery(product.productDetail?.productGallery);
+    firstNonEmptyImage(
+      product.productImage,
+      product.productDetail?.productImage,
+      parseGallery(product.variantDetail?.variantImageGallery),
+      parseGallery(product.productDetail?.productGallery),
+      parseGallery(product.productGallery)
+    ) || undefined;
 
   return {
     id: product.id,
     productName,
-    quantity: Number(product.qty ?? 1),
+    quantity: Number(product.qty ?? product.quantity ?? 1),
     unitPrice: Number(product.unitPrice ?? 0),
-    totalPrice: Number(product.finalAmount ?? product.unitPrice ?? 0),
+    totalPrice: Number(
+      product.finalAmount ?? product.totalPrice ?? product.unitPrice ?? 0
+    ),
     image,
     lastTrackedStatus: product.lastTrackedStatus,
   };
@@ -122,13 +146,7 @@ function mapOrderProduct(product: RawOrderProduct): OrderProduct {
 function mapOrder(order: RawOrder): OrderSummary {
   const orderedProducts = order.products?.length
     ? order.products.map(mapOrderProduct)
-    : (order.orderedProducts ?? []).map((product) => ({
-        id: product.id,
-        productName: product.productName,
-        quantity: product.quantity,
-        unitPrice: Number(product.unitPrice ?? 0),
-        totalPrice: Number(product.totalPrice ?? 0),
-      }));
+    : (order.orderedProducts ?? []).map(mapOrderProduct);
 
   const paymentStatus = order.paymentStatus?.toLowerCase();
   const isPaid =

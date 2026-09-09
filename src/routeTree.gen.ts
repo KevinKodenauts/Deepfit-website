@@ -36,6 +36,7 @@ import { Route as ExploreMyEquipmentRouteImport } from './routes/explore.my-equi
 import { Route as ForgotPasswordResetRouteImport } from './routes/forgot-password_.reset'
 import { Route as ForgotPasswordVerifyRouteImport } from './routes/forgot-password_.verify'
 import { Route as LabTestReportProductNameRouteImport } from './routes/lab-test-report.$productName'
+import { Route as OrdersIndexRouteImport } from './routes/orders.index'
 import { Route as OrdersDetailsRouteImport } from './routes/orders.details'
 import { Route as OrdersSuccessRouteImport } from './routes/orders.success'
 import { Route as PoliciesSlugRouteImport } from './routes/policies.$slug'
@@ -190,6 +191,11 @@ const LabTestReportProductNameRoute =
     path: '/lab-test-report/$productName',
     getParentRoute: () => rootRouteImport,
   } as any)
+const OrdersIndexRoute = OrdersIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => OrdersRoute,
+} as any)
 const OrdersDetailsRoute = OrdersDetailsRouteImport.update({
   id: '/details',
   path: '/details',
@@ -314,6 +320,7 @@ export interface FileRoutesByFullPath {
   '/wallet/add': typeof WalletAddRoute
   '/blog/': typeof BlogIndexRoute
   '/exercise/': typeof ExerciseIndexRoute
+  '/orders/': typeof OrdersIndexRoute
   '/profile/': typeof ProfileIndexRoute
   '/exercise/active/$id': typeof ExerciseActiveIdRoute
   '/exercise/equipment/$id': typeof ExerciseEquipmentIdRoute
@@ -331,7 +338,6 @@ export interface FileRoutesByTo {
   '/explore': typeof ExploreRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
-  '/orders': typeof OrdersRouteWithChildren
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
@@ -357,6 +363,7 @@ export interface FileRoutesByTo {
   '/wallet/add': typeof WalletAddRoute
   '/blog': typeof BlogIndexRoute
   '/exercise': typeof ExerciseIndexRoute
+  '/orders': typeof OrdersIndexRoute
   '/profile': typeof ProfileIndexRoute
   '/exercise/active/$id': typeof ExerciseActiveIdRoute
   '/exercise/equipment/$id': typeof ExerciseEquipmentIdRoute
@@ -404,6 +411,7 @@ export interface FileRoutesById {
   '/wallet/add': typeof WalletAddRoute
   '/blog/': typeof BlogIndexRoute
   '/exercise/': typeof ExerciseIndexRoute
+  '/orders/': typeof OrdersIndexRoute
   '/profile/': typeof ProfileIndexRoute
   '/exercise/active/$id': typeof ExerciseActiveIdRoute
   '/exercise/equipment/$id': typeof ExerciseEquipmentIdRoute
@@ -452,6 +460,7 @@ export interface FileRouteTypes {
     | '/wallet/add'
     | '/blog/'
     | '/exercise/'
+    | '/orders/'
     | '/profile/'
     | '/exercise/active/$id'
     | '/exercise/equipment/$id'
@@ -469,7 +478,6 @@ export interface FileRouteTypes {
     | '/explore'
     | '/forgot-password'
     | '/login'
-    | '/orders'
     | '/search'
     | '/shop'
     | '/signup'
@@ -495,6 +503,7 @@ export interface FileRouteTypes {
     | '/wallet/add'
     | '/blog'
     | '/exercise'
+    | '/orders'
     | '/profile'
     | '/exercise/active/$id'
     | '/exercise/equipment/$id'
@@ -541,6 +550,7 @@ export interface FileRouteTypes {
     | '/wallet/add'
     | '/blog/'
     | '/exercise/'
+    | '/orders/'
     | '/profile/'
     | '/exercise/active/$id'
     | '/exercise/equipment/$id'
@@ -768,6 +778,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LabTestReportProductNameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/orders/': {
+      id: '/orders/'
+      path: '/'
+      fullPath: '/orders/'
+      preLoaderRoute: typeof OrdersIndexRouteImport
+      parentRoute: typeof OrdersRoute
+    }
     '/orders/details': {
       id: '/orders/details'
       path: '/details'
@@ -942,11 +959,13 @@ const ExploreRouteWithChildren =
 interface OrdersRouteChildren {
   OrdersDetailsRoute: typeof OrdersDetailsRoute
   OrdersSuccessRoute: typeof OrdersSuccessRoute
+  OrdersIndexRoute: typeof OrdersIndexRoute
 }
 
 const OrdersRouteChildren: OrdersRouteChildren = {
   OrdersDetailsRoute: OrdersDetailsRoute,
   OrdersSuccessRoute: OrdersSuccessRoute,
+  OrdersIndexRoute: OrdersIndexRoute,
 }
 
 const OrdersRouteWithChildren =
