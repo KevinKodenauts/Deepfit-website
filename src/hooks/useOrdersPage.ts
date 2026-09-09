@@ -49,6 +49,12 @@ export function useOrdersPage() {
     loadOrders();
   }, [loadOrders]);
 
+  useEffect(() => {
+    const onFocus = () => loadOrders({ silent: true });
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [loadOrders]);
+
   const filteredOrders = useMemo(
     () => filterOrdersByStatus(orders, selectedFilter),
     [orders, selectedFilter]

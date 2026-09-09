@@ -465,7 +465,7 @@ export async function startZiinaPayment(payload: {
   };
 }
 
-/** Verify Ziina payment via the Next.js server, then best-effort sync to Django. */
+/** Verify Ziina payment via the website server, then sync Django so the order appears in My Orders. */
 export async function confirmZiinaPayment(payload: {
   orderId?: number | string;
   paymentIntentId?: string;
@@ -489,15 +489,32 @@ export async function confirmZiinaPayment(payload: {
     paymentStatus?: string;
     orderId?: number | string;
     paymentIntentId?: string;
+    djangoSynced?: boolean;
   } | null;
 
+  let djangoSynced = Boolean(data?.djangoSynced);
+  if (!djangoSynced && payload.orderId && payload.paymentIntentId) {
+    try {
+      const django = await verifyZiinaPayment({
+        orderId: payload.orderId,
+        paymentIntentId: payload.paymentIntentId,
+      });
+      djangoSynced = Boolean(django?.status && django.isPaid);
+    } catch {
+      djangoSynced = false;
+    }
+  }
+
   return {
-    status: Boolean(data?.status),
-    message: data?.message,
-    isPaid: data?.isPaid,
+    status: Boolean(data?.status) || djangoSynced,
+    message: djangoSynced
+      ? "Payment verified. Thank you!"
+      : data?.message,
+    isPaid: Boolean(data?.isPaid) || djangoSynced,
     paymentStatus: data?.paymentStatus,
-    orderId: data?.orderId,
-    paymentIntentId: data?.paymentIntentId,
+    orderId: data?.orderId ?? payload.orderId,
+    paymentIntentId: data?.paymentIntentId ?? payload.paymentIntentId,
+    djangoSynced,
   };
 }
 

@@ -31,21 +31,61 @@ export const Route = createFileRoute("/orders/success")({
 
 function OrderSuccessFallback() {
   return (
+    <OrderSuccessLayout
+      status="Your payment was received. Open My Orders to see it — refresh if it is still syncing."
+    />
+  );
+}
+
+function OrderSuccessLayout({
+  status,
+  orderNumber,
+  orderId,
+}: {
+  status: string;
+  orderNumber?: string;
+  orderId?: string;
+}) {
+  const detailsSearch = orderId
+    ? { orderId: Number(orderId) }
+    : undefined;
+
+  return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
       <section className="mx-auto flex max-w-xl flex-col items-center px-6 pb-24 pt-40 text-center lg:px-10">
         <CheckCircle2 size={48} className="text-[oklch(0.7_0.15_155)]" />
         <h1 className="mt-6 font-display text-4xl">Thank you</h1>
-        <p className="mt-3 text-muted-foreground">
-          Your payment was received. Your order confirmation is still syncing —
-          check My Orders shortly.
-        </p>
-        <Link
-          to="/shop"
-          className="mt-10 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background"
-        >
-          Continue shopping
-        </Link>
+        <p className="mt-3 text-muted-foreground">{status}</p>
+        {orderNumber ? (
+          <p className="mt-2 text-sm">
+            Order <span className="font-medium">{orderNumber}</span>
+          </p>
+        ) : null}
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+          <Link
+            to="/orders"
+            className="rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background"
+          >
+            View my orders
+          </Link>
+          {detailsSearch ? (
+            <Link
+              to="/orders/details"
+              search={detailsSearch}
+              className="rounded-full border border-foreground/20 px-6 py-3 text-sm font-medium"
+            >
+              Order details
+            </Link>
+          ) : (
+            <Link
+              to="/shop"
+              className="rounded-full border border-foreground/20 px-6 py-3 text-sm font-medium"
+            >
+              Continue shopping
+            </Link>
+          )}
+        </div>
       </section>
       <Footer />
     </div>
@@ -68,45 +108,50 @@ function OrderSuccessPage() {
       return;
     }
 
-    const token = getAccessToken() ?? undefined;
-    confirmZiinaPayment({
-      orderId,
-      paymentIntentId: intentId,
-      accessToken: token,
-    })
-      .then((result) => {
+    let cancelled = false;
+
+    const confirm = async () => {
+      const token = getAccessToken() ?? undefined;
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        try {
+          const result = await confirmZiinaPayment({
+            orderId,
+            paymentIntentId: intentId,
+            accessToken: token,
+          });
+          if (cancelled) return;
+          if (result.djangoSynced || result.isPaid) {
+            setStatus(
+              result.message ||
+                "Payment verified. Your order is now in My Orders.",
+            );
+            return;
+          }
+        } catch {
+          // Retry — the charge can succeed before Django has un-hidden the order.
+        }
+        if (attempt < 2) {
+          await new Promise((resolve) => setTimeout(resolve, 1200));
+        }
+      }
+      if (!cancelled) {
         setStatus(
-          result.message ||
-            (result.isPaid
-              ? "Payment verified. Thank you!"
-              : "Order received. Payment is still syncing."),
+          "Payment received. If the order is not in My Orders yet, refresh that page in a moment.",
         );
-      })
-      .catch(() => {
-        setStatus("Order received. Payment confirmation is still syncing.");
-      });
+      }
+    };
+
+    void confirm();
+    return () => {
+      cancelled = true;
+    };
   }, [orderId, paymentIntentId]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Nav />
-      <section className="mx-auto flex max-w-xl flex-col items-center px-6 pb-24 pt-40 text-center lg:px-10">
-        <CheckCircle2 size={48} className="text-[oklch(0.7_0.15_155)]" />
-        <h1 className="mt-6 font-display text-4xl">Thank you</h1>
-        <p className="mt-3 text-muted-foreground">{status}</p>
-        {orderNumber ? (
-          <p className="mt-2 text-sm">
-            Order <span className="font-medium">{orderNumber}</span>
-          </p>
-        ) : null}
-        <Link
-          to="/shop"
-          className="mt-10 rounded-full bg-foreground px-6 py-3 text-sm font-medium text-background"
-        >
-          Continue shopping
-        </Link>
-      </section>
-      <Footer />
-    </div>
+    <OrderSuccessLayout
+      status={status}
+      orderNumber={orderNumber}
+      orderId={orderId}
+    />
   );
 }
