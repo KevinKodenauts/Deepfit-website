@@ -1,9 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { OrdersPage } from "@/components/profile/OrdersPage";
+import { Outlet, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/orders")({
-  head: () => ({
-    meta: [{ title: "My Orders — DEEPFIT" }],
-  }),
-  component: OrdersPage,
+  component: OrdersLayout,
 });
+
+function OrdersLayout() {
+  return <Outlet />;
+}
