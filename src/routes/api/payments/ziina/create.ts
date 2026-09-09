@@ -35,7 +35,7 @@ function siteUrl(request: Request) {
     (typeof process !== "undefined"
       ? process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "")
       : undefined) ??
-    "https://main.d3efheeou96ml2.amplifyapp.com"
+    "https://deepfit.life"
   );
 }
 

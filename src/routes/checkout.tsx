@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CreditCard, Banknote } from "lucide-react";
-import { z } from "zod";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,13 +14,16 @@ import {
 import { getCustomerId } from "@/lib/auth/session";
 import { CheckoutSkeleton } from "@/components/skeleton/PageSkeletons";
 
-const searchSchema = z.object({
-  payment: z.string().optional(),
-  orderId: z.string().optional(),
-});
+function stringParam(value: unknown): string | undefined {
+  if (value == null || value === "") return undefined;
+  return Array.isArray(value) ? String(value[0] ?? "") : String(value);
+}
 
 export const Route = createFileRoute("/checkout")({
-  validateSearch: searchSchema,
+  validateSearch: (search: Record<string, unknown>) => ({
+    payment: stringParam(search.payment),
+    orderId: stringParam(search.orderId),
+  }),
   head: () => ({
     meta: [{ title: "Checkout — DEEPFIT" }],
   }),
