@@ -6,7 +6,8 @@ import { ProductsEmptyState } from "@/components/site/ProductsEmptyState";
 import { ProductGridSkeleton } from "@/components/skeleton/PageSkeletons";
 import { categories as fallbackCategories, type Product } from "@/lib/products";
 import { LayoutGrid, List, SlidersHorizontal } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useCatalogSync } from "@/hooks/useCatalogSync";
 import { z } from "zod";
 import { getMainCategories } from "@/lib/api/categories";
 import { getAllProducts, getProductsByCategory } from "@/lib/api/products";
@@ -173,6 +174,27 @@ function Shop() {
   const [loading, setLoading] = useState(true);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [view, setView] = useState<ViewMode>("grid");
+  const [catalogTick, setCatalogTick] = useState(0);
+  const silentProductRefreshRef = useRef(false);
+
+  useCatalogSync(
+    (event) => {
+      silentProductRefreshRef.current = true;
+      setCatalogTick((tick) => tick + 1);
+      if (
+        event.entity === "category" ||
+        event.entity === "sub_category" ||
+        event.entity === "dashboard"
+      ) {
+        void getMainCategories().then(setMainCategories);
+      }
+    },
+    (event) =>
+      event.entity === "product" ||
+      event.entity === "category" ||
+      event.entity === "sub_category" ||
+      event.entity === "dashboard",
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -218,7 +240,9 @@ function Shop() {
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
+    const silent = silentProductRefreshRef.current;
+    silentProductRefreshRef.current = false;
+    if (!silent) setLoading(true);
 
     const selectedDisciplines = disciplineItems.filter((item) =>
       selectedDisciplineKeys.has(item.key)
@@ -252,7 +276,7 @@ function Shop() {
     return () => {
       cancelled = true;
     };
-  }, [selectedCategoryId, selectedDisciplineKeys, disciplineItems]);
+  }, [selectedCategoryId, selectedDisciplineKeys, disciplineItems, catalogTick]);
 
   const scopedProducts = useMemo(() => {
     const selectedDisciplines = disciplineItems.filter((item) =>

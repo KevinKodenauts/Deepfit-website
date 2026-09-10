@@ -23,6 +23,8 @@ import type { EquipmentItem } from "@/lib/api/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlistToggle } from "@/hooks/useWishlistToggle";
+import { useCatalogSync } from "@/hooks/useCatalogSync";
+import { affectsProduct } from "@/lib/realtime/catalogSyncEvent";
 
 function stripHtml(value: string): string {
   if (typeof document !== "undefined") {
@@ -267,6 +269,26 @@ function ProductPage() {
     if (!productView?.title) return;
     document.title = `${productView.title} — DEEPFIT`;
   }, [productView?.title]);
+
+  useCatalogSync(
+    () => {
+      const id = productIdFromSlug(slug);
+      if (!id) return;
+      void getProductDetails(id).then((details) => {
+        if (details) setProductView(mapToProductDetail(details));
+      });
+    },
+    (event) => {
+      const id = productIdFromSlug(slug);
+      if (!id) return false;
+      return (
+        affectsProduct(event, id) ||
+        event.entity === "category" ||
+        event.entity === "sub_category" ||
+        event.entity === "dashboard"
+      );
+    },
+  );
 
   useEffect(() => {
     const id = productIdFromSlug(slug);

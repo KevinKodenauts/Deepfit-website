@@ -7,6 +7,7 @@ import {
   type OrderSummary,
 } from "@/lib/api/orders";
 import { getCustomerId } from "@/lib/auth/session";
+import { useOrderSync } from "@/hooks/useOrderSync";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 export const ORDER_FILTERS: OrderStatusFilter[] = [
@@ -48,6 +49,10 @@ export function useOrdersPage() {
   useEffect(() => {
     loadOrders();
   }, [loadOrders]);
+
+  useOrderSync({
+    onAny: () => loadOrders({ silent: true }),
+  });
 
   useEffect(() => {
     const onFocus = () => loadOrders({ silent: true });

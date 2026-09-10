@@ -5,6 +5,7 @@ import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import { goals, products as fallbackProducts, type Product } from "@/lib/products";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useCatalogSync } from "@/hooks/useCatalogSync";
 // import { AnimatePresence, motion } from "framer-motion";
 import Autoplay from "embla-carousel-autoplay";
 import { getDashboardData, getProductsByCategory } from "@/lib/api/products";
@@ -131,8 +132,9 @@ function Home() {
   const [categories, setCategories] = useState<MainCategory[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const loadDashboard = useCallback((options?: { silent?: boolean }) => {
     let cancelled = false;
+    if (!options?.silent) setLoading(true);
     getDashboardData()
       .then((dashboard) => {
         if (cancelled) return;
@@ -164,12 +166,23 @@ function Home() {
         setBestSellers([...fallbackProducts].reverse());
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled && !options?.silent) setLoading(false);
       });
     return () => {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => loadDashboard(), [loadDashboard]);
+
+  useCatalogSync(
+    () => loadDashboard({ silent: true }),
+    (event) =>
+      event.entity === "product" ||
+      event.entity === "category" ||
+      event.entity === "sub_category" ||
+      event.entity === "dashboard",
+  );
 
   return (
     <div className="min-h-screen bg-background text-foreground">

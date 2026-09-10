@@ -70,9 +70,8 @@ export function portalUrl(
 export function getCatalogWebSocketUrl(): string {
   const uri = new URL(DEFAULT_API_HOST);
   const scheme = uri.protocol === "https:" ? "wss" : "ws";
-  const portSuffix =
-    uri.port && uri.port !== "80" && uri.port !== "443" ? `:${uri.port}` : "";
-  return `${scheme}://${uri.host}${portSuffix}/ws/catalog/`;
+  // uri.host already includes a non-default port (e.g. localhost:8000).
+  return `${scheme}://${uri.host}/ws/catalog/`;
 }
 
 export { DEFAULT_API_HOST };

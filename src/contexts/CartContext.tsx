@@ -19,6 +19,7 @@ import {
 import { getProductDetails } from "@/lib/api/products";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCustomerId } from "@/lib/auth/session";
+import { useCatalogSync } from "@/hooks/useCatalogSync";
 
 export type AddToCartProduct = {
   productId: number;
@@ -123,6 +124,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setItems([]);
     }
   }, [isAuthenticated, refreshCart]);
+
+  useCatalogSync(
+    () => {
+      if (isAuthenticated) {
+        void refreshCart({ silent: true });
+      }
+    },
+    (event) => event.entity === "product" || event.entity === "order",
+  );
 
   const dismissCartToast = useCallback(() => {
     setCartToast(null);

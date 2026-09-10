@@ -14,10 +14,12 @@ import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
 import CrispChat from "@/components/analytics/CrispChat";
 import { FloatingWhatsApp } from "@/components/site/FloatingWhatsApp";
 import { OfferBannerPopup } from "@/components/site/OfferBannerPopup";
+import CatalogSyncManager from "@/components/CatalogSyncManager";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { AddressProvider } from "@/contexts/AddressContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
+import { RealtimeProvider } from "@/contexts/RealtimeContext";
 
 function NotFoundComponent() {
   return (
@@ -127,17 +129,20 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <CrispChat />
       <AuthProvider>
-        <AnalyticsProvider>
-          <AddressProvider>
-            <WishlistProvider>
-              <CartProvider>
-                <Outlet />
-                <FloatingWhatsApp />
-                <OfferBannerPopup />
-              </CartProvider>
-            </WishlistProvider>
-          </AddressProvider>
-        </AnalyticsProvider>
+        <RealtimeProvider>
+          <CatalogSyncManager />
+          <AnalyticsProvider>
+            <AddressProvider>
+              <WishlistProvider>
+                <CartProvider>
+                  <Outlet />
+                  <FloatingWhatsApp />
+                  <OfferBannerPopup />
+                </CartProvider>
+              </WishlistProvider>
+            </AddressProvider>
+          </AnalyticsProvider>
+        </RealtimeProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

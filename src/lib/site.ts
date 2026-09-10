@@ -1,7 +1,7 @@
 export const SITE_EMAIL = "support@deepfit.life";
 
 export const SITE_WHATSAPP = {
-  display: "+971 50 1148044",
+  display: "+971 54 751 2302",
   href: "https://wa.me/971501148044",
 } as const;
 
