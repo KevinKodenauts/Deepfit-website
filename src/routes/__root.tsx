@@ -11,7 +11,9 @@ import { type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import AnalyticsProvider from "@/components/analytics/AnalyticsProvider";
+import ClarityTracker from "@/components/analytics/ClarityTracker";
 import CrispChat from "@/components/analytics/CrispChat";
+import GoogleAnalytics from "@/components/analytics/GoogleAnalytics";
 import { FloatingWhatsApp } from "@/components/site/FloatingWhatsApp";
 import { OfferBannerPopup } from "@/components/site/OfferBannerPopup";
 import CatalogSyncManager from "@/components/CatalogSyncManager";
@@ -128,6 +130,8 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <CrispChat />
+      <ClarityTracker />
+      <GoogleAnalytics />
       <AuthProvider>
         <RealtimeProvider>
           <CatalogSyncManager />
