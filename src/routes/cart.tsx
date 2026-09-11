@@ -3,6 +3,7 @@ import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ProductsEmptyState } from "@/components/site/ProductsEmptyState";
 import AddAddressModal from "@/components/profile/AddAddressModal";
+import { CurrencyAmount } from "@/components/CurrencySymbol";
 import {
   Minus,
   Plus,
@@ -341,7 +342,7 @@ function Cart() {
                         </button>
                       </div>
                       <div className="text-base font-semibold tabular-nums text-emerald-700">
-                        AED {it.price * it.qty}
+                        <CurrencyAmount>{it.price * it.qty}</CurrencyAmount>
                       </div>
                     </div>
                   </div>
@@ -445,9 +446,13 @@ function Cart() {
               <div className="flex items-center gap-3 rounded-lg bg-brand px-5 py-4 text-white">
                 <Gift size={18} className="shrink-0" />
                 <div className="text-sm">
-                  {deliveryFee === 0
-                    ? "Free delivery applied for this address."
-                    : `Delivery: AED ${deliveryFee}`}
+                  {deliveryFee === 0 ? (
+                    "Free delivery applied for this address."
+                  ) : (
+                    <>
+                      Delivery: <CurrencyAmount>{deliveryFee}</CurrencyAmount>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -455,10 +460,19 @@ function Cart() {
             <aside className="h-fit rounded-lg bg-card p-6 shadow-soft ring-1 ring-border/60 sm:p-8">
               <div className="font-display text-2xl">Order summary</div>
               <dl className="mt-6 space-y-3 text-sm">
-                <Row k="Subtotal" v={`AED ${subtotal}`} />
+                <Row
+                  k="Subtotal"
+                  v={<CurrencyAmount>{subtotal}</CurrencyAmount>}
+                />
                 <Row
                   k="Shipping"
-                  v={deliveryFee === 0 ? "Free" : `AED ${deliveryFee}`}
+                  v={
+                    deliveryFee === 0 ? (
+                      "Free"
+                    ) : (
+                      <CurrencyAmount>{deliveryFee}</CurrencyAmount>
+                    )
+                  }
                 />
               </dl>
 
@@ -496,7 +510,7 @@ function Cart() {
                     k={`Discount (${appliedCoupon})`}
                     v={
                       <span className="font-medium text-emerald-700">
-                        −AED {discount}
+                        −<CurrencyAmount>{discount}</CurrencyAmount>
                       </span>
                     }
                   />
@@ -504,9 +518,9 @@ function Cart() {
                 <Row
                   k={<span className="font-medium">Total</span>}
                   v={
-                    <span className="font-display text-2xl tabular-nums">
-                      AED {grandTotal}
-                    </span>
+                    <CurrencyAmount className="font-display text-2xl tabular-nums">
+                      {grandTotal}
+                    </CurrencyAmount>
                   }
                 />
               </div>
@@ -520,9 +534,13 @@ function Cart() {
                         {appliedCoupon}
                       </div>
                       <div className="text-xs text-emerald-700">
-                        {discount > 0
-                          ? `Saving AED ${discount}`
-                          : "Coupon applied"}
+                        {discount > 0 ? (
+                          <>
+                            Saving <CurrencyAmount>{discount}</CurrencyAmount>
+                          </>
+                        ) : (
+                          "Coupon applied"
+                        )}
                       </div>
                     </div>
                     <button

@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
+import { CurrencyAmount } from "@/components/CurrencySymbol";
 import type { Product } from "@/lib/products";
 import { Check, ChevronDown, ChevronRight, Heart, Minus, Plus, ShieldCheck, Star } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -576,11 +577,13 @@ function ProductPage() {
                 </span>
               ) : (
                 <>
-                  <span className="font-display text-3xl">AED {product.price}</span>
+                  <CurrencyAmount className="font-display text-3xl">
+                    {product.price}
+                  </CurrencyAmount>
                   {product.compareAt ? (
-                    <span className="text-muted-foreground line-through">
-                      AED {product.compareAt}
-                    </span>
+                    <CurrencyAmount className="text-muted-foreground line-through">
+                      {product.compareAt}
+                    </CurrencyAmount>
                   ) : null}
                 </>
               )}

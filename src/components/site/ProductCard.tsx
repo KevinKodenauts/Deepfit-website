@@ -4,6 +4,7 @@ import type { Product } from "@/lib/products";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWishlistToggle } from "@/hooks/useWishlistToggle";
+import { CurrencyAmount } from "@/components/CurrencySymbol";
 
 export function ProductCard({
   product,
@@ -65,11 +66,13 @@ export function ProductCard({
     </span>
   ) : (
     <div className="flex items-baseline gap-2">
-      <span className="text-lg font-semibold">AED {product.price}</span>
+      <CurrencyAmount className="text-lg font-semibold">
+        {product.price}
+      </CurrencyAmount>
       {product.compareAt ? (
-        <span className="text-xs text-muted-foreground line-through">
-          AED {product.compareAt}
-        </span>
+        <CurrencyAmount className="text-xs text-muted-foreground line-through">
+          {product.compareAt}
+        </CurrencyAmount>
       ) : null}
     </div>
   );
