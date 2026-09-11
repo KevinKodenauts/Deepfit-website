@@ -4,7 +4,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -169,10 +168,10 @@ export function WriteReviewDialog({
           </p>
         ) : null}
 
-        <DialogFooter className={styles.modalFooter}>
+        <div className={styles.reviewFooter}>
           <button
             type="button"
-            className={styles.modalNoBtn}
+            className={styles.reviewCancelBtn}
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >
@@ -186,7 +185,7 @@ export function WriteReviewDialog({
           >
             {isSubmitting ? "Submitting..." : "Submit review"}
           </button>
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

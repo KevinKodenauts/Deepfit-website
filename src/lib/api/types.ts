@@ -40,11 +40,20 @@ export type ApiProduct = {
     id?: number;
     customerName?: string;
     userName?: string;
+    customerDetails?: {
+      id?: number;
+      customerName?: string;
+      customerEmail?: string;
+      profileImage?: string;
+    };
+    starRating?: number | string;
     rating?: number | string;
+    reviewComment?: string;
     review?: string;
     reviewText?: string;
     comment?: string;
     created_at?: string;
+    ratingDate?: string;
     reviewDate?: string;
     reviewImage?: string;
     reviewGallery?: string | string[];

@@ -21,6 +21,7 @@ import {
 } from "@/components/product/ProductEquipmentGuide";
 import { pickPrimaryEquipmentForProduct } from "@/lib/exercise/productEquipmentMatcher";
 import type { EquipmentItem } from "@/lib/api/types";
+import { ProductReviews } from "@/components/product/ProductReviews";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { useWishlistToggle } from "@/hooks/useWishlistToggle";
@@ -587,10 +588,13 @@ function ProductPage() {
                   ) : null}
                 </>
               )}
-              <span className="ml-auto flex items-center gap-1 text-sm text-muted-foreground">
+              <a
+                href="#customer-reviews"
+                className="ml-auto flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+              >
                 <Star size={14} className="fill-foreground text-foreground" />
                 {Number(product.rating || 0).toFixed(1)} ({product.reviews})
-              </span>
+              </a>
             </div>
             {isMultiVariant && (
               <div className="mt-6">
@@ -704,6 +708,15 @@ function ProductPage() {
             ) : null}
           </div>
         </div>
+
+        {productView ? (
+          <ProductReviews
+            rating={productView.rating}
+            ratingCount={productView.ratingCount}
+            ratingBreakdown={productView.ratingBreakdown}
+            reviews={productView.reviews}
+          />
+        ) : null}
 
         {relatedProducts.length > 0 && (
           <section className="mt-24">

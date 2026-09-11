@@ -537,14 +537,14 @@ export function OrderDetailsPage() {
                 ) : null}
                 {showDeliveredActions ? (
                   <>
-                    <button
+                    {/* <button
                       type="button"
                       className={styles.invoiceBtn}
                       onClick={handleDownloadInvoice}
                     >
                       <Download size={16} />
                       Download invoice
-                    </button>
+                    </button> */}
                     <button
                       type="button"
                       className={styles.reviewBtn}

@@ -310,20 +310,37 @@ function mapUserReview(
   item: NonNullable<ApiProduct["userRatingsDetails"]>[number],
   index: number
 ): ProductReviewView {
-  const author = item.customerName ?? item.userName ?? "Customer";
+  const author = (
+    item.customerDetails?.customerName ??
+    item.customerName ??
+    item.userName ??
+    "Customer"
+  ).trim() || "Customer";
   const galleryImage = Array.isArray(item.reviewGallery)
     ? item.reviewGallery[0]
     : item.reviewGallery;
+  const verifiedRaw = item.isVerified;
 
   return {
     id: item.id ?? index,
     author,
-    initials: getInitials(author),
-    rating: Number(item.rating ?? 5),
-    text: item.review ?? item.reviewText ?? item.comment ?? "",
-    dateLabel: formatReviewDate(item.reviewDate ?? item.created_at),
+    initials: getInitials(author) || "C",
+    rating: Number(item.starRating ?? item.rating ?? 5) || 5,
+    text: (
+      item.reviewComment ??
+      item.review ??
+      item.reviewText ??
+      item.comment ??
+      ""
+    ).trim(),
+    dateLabel: formatReviewDate(
+      item.ratingDate ?? item.reviewDate ?? item.created_at,
+    ),
     image: item.reviewImage ?? galleryImage,
-    isVerified: item.isVerified === true || item.isVerified === "true",
+    isVerified:
+      verifiedRaw == null ||
+      verifiedRaw === true ||
+      verifiedRaw === "true",
     helpfulCount: Number(item.helpfulCount ?? 0),
   };
 }
@@ -374,6 +391,11 @@ export function mapToProductDetail(product: ApiProduct): ProductDetailView {
         ? galleryUrls.map((url) => pickBestImageUrl([url]))
         : variantImages;
 
+  const mappedReviews = (product.userRatingsDetails ?? []).map(mapUserReview);
+  const ratingCount =
+    Number(ratings?.totalRatings ?? 0) || mappedReviews.length;
+  const ratingAverage = Number(ratings?.averageRating ?? 0);
+
   return {
     id: product.id,
     title: product.productName,
@@ -423,8 +445,8 @@ export function mapToProductDetail(product: ApiProduct): ProductDetailView {
                 : [parseProductGallery(product.productGallery)],
             },
           ],
-    rating: Number(ratings?.averageRating ?? 0),
-    ratingCount: Number(ratings?.totalRatings ?? 0),
+    rating: ratingAverage,
+    ratingCount,
     ratingBreakdown: {
       five: Number(ratings?.fiveStarRating ?? 0),
       four: Number(ratings?.fourStarRating ?? 0),
@@ -432,7 +454,7 @@ export function mapToProductDetail(product: ApiProduct): ProductDetailView {
       two: Number(ratings?.twoStarRating ?? 0),
       one: Number(ratings?.oneStarRating ?? 0),
     },
-    reviews: (product.userRatingsDetails ?? []).map(mapUserReview),
+    reviews: mappedReviews,
     isTopSelling:
       product.isTopSellingProduct === true ||
       product.isTopSellingProduct === "true",

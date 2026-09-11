@@ -466,25 +466,54 @@
   min-height: 96px;
 }
 
+.reviewFooter {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+}
+
+.reviewCancelBtn,
 .reviewSubmitBtn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 44px;
-  padding: 0 18px;
-  border: none;
+  padding: 0 20px;
   border-radius: 10px;
-  background: #1a637b;
-  color: #ffffff;
   font-size: 14px;
   font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  flex-shrink: 0;
   cursor: pointer;
+}
+
+.reviewCancelBtn {
+  border: 1.5px solid #d0d5dd;
+  background: #ffffff;
+  color: #344054;
+}
+
+.reviewCancelBtn:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #98a2b3;
+}
+
+.reviewSubmitBtn {
+  border: 1.5px solid #1a637b;
+  background: #1a637b;
+  color: #ffffff;
 }
 
 .reviewSubmitBtn:hover:not(:disabled) {
   background: #155066;
 }
 
+.reviewCancelBtn:disabled,
 .reviewSubmitBtn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
