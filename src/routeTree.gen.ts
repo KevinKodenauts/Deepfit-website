@@ -24,6 +24,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as VerifyOtpRouteImport } from './routes/verify-otp'
 import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
@@ -129,6 +130,11 @@ const ShopRoute = ShopRouteImport.update({
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VerifyOtpRoute = VerifyOtpRouteImport.update({
@@ -304,6 +310,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-otp': typeof VerifyOtpRoute
   '/wallet': typeof WalletRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
@@ -348,6 +355,7 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-otp': typeof VerifyOtpRoute
   '/wallet': typeof WalletRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
@@ -397,6 +405,7 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-otp': typeof VerifyOtpRoute
   '/wallet': typeof WalletRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
@@ -447,6 +456,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/shop'
     | '/signup'
+    | '/sitemap.xml'
     | '/verify-otp'
     | '/wallet'
     | '/blog/$slug'
@@ -491,6 +501,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/shop'
     | '/signup'
+    | '/sitemap.xml'
     | '/verify-otp'
     | '/wallet'
     | '/blog/$slug'
@@ -539,6 +550,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/shop'
     | '/signup'
+    | '/sitemap.xml'
     | '/verify-otp'
     | '/wallet'
     | '/blog/$slug'
@@ -588,6 +600,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   ShopRoute: typeof ShopRoute
   SignupRoute: typeof SignupRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   VerifyOtpRoute: typeof VerifyOtpRoute
   WalletRoute: typeof WalletRouteWithChildren
   ForgotPasswordResetRoute: typeof ForgotPasswordResetRoute
@@ -705,6 +718,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/verify-otp': {
@@ -1039,6 +1059,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   ShopRoute: ShopRoute,
   SignupRoute: SignupRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   VerifyOtpRoute: VerifyOtpRoute,
   WalletRoute: WalletRouteWithChildren,
   ForgotPasswordResetRoute: ForgotPasswordResetRoute,
@@ -1053,13 +1074,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

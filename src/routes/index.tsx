@@ -7,26 +7,26 @@ import { goals, products as fallbackProducts, type Product } from "@/lib/product
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useCatalogSync } from "@/hooks/useCatalogSync";
 // import { AnimatePresence, motion } from "framer-motion";
-import Autoplay from "embla-carousel-autoplay";
+// import Autoplay from "embla-carousel-autoplay";
 import { getDashboardData, getProductsByCategory } from "@/lib/api/products";
 import { mapToCategoryProduct, mapToHomeProduct } from "@/lib/api/mappers";
 import { categoryProductToCard, homeProductToCard } from "@/lib/catalog";
 import { HomeHubGridSkeleton, HomeProductRowSkeleton } from "@/components/skeleton/PageSkeletons";
 import { mapDashboardCategoriesToMain } from "@/lib/api/dashboard";
-import {
-  getTestimonialAvatarColor,
-  getTestimonialInitials,
-  getTestimonials,
-  type Testimonial,
-} from "@/lib/api/testimonials";
+// import {
+//   getTestimonialAvatarColor,
+//   getTestimonialInitials,
+//   getTestimonials,
+//   type Testimonial,
+// } from "@/lib/api/testimonials";
 import type { DashboardSlider, MainCategory } from "@/lib/api/types";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+// import {
+//   Carousel,
+//   CarouselContent,
+//   CarouselItem,
+//   CarouselNext,
+//   CarouselPrevious,
+// } from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
 import lifestyleGym from "@/assets/lifestyle-gym.jpg";
 import lifestyleStrength from "@/assets/lifestyle-strength.jpg";
@@ -35,6 +35,7 @@ import lifestyleYoga from "@/assets/lifestyle-yoga.jpg";
 
 const SLIDER_INTERVAL_MS = 5500;
 
+/*
 const FALLBACK_TESTIMONIALS: Testimonial[] = [
   {
     id: 1,
@@ -67,6 +68,7 @@ const FALLBACK_TESTIMONIALS: Testimonial[] = [
     image: "",
   },
 ];
+*/
 
 /*
 const FALLBACK_SLIDES: DashboardSlider[] = [
@@ -197,7 +199,7 @@ function Home() {
       <Story />
       {/* <Stats /> */}
       <BestSellers products={bestSellers} loading={loading} />
-      <Testimonials />
+      {/* <Testimonials /> */}
       <Newsletter />
       <Footer />
     </div>
@@ -906,7 +908,7 @@ function BestSellers({
   );
 }
 
-function Testimonials() {
+/* function Testimonials() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>(FALLBACK_TESTIMONIALS);
   const [loading, setLoading] = useState(true);
   const autoplay = useRef(
@@ -926,7 +928,7 @@ function Testimonials() {
         if (data.length > 0) setTestimonials(data);
       })
       .catch(() => {
-        /* keep fallbacks */
+        // keep fallbacks
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -1045,6 +1047,7 @@ function Testimonials() {
     </section>
   );
 }
+*/
 
 function Newsletter() {
   return (
