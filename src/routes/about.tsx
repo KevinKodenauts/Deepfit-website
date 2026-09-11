@@ -114,7 +114,13 @@ const PILLARS = [
   },
 ] as const;
 
-const FIT_TRAITS = ["Strong", "Capable", "Confident", "Energised", "Balanced"] as const;
+const FIT_TRAITS = [
+  "Strong",
+  "Capable",
+  "Confident",
+  "Energised",
+  "Balanced",
+] as const;
 
 function AboutSectionImage({
   src,
@@ -145,7 +151,11 @@ function AboutSectionImage({
       style={{ aspectRatio: `${width} / ${height}` }}
     >
       {!imageReady ? (
-        <div className={styles.heroLoader} role="status" aria-label="Loading banner">
+        <div
+          className={styles.heroLoader}
+          role="status"
+          aria-label="Loading banner"
+        >
           <div className={styles.heroLoaderShimmer} aria-hidden />
           <div className={styles.heroLoaderContent}>
             <Loader2 className={styles.heroLoaderSpin} size={40} aria-hidden />
@@ -176,7 +186,10 @@ function AboutPage() {
   return (
     <div className="bg-background text-foreground">
       <Nav />
-      <div className={styles.page} style={{ paddingTop: "var(--desktop-nav-height)" }}>
+      <div
+        className={styles.page}
+        style={{ paddingTop: "var(--desktop-nav-height)" }}
+      >
         <header className={styles.header}>
           <button
             type="button"
@@ -270,32 +283,34 @@ function AboutPage() {
 
             <div className={styles.storyBody}>
               <p className={styles.leadPara}>
-                At <strong>DEEPFIT</strong>, we believe wellness is created through
-                the small choices we make every day.
+                At <strong>DEEPFIT</strong>, we believe wellness is created
+                through the small choices we make every day.
               </p>
               <p>
-                No single choice defines our health, but together, they shape how we
-                feel, how we perform and how we experience life. That&apos;s the
-                philosophy behind everything we create.
+                No single choice defines our health, but together, they shape
+                how we feel, how we perform and how we experience life.
+                That&apos;s the philosophy behind everything we create.
               </p>
 
               <figure className={styles.quoteCard}>
                 <blockquote>
-                  DEEPFIT didn&apos;t begin with a product. It began with a question:
+                  DEEPFIT didn&apos;t begin with a product. It began with a
+                  question:
                   <em> What if wellness could feel simpler?</em>
                 </blockquote>
               </figure>
 
               <p>
-                Our journey started in nutrition, helping people make better food
-                choices. Along the way, we realised something important—nutrition is
-                only one part of feeling well. Lasting wellbeing comes from the way
-                we think, the way we move and the way we fuel ourselves.
+                Our journey started in nutrition, helping people make better
+                food choices. Along the way, we realised something
+                important—nutrition is only one part of feeling well. Lasting
+                wellbeing comes from the way we think, the way we move and the
+                way we fuel ourselves.
               </p>
               <p>
-                That realisation became the foundation for DEEPFIT. We didn&apos;t
-                want to create another fitness brand. We wanted to build a wellness
-                ecosystem.
+                That realisation became the foundation for DEEPFIT. We
+                didn&apos;t want to create another fitness brand. We wanted to
+                build a wellness ecosystem.
               </p>
             </div>
           </AnimatedSection>
@@ -317,33 +332,38 @@ function AboutPage() {
 
             <div className={styles.storyBody}>
               <p className={styles.leadPara}>
-                I&apos;m <strong>Deepa</strong>, founder of <strong>DEEPFIT</strong>.
+                I&apos;m <strong>Deepa</strong>, founder of{" "}
+                <strong>DEEPFIT</strong>.
               </p>
               <p>
-                Like many people, I spent years believing wellness had to be intense
-                to be effective—long workouts, strict routines, and the constant
-                pressure to do more.
+                Like many people, I spent years believing wellness had to be
+                intense to be effective—long workouts, strict routines, and the
+                constant pressure to do more.
               </p>
-              <p>Over time, I realised that lasting health is built differently.</p>
               <p>
-                It&apos;s created through consistent movement, nourishing food, a
-                resilient mindset, and habits that fit into everyday life.
+                Over time, I realised that lasting health is built differently.
+              </p>
+              <p>
+                It&apos;s created through consistent movement, nourishing food,
+                a resilient mindset, and habits that fit into everyday life.
               </p>
               <p>That belief became DEEPFIT.</p>
               <p>
-                Every product, every idea, and every conversation is designed around
-                one purpose: to make holistic wellness simpler, more practical, and
-                sustainable for real life.
+                Every product, every idea, and every conversation is designed
+                around one purpose: to make holistic wellness simpler, more
+                practical, and sustainable for real life.
               </p>
               <p>
-                Because wellness shouldn&apos;t feel overwhelming. It should feel
-                like something you can come back to, every single day.
+                Because wellness shouldn&apos;t feel overwhelming. It should
+                feel like something you can come back to, every single day.
               </p>
               <p>Welcome to DEEPFIT.</p>
 
               <figure className={styles.quoteCard}>
                 <blockquote>
-                  <span className={styles.founderSignature}>Wellness. Inside Out.</span>
+                  <span className={styles.founderSignature}>
+                    Wellness. Inside Out.
+                  </span>
                 </blockquote>
               </figure>
             </div>
@@ -353,7 +373,6 @@ function AboutPage() {
             <div className={styles.methodHead}>
               <div className={styles.methodHeadLeft}>
                 <span className={styles.sectionNumDark}>03</span>
-
               </div>
             </div>
 
@@ -381,9 +400,9 @@ function AboutPage() {
                 >
                   <div className={styles.pillarMeta}>
                     <span className={styles.sectionNum}>{pillar.num}</span>
-                    <span className={styles.pillarIconWrap}>
+                    {/* <span className={styles.pillarIconWrap}>
                       <Icon size={22} />
-                    </span>
+                    </span> */}
                     <span className={styles.sectionLabel}>{pillar.label}</span>
                   </div>
                   <p className={styles.pillarText}>{pillar.text}</p>
@@ -396,7 +415,9 @@ function AboutPage() {
             <div className={styles.valuesHead}>
               <span className={styles.sectionNum}>07</span>
               <span className={styles.sectionLabel}>Our Values</span>
-              <h2 className={styles.valuesTitle}>What guides everything we do</h2>
+              <h2 className={styles.valuesTitle}>
+                What guides everything we do
+              </h2>
             </div>
 
             <div className={styles.valuesBento}>
@@ -423,8 +444,8 @@ function AboutPage() {
                 Why the name &ldquo;DEEPFIT&rdquo;?
               </span>
               <p className={styles.brandLead}>
-                Every great brand begins with a meaningful idea. For us, that idea
-                is reflected in our name.
+                Every great brand begins with a meaningful idea. For us, that
+                idea is reflected in our name.
               </p>
 
               <div className={styles.nameBreakdown}>
@@ -432,7 +453,8 @@ function AboutPage() {
                   <span className={styles.nameKey}>DEEP</span>
                   <p>
                     Lasting wellness starts beneath the surface—built through
-                    intention, knowledge and habits that strengthen us from within.
+                    intention, knowledge and habits that strengthen us from
+                    within.
                   </p>
                 </div>
                 <div className={styles.nameDivider} aria-hidden />
@@ -446,8 +468,8 @@ function AboutPage() {
                     ))}
                   </div>
                   <p>
-                    How we want people to feel—not by someone else&apos;s definition,
-                    but by discovering their own.
+                    How we want people to feel—not by someone else&apos;s
+                    definition, but by discovering their own.
                   </p>
                 </div>
               </div>
@@ -460,16 +482,17 @@ function AboutPage() {
               </span>
               <h3 className={styles.promiseTitle}>Our daily promise</h3>
               <p>
-                Real wellness begins within. It starts with the choices we make, the
-                food we eat, the way we move and the mindset we cultivate.
+                Real wellness begins within. It starts with the choices we make,
+                the food we eat, the way we move and the mindset we cultivate.
               </p>
               <p>
                 When these elements work together, wellbeing naturally becomes
-                visible in our energy, confidence and the way we experience life.
+                visible in our energy, confidence and the way we experience
+                life.
               </p>
               <p className={styles.promiseEmphasis}>
-                It&apos;s the philosophy behind every product, every conversation,
-                and every decision we make.
+                It&apos;s the philosophy behind every product, every
+                conversation, and every decision we make.
               </p>
             </article>
           </AnimatedSection>

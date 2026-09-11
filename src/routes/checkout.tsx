@@ -271,7 +271,7 @@ function CheckoutPage() {
                 >
                   <CreditCard size={16} /> Pay online (Ziina)
                 </button>
-                <button
+                {/* <button
                   type="button"
                   onClick={() => setPaymentMethod("cod")}
                   className={`flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left text-sm ${
@@ -281,7 +281,7 @@ function CheckoutPage() {
                   }`}
                 >
                   <Banknote size={16} /> Cash on delivery
-                </button>
+                </button> */}
               </div>
               <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
                 <span className="text-muted-foreground">Total</span>

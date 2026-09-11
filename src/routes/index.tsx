@@ -174,7 +174,8 @@ function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
-      <div className="lg:flex lg:h-svh lg:max-h-svh lg:flex-col lg:overflow-hidden">
+      {/* First screen: navbar offset + banner + marquee = 100vh */}
+      <div className="flex flex-col pt-[4.5rem] lg:flex lg:h-svh lg:max-h-svh lg:overflow-hidden lg:pt-[var(--desktop-nav-height)]">
         <Hero sliders={sliders} loading={loading} />
         <Marquee />
       </div>
@@ -236,22 +237,28 @@ function Hero({
 
   return (
     <section
-      className="relative w-full overflow-hidden bg-muted pt-[4.5rem] lg:flex lg:min-h-0 lg:flex-1 lg:flex-col"
+      className="relative w-full overflow-hidden bg-white lg:min-h-0 lg:flex-1"
       aria-busy={showSkeleton}
       aria-label={headline}
     >
       <h1 className="sr-only">{headline}</h1>
+
+      {/* Mobile: natural height. Desktop: fill leftover space, cover edge-to-edge. */}
       <div
-        className={`relative w-full lg:min-h-0 lg:flex-1 ${showSkeleton ? "min-h-[calc(100svh-4.5rem)] lg:min-h-0" : ""}`}
+        className={`relative w-full ${
+          showSkeleton ? "min-h-[70vw] lg:min-h-0" : ""
+        } lg:absolute lg:inset-0`}
       >
         {showSkeleton ? <HeroBannerLoader /> : null}
+
         {loadedSrc ? (
           <img
             src={loadedSrc}
             alt={headline}
-            className="block h-auto w-full object-contain object-top lg:absolute lg:inset-0 lg:h-full lg:w-full lg:object-cover lg:object-center"
+            className="block h-auto w-full lg:absolute lg:left-1/2 lg:top-1/2 lg:h-auto lg:max-h-none lg:min-h-full lg:w-auto lg:min-w-full lg:max-w-none lg:-translate-x-1/2 lg:-translate-y-1/2"
           />
         ) : null}
+
         {pendingSrc ? (
           <img
             ref={pendingRef}
@@ -259,7 +266,7 @@ function Hero({
             alt=""
             fetchPriority="high"
             decoding="async"
-            className="pointer-events-none absolute inset-0 h-full w-full object-contain object-top opacity-0"
+            className="pointer-events-none absolute inset-0 h-full w-full opacity-0"
             onLoad={() => setLoadedSrc(pendingSrc)}
             onError={() => {
               if (loadedSrc === pendingSrc) setLoadedSrc(null);
@@ -466,7 +473,7 @@ function HeroPrevious({ sliders }: { sliders: DashboardSlider[] }) {
 function Marquee() {
   const words = ["Wellness Inside Out", "Precision-cast steel", "Silent decks", "Studio-grade recovery", "Made to last", "Handcrafted"];
   return (
-    <div className="overflow-hidden border-y border-border/60 bg-background py-6 lg:shrink-0">
+    <div className="shrink-0 overflow-hidden border-y border-border/60 bg-background py-5 lg:py-6">
       <div className="flex w-max animate-marquee gap-14 whitespace-nowrap">
         {[...words, ...words, ...words].map((w, i) => (
           <span key={i} className="font-display text-2xl italic text-muted-foreground">

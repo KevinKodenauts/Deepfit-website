@@ -47,8 +47,14 @@ type PaymentMethod = "ziina" | "cod";
 function Cart() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const { items, isLoading, updateQuantity, removeItem, refreshCart, subtotal } =
-    useCart();
+  const {
+    items,
+    isLoading,
+    updateQuantity,
+    removeItem,
+    refreshCart,
+    subtotal,
+  } = useCart();
   const {
     addresses,
     selectedAddressId,
@@ -291,7 +297,7 @@ function Cart() {
               {items.map((it) => (
                 <div
                   key={it.id}
-                  className="flex items-center gap-5 rounded-lg bg-card p-4 shadow-soft ring-1 ring-border/60 sm:p-5"
+                  className="flex items-center gap-4 rounded-lg bg-card p-4 shadow-soft ring-1 ring-border/60 sm:gap-5 sm:p-5"
                 >
                   <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-white ring-1 ring-border/40 sm:h-24 sm:w-24">
                     <img
@@ -304,17 +310,20 @@ function Cart() {
                     <div className="line-clamp-2 font-medium leading-snug">
                       {it.title}
                     </div>
-                    <div className="mt-1 text-sm text-muted-foreground">
-                      AED {it.price}
-                    </div>
-                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <div className="mt-3 flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 rounded-lg border border-border px-3 py-1.5">
                         <button
                           type="button"
-                          aria-label="Decrease quantity"
-                          onClick={() =>
-                            void updateQuantity(it.id, Math.max(1, it.qty - 1))
+                          aria-label={
+                            it.qty <= 1 ? "Remove item" : "Decrease quantity"
                           }
+                          onClick={() => {
+                            if (it.qty <= 1) {
+                              void removeItem(it.id);
+                              return;
+                            }
+                            void updateQuantity(it.id, it.qty - 1);
+                          }}
                           className="text-muted-foreground transition hover:text-foreground"
                         >
                           <Minus size={12} />
@@ -331,19 +340,16 @@ function Cart() {
                           <Plus size={12} />
                         </button>
                       </div>
-                      <div className="font-medium tabular-nums sm:hidden">
+                      <div className="text-base font-semibold tabular-nums text-emerald-700">
                         AED {it.price * it.qty}
                       </div>
                     </div>
-                  </div>
-                  <div className="hidden w-24 text-right font-medium tabular-nums sm:block">
-                    AED {it.price * it.qty}
                   </div>
                   <button
                     type="button"
                     aria-label="Remove item"
                     onClick={() => void removeItem(it.id)}
-                    className="rounded-lg p-2 text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground"
+                    className="shrink-0 rounded-lg p-2 text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground"
                   >
                     <Trash2 size={16} />
                   </button>
@@ -471,7 +477,7 @@ function Cart() {
                 >
                   <CreditCard size={16} /> Pay online (Ziina)
                 </button>
-                <button
+                {/* <button
                   type="button"
                   onClick={() => setPaymentMethod("cod")}
                   className={`flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm transition ${
@@ -481,7 +487,7 @@ function Cart() {
                   }`}
                 >
                   <Banknote size={16} /> Cash on delivery
-                </button>
+                </button> */}
               </div>
 
               <div className="mt-6 space-y-3 border-t border-border pt-6 text-sm">
@@ -554,7 +560,9 @@ function Cart() {
                       </button>
                     </div>
                     {couponMessage ? (
-                      <p className="mt-2 text-xs text-red-600">{couponMessage}</p>
+                      <p className="mt-2 text-xs text-red-600">
+                        {couponMessage}
+                      </p>
                     ) : null}
                   </>
                 )}

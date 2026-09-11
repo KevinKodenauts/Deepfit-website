@@ -199,10 +199,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     [refreshCart]
   );
 
-  const itemCount = useMemo(
-    () => items.reduce((sum, item) => sum + item.qty, 0),
-    [items]
-  );
+  const itemCount = useMemo(() => items.length, [items]);
 
   const subtotal = useMemo(
     () => items.reduce((sum, item) => sum + item.price * item.qty, 0),

@@ -301,28 +301,24 @@ export function OrderDetailsPage() {
               </div>
             </section>
 
-            <div className={styles.gridTwo}>
-              <section className={styles.card}>
-                <h2 className={styles.sectionTitle}>PAYMENT</h2>
-                <div className={styles.infoRow}>
-                  <div className={styles.iconWrap}>
-                    <CreditCard size={20} />
-                  </div>
-                  <div className={styles.infoText}>
-                    <span className={styles.infoTitle}>
-                      {order.isPaid ? "Paid online" : "Cash on Delivery"}
-                    </span>
-                    <span className={styles.infoSubtitle}>
-                      {order.isPaid
-                        ? "Payment received"
-                        : "Pay when you receive"}
-                    </span>
-                  </div>
-                  {order.isPaid ? (
+            <div className={order.isPaid ? styles.gridTwo : undefined}>
+              {order.isPaid ? (
+                <section className={styles.card}>
+                  <h2 className={styles.sectionTitle}>PAYMENT</h2>
+                  <div className={styles.infoRow}>
+                    <div className={styles.iconWrap}>
+                      <CreditCard size={20} />
+                    </div>
+                    <div className={styles.infoText}>
+                      <span className={styles.infoTitle}>Paid online</span>
+                      <span className={styles.infoSubtitle}>
+                        Payment received
+                      </span>
+                    </div>
                     <BadgeCheck size={20} className={styles.verifiedIcon} />
-                  ) : null}
-                </div>
-              </section>
+                  </div>
+                </section>
+              ) : null}
 
               <section className={styles.card}>
                 <h2 className={styles.sectionTitle}>FULFILLMENT</h2>

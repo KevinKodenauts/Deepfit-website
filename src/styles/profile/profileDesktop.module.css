@@ -259,6 +259,11 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
+.quickCardFull {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
 .quickCard:hover {
   border-color: #c5dce4;
   box-shadow: 0 8px 24px rgba(26, 99, 123, 0.1);

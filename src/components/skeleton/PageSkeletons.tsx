@@ -127,10 +127,11 @@ export function CartSkeleton() {
             <Skeleton className="h-20 w-20 shrink-0 rounded-lg sm:h-24 sm:w-24" />
             <div className="min-w-0 flex-1 space-y-3">
               <Skeleton className="h-5 w-3/5" />
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-9 w-28 rounded-full" />
+              <div className="flex items-center justify-between gap-3">
+                <Skeleton className="h-9 w-28 rounded-lg" />
+                <Skeleton className="h-5 w-16" />
+              </div>
             </div>
-            <Skeleton className="h-6 w-16" />
           </div>
         ))}
       </div>
@@ -141,6 +142,27 @@ export function CartSkeleton() {
         <Skeleton className="h-4 w-2/3" />
         <Skeleton className="mt-4 h-12 w-full rounded-full" />
       </div>
+    </div>
+  );
+}
+
+export function WishlistSkeleton() {
+  return (
+    <div className="mt-12 space-y-4" aria-busy aria-label="Loading wishlist">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex items-center gap-4 rounded-lg bg-card p-4 shadow-soft ring-1 ring-border/60 sm:gap-5 sm:p-5"
+        >
+          <Skeleton className="h-24 w-24 shrink-0 rounded-lg sm:h-28 sm:w-28" />
+          <div className="min-w-0 flex-1 space-y-3">
+            <Skeleton className="h-5 w-3/5" />
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-5 w-20" />
+            <Skeleton className="h-9 w-32 rounded-lg" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

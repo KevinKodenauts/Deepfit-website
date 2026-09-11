@@ -192,7 +192,7 @@ export function ProfileDesktop(profile: ProfileData) {
 
           <div className={styles.main}>
             <div className={styles.quickGrid}>
-              <button
+              {/* <button
                 type="button"
                 className={styles.quickCard}
                 onClick={() => requireAuth("/wallet")}
@@ -202,19 +202,26 @@ export function ProfileDesktop(profile: ProfileData) {
                 </span>
                 <span className={styles.quickLabel}>Wallet</span>
                 <span className={styles.quickHint}>View balance &amp; top up</span>
-              </button>
+              </button> */}
               <button
                 type="button"
-                className={styles.quickCard}
+                className={`${styles.quickCard} ${styles.quickCardFull}`}
                 onClick={() => requireAuth("/orders")}
               >
-                <span className={styles.quickIconWrap}>
-                  <ShoppingBag size={22} />
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "14px" }}
+                >
+                  <span className={styles.quickIconWrap}>
+                    <ShoppingBag size={22} />
+                  </span>
+                  <span className={styles.quickLabel}>Your orders</span>
+                </div>
+
+                <span className={styles.quickHint}>
+                  Track and manage purchases
                 </span>
-                <span className={styles.quickLabel}>Your orders</span>
-                <span className={styles.quickHint}>Track and manage purchases</span>
               </button>
-              <button
+              {/* <button
                 type="button"
                 className={styles.quickCard}
                 onClick={() => requireAuth("/profile/referral")}
@@ -224,10 +231,10 @@ export function ProfileDesktop(profile: ProfileData) {
                 </span>
                 <span className={styles.quickLabel}>Referral tree</span>
                 <span className={styles.quickHint}>See your invite network</span>
-              </button>
+              </button> */}
             </div>
 
-            <section className={styles.referralCard}>
+            {/* <section className={styles.referralCard}>
               <div className={styles.referralHeader}>
                 <h2 className={styles.referralTitle}>Invite &amp; Earn</h2>
               </div>
@@ -242,13 +249,17 @@ export function ProfileDesktop(profile: ProfileData) {
                   <span className={styles.statLabel}>Total rewards</span>
                 </div>
                 <div className={styles.statCard}>
-                  <span className={`${styles.statValue} ${styles.statValueGreen}`}>
+                  <span
+                    className={`${styles.statValue} ${styles.statValueGreen}`}
+                  >
                     {referralStats.totalReferrals}
                   </span>
                   <span className={styles.statLabel}>Referred</span>
                 </div>
                 <div className={styles.statCard}>
-                  <span className={`${styles.statValue} ${styles.statValueGreen}`}>
+                  <span
+                    className={`${styles.statValue} ${styles.statValueGreen}`}
+                  >
                     {referralStats.directInvites}
                   </span>
                   <span className={styles.statLabel}>Direct invites</span>
@@ -291,7 +302,7 @@ export function ProfileDesktop(profile: ProfileData) {
               {copyMessage ? (
                 <p className={styles.copyMessage}>{copyMessage}</p>
               ) : null}
-            </section>
+            </section> */}
 
             <section className={styles.policySection}>
               <h3 className={styles.policyTitle}>POLICIES</h3>
