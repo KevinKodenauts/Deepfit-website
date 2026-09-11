@@ -1,15 +1,18 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import {
   BadgeCheck,
   ChevronLeft,
   CreditCard,
+  Download,
   Package,
   ShoppingBag,
+  Star,
 } from "lucide-react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { CurrencyAmount } from "@/components/CurrencySymbol";
+import { WriteReviewDialog } from "@/components/profile/WriteReviewDialog";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -19,8 +22,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import styles from "@/styles/orders/details.module.css";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   canCancelOrder,
   canReturnOrder,
@@ -28,8 +39,12 @@ import {
   returnOrder,
   getCustomerOrders,
   groupOrdersByNumber,
+  isDeliveredStatus,
+  type OrderProduct,
   type OrderSummary,
 } from "@/lib/api/orders";
+import { getReviewedProductIds } from "@/lib/api/reviews";
+import { downloadOrderInvoice } from "@/lib/invoice";
 import { getCustomerId } from "@/lib/auth/session";
 import { useOrderSync } from "@/hooks/useOrderSync";
 import { OrderDetailsSkeleton } from "@/components/skeleton/PageSkeletons";
@@ -69,17 +84,44 @@ function formatOrderDate(value?: string) {
   });
 }
 
+function canShowDeliveredActions(order: OrderSummary) {
+  const status = (order.orderStatus || "").toLowerCase();
+  if (status.includes("cancel")) return false;
+  return Boolean(order.deliveredAt) || isDeliveredStatus(order.orderStatus);
+}
+
+function uniqueReviewableProducts(
+  products: OrderProduct[],
+  reviewedIds: Set<number>,
+) {
+  const seen = new Set<number>();
+  return products.filter((product) => {
+    const catalogId = product.productId;
+    if (!catalogId || reviewedIds.has(catalogId) || seen.has(catalogId)) {
+      return false;
+    }
+    seen.add(catalogId);
+    return true;
+  });
+}
+
 export function OrderDetailsPage() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/orders/details" });
   const orderId = Number(search.orderId);
   const { isAuthenticated, isLoading: authLoading } = useRequireAuth();
+  const { user } = useAuth();
   const [order, setOrder] = useState<OrderSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCancelling, setIsCancelling] = useState(false);
   const [isReturning, setIsReturning] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
+  const [reviewedIds, setReviewedIds] = useState<Set<number>>(new Set());
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [reviewProduct, setReviewProduct] = useState<OrderProduct | null>(null);
+  const [reviewPickerOpen, setReviewPickerOpen] = useState(false);
+  const [invoiceError, setInvoiceError] = useState<string | null>(null);
 
   const loadOrder = useCallback(
     (options?: { silent?: boolean }) => {
@@ -181,6 +223,84 @@ export function OrderDetailsPage() {
     }
   };
 
+  const catalogProductIds = useMemo(
+    () =>
+      [
+        ...new Set(
+          (order?.orderedProducts ?? [])
+            .map((product) => product.productId)
+            .filter((id): id is number => Boolean(id && id > 0)),
+        ),
+      ],
+    [order],
+  );
+
+  const showDeliveredActions = Boolean(order && canShowDeliveredActions(order));
+
+  useEffect(() => {
+    if (!showDeliveredActions || catalogProductIds.length === 0) {
+      setReviewedIds(new Set());
+      setIsLoadingReviews(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsLoadingReviews(true);
+    getReviewedProductIds(catalogProductIds)
+      .then((ids) => {
+        if (!cancelled) setReviewedIds(new Set(ids));
+      })
+      .catch(() => {
+        if (!cancelled) setReviewedIds(new Set());
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingReviews(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [showDeliveredActions, catalogProductIds]);
+
+  const reviewableProducts = useMemo(
+    () => uniqueReviewableProducts(order?.orderedProducts ?? [], reviewedIds),
+    [order, reviewedIds],
+  );
+
+  const openReviewForProduct = (product: OrderProduct) => {
+    if (!product.productId) return;
+    setReviewPickerOpen(false);
+    setReviewProduct(product);
+  };
+
+  const handleWriteReview = () => {
+    if (reviewableProducts.length === 1) {
+      openReviewForProduct(reviewableProducts[0]);
+      return;
+    }
+    if (reviewableProducts.length > 1) {
+      setReviewPickerOpen(true);
+    }
+  };
+
+  const handleDownloadInvoice = () => {
+    if (!order) return;
+    setInvoiceError(null);
+    try {
+      downloadOrderInvoice(order, {
+        name: user?.name || user?.customerName,
+        email: user?.email || user?.customerEmail,
+        phone: user?.phone || user?.customerMobile,
+      });
+    } catch (error) {
+      setInvoiceError(
+        error instanceof Error
+          ? error.message
+          : "Unable to download the invoice. Please try again.",
+      );
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -237,6 +357,12 @@ export function OrderDetailsPage() {
   const showCancel = canCancelOrder(order.orderStatus);
   const showReturn = canReturnOrder(order);
   const itemCount = order.orderedProducts.length;
+  const canWriteReview = !isLoadingReviews && reviewableProducts.length > 0;
+  const reviewButtonLabel = isLoadingReviews
+    ? "Write a review"
+    : canWriteReview
+      ? "Write a review"
+      : "Review submitted";
 
   return (
     <div className="min-h-screen bg-background">
@@ -298,6 +424,20 @@ export function OrderDetailsPage() {
                           ? ` • ${product.lastTrackedStatus}`
                           : ""}
                       </span>
+                      {showDeliveredActions && product.productId ? (
+                        reviewedIds.has(product.productId) ? (
+                          <span className={styles.reviewedLabel}>Reviewed</span>
+                        ) : (
+                          <button
+                            type="button"
+                            className={styles.itemReviewBtn}
+                            onClick={() => openReviewForProduct(product)}
+                          >
+                            <Star size={13} />
+                            Write a review
+                          </button>
+                        )
+                      ) : null}
                     </div>
                     <span className={styles.itemPrice}>
                       <CurrencyAmount>
@@ -373,7 +513,7 @@ export function OrderDetailsPage() {
               </div>
             </section>
 
-            {(showCancel || showReturn) && (
+            {(showCancel || showReturn || showDeliveredActions) && (
               <div className={styles.actions}>
                 {showCancel ? (
                   <button
@@ -395,8 +535,34 @@ export function OrderDetailsPage() {
                     {isReturning ? "Submitting..." : "Return order"}
                   </button>
                 ) : null}
+                {showDeliveredActions ? (
+                  <>
+                    <button
+                      type="button"
+                      className={styles.invoiceBtn}
+                      onClick={handleDownloadInvoice}
+                    >
+                      <Download size={16} />
+                      Download invoice
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.reviewBtn}
+                      onClick={handleWriteReview}
+                      disabled={!canWriteReview}
+                    >
+                      <Star size={16} />
+                      {reviewButtonLabel}
+                    </button>
+                  </>
+                ) : null}
               </div>
             )}
+            {invoiceError ? (
+              <p className={styles.modalError} role="alert">
+                {invoiceError}
+              </p>
+            ) : null}
           </div>
         </div>
       </div>
@@ -442,6 +608,49 @@ export function OrderDetailsPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <WriteReviewDialog
+        open={Boolean(reviewProduct)}
+        product={reviewProduct}
+        onOpenChange={(open) => {
+          if (!open) setReviewProduct(null);
+        }}
+        onSubmitted={(productId) => {
+          setReviewedIds((current) => new Set([...current, productId]));
+        }}
+      />
+
+      <Dialog open={reviewPickerOpen} onOpenChange={setReviewPickerOpen}>
+        <DialogContent className={styles.reviewDialog}>
+          <DialogHeader>
+            <DialogTitle className={styles.modalTitle}>
+              Choose a product to review
+            </DialogTitle>
+            <DialogDescription className={styles.modalDescription}>
+              Select one item from this order.
+            </DialogDescription>
+          </DialogHeader>
+          <div className={styles.pickerList}>
+            {reviewableProducts.map((product) => (
+              <button
+                key={product.productId}
+                type="button"
+                className={styles.pickerItem}
+                onClick={() => openReviewForProduct(product)}
+              >
+                <img
+                  src={product.image || "/images/whey-protein.png"}
+                  alt=""
+                  className={styles.reviewProductThumb}
+                />
+                <span className={styles.reviewProductName}>
+                  {product.productName}
+                </span>
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </div>

@@ -305,10 +305,13 @@
 
 .cancelBtn,
 .returnBtn,
+.invoiceBtn,
+.reviewBtn,
 .browseBtn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   height: 44px;
   padding: 0 20px;
   border-radius: 10px;
@@ -341,6 +344,176 @@
   background: #e8f4f8;
 }
 
+.invoiceBtn {
+  background: transparent;
+  border: 1.5px solid #1a637b;
+  color: #1a637b;
+}
+
+.invoiceBtn:hover:not(:disabled) {
+  background: #e8f4f8;
+}
+
+.reviewBtn {
+  background: #1a637b;
+  border: 1.5px solid #1a637b;
+  color: #ffffff;
+}
+
+.reviewBtn:hover:not(:disabled) {
+  background: #155066;
+}
+
+.itemReviewBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #1a637b;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.itemReviewBtn:hover {
+  text-decoration: underline;
+}
+
+.reviewedLabel {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2e7d32;
+}
+
+.reviewDialog {
+  max-width: 480px;
+  border-radius: 16px;
+  border: 1px solid #e8ecef;
+  font-family: var(--font-display), Arial, Helvetica, sans-serif;
+}
+
+.reviewProductRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.reviewProductThumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #f5f6fa;
+  flex-shrink: 0;
+}
+
+.reviewProductName {
+  font-size: 14px;
+  font-weight: 600;
+  color: #212121;
+}
+
+.starRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.starBtn {
+  display: inline-flex;
+  padding: 2px;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.ratingLabel {
+  margin-left: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #757575;
+}
+
+.tagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tagChip {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid #e8ecef;
+  background: #ffffff;
+  color: #424242;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tagChipActive {
+  border-color: #1a637b;
+  background: #e8f4f8;
+  color: #1a637b;
+}
+
+.reviewTextarea {
+  min-height: 96px;
+}
+
+.reviewSubmitBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 10px;
+  background: #1a637b;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reviewSubmitBtn:hover:not(:disabled) {
+  background: #155066;
+}
+
+.reviewSubmitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pickerList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pickerItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e8ecef;
+  border-radius: 12px;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pickerItem:hover {
+  border-color: #c5dce4;
+  background: #f3f6f8;
+}
+
 .browseBtn {
   background: #1a637b;
   border: none;
@@ -353,7 +526,9 @@
 }
 
 .cancelBtn:disabled,
-.returnBtn:disabled {
+.returnBtn:disabled,
+.invoiceBtn:disabled,
+.reviewBtn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -511,6 +686,8 @@
 
   .cancelBtn,
   .returnBtn,
+  .invoiceBtn,
+  .reviewBtn,
   .browseBtn {
     width: 100%;
   }

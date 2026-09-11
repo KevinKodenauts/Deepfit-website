@@ -10,6 +10,7 @@ export type OrderItemPayload = {
 
 export type OrderProduct = {
   id: number;
+  productId?: number;
   productName: string;
   quantity: number;
   unitPrice: number;
@@ -35,6 +36,7 @@ export type OrderSummary = {
 
 type RawOrderProduct = {
   id: number;
+  productId?: number;
   qty?: string | number;
   quantity?: number;
   unitPrice?: string | number;
@@ -136,6 +138,7 @@ function mapOrderProduct(product: RawOrderProduct): OrderProduct {
 
   return {
     id: product.id,
+    productId: Number(product.productId ?? product.productDetail?.id ?? 0) || undefined,
     productName,
     quantity: Number(product.qty ?? product.quantity ?? 1),
     unitPrice: Number(product.unitPrice ?? 0),
@@ -241,7 +244,7 @@ export function canCancelOrder(status: string): boolean {
 
 const RETURN_WINDOW_DAYS = 7;
 
-function isDeliveredStatus(status: string): boolean {
+export function isDeliveredStatus(status: string): boolean {
   const normalized = (status || "").toLowerCase().trim();
   return (
     (normalized.includes("deliver") && !normalized.includes("out for")) ||
