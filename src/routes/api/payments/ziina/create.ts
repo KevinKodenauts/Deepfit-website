@@ -3,11 +3,13 @@ import {
   createZiinaPaymentIntent,
   isZiinaConfigured,
 } from "@/lib/ziina/server";
+import { DEFAULT_API_HOST } from "@/lib/api/config";
 
 type CreateBody = {
   orderId?: number | string;
   orderNumber?: string;
   amount?: number | string;
+  accessToken?: string;
 };
 
 function siteUrl(request: Request) {
@@ -33,7 +35,7 @@ function siteUrl(request: Request) {
     (typeof process !== "undefined"
       ? process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "")
       : undefined) ??
-    "https://main.d3efheeou96ml2.amplifyapp.com"
+    "https://deepfit.life"
   );
 }
 
@@ -71,12 +73,13 @@ export const Route = createFileRoute("/api/payments/ziina/create")({
             orderNumber: String(orderNumber),
           });
 
+          const returnQuery = `${query.toString()}&paymentIntentId={PAYMENT_INTENT_ID}`;
           const intent = await createZiinaPaymentIntent({
             amount,
             message: `Deepfit order ${orderNumber}`,
-            successUrl: `${base}/orders/success?${query.toString()}`,
-            cancelUrl: `${base}/checkout?payment=cancelled&orderId=${orderId}`,
-            failureUrl: `${base}/checkout?payment=failed&orderId=${orderId}`,
+            successUrl: `${base}/orders/success?${returnQuery}`,
+            cancelUrl: `${base}/checkout?payment=cancelled&${returnQuery}`,
+            failureUrl: `${base}/checkout?payment=failed&${returnQuery}`,
           });
 
           const paymentUrl = intent.redirect_url || intent.embedded_url;
@@ -89,11 +92,39 @@ export const Route = createFileRoute("/api/payments/ziina/create")({
 
           query.set("paymentIntentId", intent.id);
 
+          let djangoSynced = false;
+          if (body.accessToken) {
+            try {
+              const djangoResponse = await fetch(
+                `${DEFAULT_API_HOST}/api/customerportal/saveziinapaymentintent?clientId=1&ipAddress=127.0.0.1`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${body.accessToken}`,
+                  },
+                  body: JSON.stringify({
+                    orderId,
+                    paymentIntentId: intent.id,
+                  }),
+                },
+              );
+              const djangoData = (await djangoResponse.json().catch(
+                () => null,
+              )) as { status?: boolean } | null;
+              djangoSynced = djangoResponse.ok && djangoData?.status === true;
+            } catch {
+              djangoSynced = false;
+            }
+          }
+
           return Response.json({
             status: true,
+            orderId,
             paymentIntentId: intent.id,
             paymentUrl,
             paymentRequired: true,
+            djangoSynced,
             successUrl: `${base}/orders/success?${query.toString()}`,
           });
         } catch (error) {

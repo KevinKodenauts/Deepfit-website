@@ -1,12 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { z } from "zod";
 import { ArrowLeft, ExternalLink, FileText, ShieldCheck } from "lucide-react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import { getProductByNameSlug } from "@/lib/api/products";
+import { getProductByNameSlug, getProductDetails } from "@/lib/api/products";
 import { mapToProductDetail, type ProductDetailView } from "@/lib/api/mappers";
 
+const searchSchema = z.object({
+  productId: z.coerce.number().optional(),
+});
+
 export const Route = createFileRoute("/lab-test-report/$productName")({
+  validateSearch: searchSchema,
   head: ({ params }) => {
     const label = params.productName.replace(/-/g, " ");
     return {
@@ -24,13 +30,21 @@ export const Route = createFileRoute("/lab-test-report/$productName")({
 
 function LabTestReportPage() {
   const { productName } = Route.useParams();
+  const { productId: productIdParam } = Route.useSearch();
   const [product, setProduct] = useState<ProductDetailView | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    getProductByNameSlug(productName)
+
+    const productId = Number(productIdParam);
+    const loader =
+      Number.isFinite(productId) && productId > 0
+        ? getProductDetails(productId).then((details) => details)
+        : getProductByNameSlug(productName);
+
+    loader
       .then((details) => {
         if (cancelled) return;
         setProduct(details ? mapToProductDetail(details) : null);
@@ -44,7 +58,7 @@ function LabTestReportPage() {
     return () => {
       cancelled = true;
     };
-  }, [productName]);
+  }, [productName, productIdParam]);
 
   useEffect(() => {
     if (!product?.title) return;

@@ -3,29 +3,37 @@ import { ArrowRight, ArrowUpRight, Loader2 } from "lucide-react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
-import { goals, products as fallbackProducts, type Product } from "@/lib/products";
+import {
+  goals,
+  products as fallbackProducts,
+  type Product,
+} from "@/lib/products";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useCatalogSync } from "@/hooks/useCatalogSync";
 // import { AnimatePresence, motion } from "framer-motion";
-import Autoplay from "embla-carousel-autoplay";
+// import Autoplay from "embla-carousel-autoplay";
 import { getDashboardData, getProductsByCategory } from "@/lib/api/products";
 import { mapToCategoryProduct, mapToHomeProduct } from "@/lib/api/mappers";
 import { categoryProductToCard, homeProductToCard } from "@/lib/catalog";
-import { HomeHubGridSkeleton, HomeProductRowSkeleton } from "@/components/skeleton/PageSkeletons";
+import {
+  HomeHubGridSkeleton,
+  HomeProductRowSkeleton,
+} from "@/components/skeleton/PageSkeletons";
 import { mapDashboardCategoriesToMain } from "@/lib/api/dashboard";
-import {
-  getTestimonialAvatarColor,
-  getTestimonialInitials,
-  getTestimonials,
-  type Testimonial,
-} from "@/lib/api/testimonials";
+// import {
+//   getTestimonialAvatarColor,
+//   getTestimonialInitials,
+//   getTestimonials,
+//   type Testimonial,
+// } from "@/lib/api/testimonials";
 import type { DashboardSlider, MainCategory } from "@/lib/api/types";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+// import {
+//   Carousel,
+//   CarouselContent,
+//   CarouselItem,
+//   CarouselNext,
+//   CarouselPrevious,
+// } from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
 import lifestyleGym from "@/assets/lifestyle-gym.jpg";
 import lifestyleStrength from "@/assets/lifestyle-strength.jpg";
@@ -34,6 +42,7 @@ import lifestyleYoga from "@/assets/lifestyle-yoga.jpg";
 
 const SLIDER_INTERVAL_MS = 5500;
 
+/*
 const FALLBACK_TESTIMONIALS: Testimonial[] = [
   {
     id: 1,
@@ -66,6 +75,7 @@ const FALLBACK_TESTIMONIALS: Testimonial[] = [
     image: "",
   },
 ];
+*/
 
 /*
 const FALLBACK_SLIDES: DashboardSlider[] = [
@@ -92,9 +102,24 @@ const FALLBACK_SLIDES: DashboardSlider[] = [
 */
 
 const FALLBACK_CATEGORY_TILES = [
-  { id: 0, name: "Move Hub", img: lifestyleStrength, desc: "Mindful movement for the life you live every day." },
-  { id: 1, name: "Fuel Hub", img: lifestyleGym, desc: "Nourishment that supports better habits over time." },
-  { id: 2, name: "Mind Hub", img: lifestyleYoga, desc: "A calmer mind — the foundation of lasting wellbeing." },
+  {
+    id: 0,
+    name: "Move Hub",
+    img: lifestyleStrength,
+    desc: "Mindful movement for the life you live every day.",
+  },
+  {
+    id: 1,
+    name: "Fuel Hub",
+    img: lifestyleGym,
+    desc: "Nourishment that supports better habits over time.",
+  },
+  {
+    id: 2,
+    name: "Mind Hub",
+    img: lifestyleYoga,
+    desc: "A calmer mind — the foundation of lasting wellbeing.",
+  },
 ];
 
 const HUB_COPY: Record<string, { desc: string; fallback: string }> = {
@@ -116,9 +141,17 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "DEEPFIT — Wellness Inside Out" },
-      { name: "description", content: "Premium home fitness equipment, recovery gear and wellness essentials designed for every lifestyle." },
+      {
+        name: "description",
+        content:
+          "Premium home fitness equipment, recovery gear and wellness essentials designed for every lifestyle.",
+      },
       { property: "og:title", content: "DEEPFIT — Wellness Inside Out" },
-      { property: "og:description", content: "Transform your home into a premium fitness studio with Deepfit." },
+      {
+        property: "og:description",
+        content:
+          "Transform your home into a premium fitness studio with Deepfit.",
+      },
     ],
   }),
   component: Home,
@@ -131,8 +164,9 @@ function Home() {
   const [categories, setCategories] = useState<MainCategory[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const loadDashboard = useCallback((options?: { silent?: boolean }) => {
     let cancelled = false;
+    if (!options?.silent) setLoading(true);
     getDashboardData()
       .then((dashboard) => {
         if (cancelled) return;
@@ -145,17 +179,17 @@ function Home() {
         if (featuredCards.length) setFeatured(featuredCards.slice(0, 8));
         else setFeatured(fallbackProducts);
         if (topSelling.length) setBestSellers(topSelling.slice(0, 8));
-        else if (featuredCards.length) setBestSellers(featuredCards.slice(0, 8));
+        else if (featuredCards.length)
+          setBestSellers(featuredCards.slice(0, 8));
         else setBestSellers([...fallbackProducts].reverse());
 
         if (dashboard.sliderList?.length) {
           setSliders(dashboard.sliderList);
         }
 
-        const mappedCategories =
-          dashboard.mainCategories?.length
-            ? dashboard.mainCategories
-            : mapDashboardCategoriesToMain(dashboard.categoryList ?? []);
+        const mappedCategories = dashboard.mainCategories?.length
+          ? dashboard.mainCategories
+          : mapDashboardCategoriesToMain(dashboard.categoryList ?? []);
         if (mappedCategories.length) setCategories(mappedCategories);
       })
       .catch(() => {
@@ -164,18 +198,28 @@ function Home() {
         setBestSellers([...fallbackProducts].reverse());
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled && !options?.silent) setLoading(false);
       });
     return () => {
       cancelled = true;
     };
   }, []);
 
+  useEffect(() => loadDashboard(), [loadDashboard]);
+
+  useCatalogSync(
+    () => loadDashboard({ silent: true }),
+    (event) =>
+      event.entity === "product" ||
+      event.entity === "category" ||
+      event.entity === "sub_category" ||
+      event.entity === "dashboard",
+  );
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
-      {/* First screen: navbar offset + banner + marquee = 100vh */}
-      <div className="flex flex-col pt-[4.5rem] lg:flex lg:h-svh lg:max-h-svh lg:overflow-hidden lg:pt-[var(--desktop-nav-height)]">
+      <div className="flex flex-col lg:h-svh lg:max-h-svh">
         <Hero sliders={sliders} loading={loading} />
         <Marquee />
       </div>
@@ -185,11 +229,62 @@ function Home() {
       <Story />
       {/* <Stats /> */}
       <BestSellers products={bestSellers} loading={loading} />
-      <Testimonials />
+      {/* <Testimonials /> */}
       <Newsletter />
       <Footer />
     </div>
   );
+}
+
+function firstSliderImage(slide: DashboardSlider) {
+  return (
+    slide.sliderImage ||
+    slide.sliderImageLaptop ||
+    slide.sliderImageDesktop ||
+    slide.sliderImageRetina ||
+    ""
+  );
+}
+
+function pickSliderImage(slide: DashboardSlider, width: number, dpr: number) {
+  if (width < 1024) {
+    return firstSliderImage(slide);
+  }
+  if (width < 1440) {
+    return slide.sliderImageLaptop || firstSliderImage(slide);
+  }
+  if (dpr >= 1.5) {
+    return (
+      slide.sliderImageRetina ||
+      slide.sliderImageDesktop ||
+      slide.sliderImageLaptop ||
+      firstSliderImage(slide)
+    );
+  }
+  return (
+    slide.sliderImageDesktop ||
+    slide.sliderImageRetina ||
+    slide.sliderImageLaptop ||
+    firstSliderImage(slide)
+  );
+}
+
+function useViewport() {
+  const [viewport, setViewport] = useState({ width: 0, dpr: 1 });
+
+  useEffect(() => {
+    const update = () => {
+      setViewport({
+        width: window.innerWidth,
+        dpr: window.devicePixelRatio || 1,
+      });
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  return viewport;
 }
 
 function Hero({
@@ -199,18 +294,18 @@ function Hero({
   sliders: DashboardSlider[];
   loading: boolean;
 }) {
-  const slides = sliders.filter((slide) => Boolean(slide.sliderImage));
+  const slides = sliders.filter((slide) => Boolean(firstSliderImage(slide)));
   const [index, setIndex] = useState(0);
   const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
   const pendingRef = useRef<HTMLImageElement>(null);
+  const { width, dpr } = useViewport();
 
   const active = slides.length > 0 ? slides[index % slides.length] : undefined;
   const headline =
-    active?.title?.trim() || "Transform your home into a premium fitness studio.";
-  const pendingSrc =
-    active?.sliderImage && active.sliderImage !== loadedSrc
-      ? active.sliderImage
-      : null;
+    active?.title?.trim() ||
+    "Transform your home into a premium fitness studio.";
+  const activeSrc = active ? pickSliderImage(active, width, dpr) : "";
+  const pendingSrc = activeSrc && activeSrc !== loadedSrc ? activeSrc : null;
   const showSkeleton = loading || !loadedSrc;
 
   const goNext = useCallback(() => {
@@ -237,28 +332,22 @@ function Hero({
 
   return (
     <section
-      className="relative w-full overflow-hidden bg-white lg:min-h-0 lg:flex-1"
+      className="relative w-full overflow-hidden bg-muted pt-[4.5rem] lg:flex lg:min-h-0 lg:flex-1 lg:flex-col"
       aria-busy={showSkeleton}
       aria-label={headline}
     >
       <h1 className="sr-only">{headline}</h1>
-
-      {/* Mobile: natural height. Desktop: fill leftover space, cover edge-to-edge. */}
       <div
-        className={`relative w-full ${
-          showSkeleton ? "min-h-[70vw] lg:min-h-0" : ""
-        } lg:absolute lg:inset-0`}
+        className={`relative w-full lg:flex lg:h-full lg:min-h-0 lg:flex-1 lg:items-center lg:justify-center ${showSkeleton ? "min-h-[min(70svh,32rem)] lg:min-h-0" : ""}`}
       >
         {showSkeleton ? <HeroBannerLoader /> : null}
-
         {loadedSrc ? (
           <img
             src={loadedSrc}
             alt={headline}
-            className="block h-auto w-full lg:absolute lg:left-1/2 lg:top-1/2 lg:h-auto lg:max-h-none lg:min-h-full lg:w-auto lg:min-w-full lg:max-w-none lg:-translate-x-1/2 lg:-translate-y-1/2"
+            className="block h-auto w-full object-contain object-top lg:h-auto lg:w-auto lg:max-h-full lg:max-w-full"
           />
         ) : null}
-
         {pendingSrc ? (
           <img
             ref={pendingRef}
@@ -266,7 +355,7 @@ function Hero({
             alt=""
             fetchPriority="high"
             decoding="async"
-            className="pointer-events-none absolute inset-0 h-full w-full opacity-0"
+            className="pointer-events-none absolute inset-0 h-full w-full object-contain object-top opacity-0"
             onLoad={() => setLoadedSrc(pendingSrc)}
             onError={() => {
               if (loadedSrc === pendingSrc) setLoadedSrc(null);
@@ -471,12 +560,22 @@ function HeroPrevious({ sliders }: { sliders: DashboardSlider[] }) {
 */
 
 function Marquee() {
-  const words = ["Wellness Inside Out", "Precision-cast steel", "Silent decks", "Studio-grade recovery", "Made to last", "Handcrafted"];
+  const words = [
+    "Wellness Inside Out",
+    "Precision-cast steel",
+    "Silent decks",
+    "Studio-grade recovery",
+    "Made to last",
+    "Handcrafted",
+  ];
   return (
-    <div className="shrink-0 overflow-hidden border-y border-border/60 bg-background py-5 lg:py-6">
+    <div className="overflow-hidden border-y border-border/60 bg-background py-6 lg:shrink-0">
       <div className="flex w-max animate-marquee gap-14 whitespace-nowrap">
         {[...words, ...words, ...words].map((w, i) => (
-          <span key={i} className="font-display text-2xl italic text-muted-foreground">
+          <span
+            key={i}
+            className="font-display text-2xl italic text-muted-foreground"
+          >
             {w} <span className="mx-8 text-foreground/40">✦</span>
           </span>
         ))}
@@ -508,7 +607,9 @@ function HubCard({
       aria-label={`${tile.name}. ${tile.desc}`}
       className="group relative aspect-[3/4] cursor-pointer overflow-hidden rounded-[2rem] shadow-soft ring-1 ring-border/50 transition hover:-translate-y-1 hover:shadow-glass focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
     >
-      {!imageReady ? <Skeleton className="absolute inset-0 rounded-none" /> : null}
+      {!imageReady ? (
+        <Skeleton className="absolute inset-0 rounded-none" />
+      ) : null}
       {tile.img ? (
         <img
           ref={imageRef}
@@ -523,14 +624,20 @@ function HubCard({
       ) : null}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/5" />
       <div className="absolute inset-x-0 bottom-0 p-7 text-white sm:p-8">
-        <div className="text-[11px] uppercase tracking-[0.24em] text-white/70">0{index + 1}</div>
+        <div className="text-[11px] uppercase tracking-[0.24em] text-white/70">
+          0{index + 1}
+        </div>
         <div className="mt-2 flex items-end justify-between gap-4">
-          <h3 className="font-display text-3xl leading-tight text-white">{tile.name}</h3>
+          <h3 className="font-display text-3xl leading-tight text-white">
+            {tile.name}
+          </h3>
           <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full glass-dark text-white transition group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0">
             <ArrowUpRight size={18} aria-hidden="true" />
           </span>
         </div>
-        <p className="mt-3 max-w-xs text-sm leading-relaxed text-white/85">{tile.desc}</p>
+        <p className="mt-3 max-w-xs text-sm leading-relaxed text-white/85">
+          {tile.desc}
+        </p>
       </div>
     </Link>
   );
@@ -562,12 +669,15 @@ function Categories({
     <section className="mx-auto max-w-7xl px-6 py-24 lg:px-10">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div className="max-w-2xl">
-          <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">01 — The hubs</div>
+          <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+            01 — The hubs
+          </div>
           <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">
             Move. Fuel. <span className="text-gradient italic">Mind.</span>
           </h2>
           <p className="mt-4 max-w-lg text-muted-foreground">
-            An integrated system designed to create lasting habits — not another one-off workout.
+            An integrated system designed to create lasting habits — not another
+            one-off workout.
           </p>
         </div>
         <Link
@@ -640,7 +750,9 @@ function Featured({
         .then((result) => {
           if (cancelled) return;
           setFilteredProducts(
-            result.products.map(mapToCategoryProduct).map(categoryProductToCard)
+            result.products
+              .map(mapToCategoryProduct)
+              .map(categoryProductToCard),
           );
         })
         .catch(() => {
@@ -663,8 +775,8 @@ function Featured({
 
     setFilteredProducts(
       products.filter(
-        (p) => p.category.toLowerCase() === activeName.toLowerCase()
-      )
+        (p) => p.category.toLowerCase() === activeName.toLowerCase(),
+      ),
     );
   }, [activeCategoryId, activeName, products]);
 
@@ -674,8 +786,12 @@ function Featured({
     <section className="mx-auto max-w-7xl px-6 py-24 lg:px-10">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
-          <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">02 — New arrivals</div>
-          <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">Just dropped.</h2>
+          <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+            02 — New arrivals
+          </div>
+          <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">
+            Just dropped.
+          </h2>
         </div>
         <div className="flex flex-wrap gap-2 text-xs uppercase tracking-widest text-muted-foreground">
           {filters.map((filter) => (
@@ -722,12 +838,16 @@ function ShopByGoal() {
       <div className="pointer-events-none absolute inset-0 opacity-40 [background:var(--gradient-soft)]" />
       <div className="relative mx-auto max-w-7xl px-6 lg:px-10">
         <div className="max-w-2xl">
-          <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">03 — Daily Movement</div>
+          <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+            03 — Daily Movement
+          </div>
           <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">
-            What&apos;s your workout <span className="text-gradient italic">focus</span> today?
+            What&apos;s your workout{" "}
+            <span className="text-gradient italic">focus</span> today?
           </h2>
           <p className="mt-4 text-muted-foreground">
-            From an upper-body session to a slow pilates flow, pick a focus and start today&apos;s practice.
+            From an upper-body session to a slow pilates flow, pick a focus and
+            start today&apos;s practice.
           </p>
         </div>
         <div className="mt-12 flex flex-wrap gap-3">
@@ -741,7 +861,10 @@ function ShopByGoal() {
                 className="group rounded-full glass px-6 py-3 text-sm font-medium shadow-soft transition hover:shadow-glass hover:-translate-y-0.5"
               >
                 {g}
-                <ArrowRight size={14} className="ml-2 inline transition-transform group-hover:translate-x-1" />
+                <ArrowRight
+                  size={14}
+                  className="ml-2 inline transition-transform group-hover:translate-x-1"
+                />
               </Link>
             );
           })}
@@ -755,20 +878,31 @@ function Story() {
   return (
     <section className="mx-auto grid max-w-7xl gap-12 px-6 py-24 lg:grid-cols-2 lg:gap-16 lg:px-10">
       <div className="relative aspect-[4/5] overflow-hidden rounded-[2.5rem] shadow-glass">
-        <img src={lifestyleStrength2} alt="" className="h-full w-full object-cover" />
+        <img
+          src={lifestyleStrength2}
+          alt=""
+          className="h-full w-full object-cover"
+        />
       </div>
       <div className="flex flex-col justify-center">
-        <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">04 — Why Deepfit</div>
+        <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+          04 — Why Deepfit
+        </div>
         <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">
-          It&apos;s not about a <span className="text-gradient italic">workout</span>.
+          It&apos;s not about a{" "}
+          <span className="text-gradient italic">workout</span>.
         </h2>
         <p className="mt-3 font-display text-2xl leading-snug text-foreground sm:text-3xl">
           It&apos;s about what you do every day.
         </p>
         <div className="mt-6 max-w-lg space-y-4 text-muted-foreground">
-          <p>Wellbeing isn&apos;t created in one workout, one meal or one good week.</p>
           <p>
-            It&apos;s created through the choices you make every day—and the habits you build over time.
+            Wellbeing isn&apos;t created in one workout, one meal or one good
+            week.
+          </p>
+          <p>
+            It&apos;s created through the choices you make every day—and the
+            habits you build over time.
           </p>
         </div>
         <ol className="mt-10 grid gap-3 sm:grid-cols-3">
@@ -777,17 +911,24 @@ function Story() {
             { n: "02", title: "Better habits" },
             { n: "03", title: "A healthier way of life" },
           ].map((step) => (
-            <li key={step.n} className="rounded-2xl bg-card p-5 shadow-soft ring-1 ring-border/60">
-              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{step.n}</div>
+            <li
+              key={step.n}
+              className="rounded-2xl bg-card p-5 shadow-soft ring-1 ring-border/60"
+            >
+              <div className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                {step.n}
+              </div>
               <div className="mt-2 font-medium leading-snug">{step.title}</div>
             </li>
           ))}
         </ol>
         <p className="mt-8 max-w-lg text-muted-foreground">
-          Simple choices are made through mindful movement and nourishment leading to a system that works for you and generations to come.
+          Simple choices are made through mindful movement and nourishment
+          leading to a system that works for you and generations to come.
         </p>
         <p className="mt-6 max-w-lg font-medium">
-          That&apos;s DEEPFIT — an integrated system designed to create lasting habits.
+          That&apos;s DEEPFIT — an integrated system designed to create lasting
+          habits.
         </p>
       </div>
     </section>
@@ -830,8 +971,12 @@ function BestSellers({
     <section className="mx-auto max-w-7xl px-6 py-24 lg:px-10">
       <div className="flex items-end justify-between">
         <div>
-          <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">05 — Best sellers</div>
-          <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">The forever favorites.</h2>
+          <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+            05 — Best sellers
+          </div>
+          <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">
+            The forever favorites.
+          </h2>
         </div>
       </div>
       <div className="mt-12">
@@ -849,7 +994,7 @@ function BestSellers({
   );
 }
 
-function Testimonials() {
+/* function Testimonials() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>(FALLBACK_TESTIMONIALS);
   const [loading, setLoading] = useState(true);
   const autoplay = useRef(
@@ -869,7 +1014,7 @@ function Testimonials() {
         if (data.length > 0) setTestimonials(data);
       })
       .catch(() => {
-        /* keep fallbacks */
+        // keep fallbacks
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -988,6 +1133,7 @@ function Testimonials() {
     </section>
   );
 }
+*/
 
 function Newsletter() {
   return (
@@ -997,13 +1143,21 @@ function Newsletter() {
         <div className="pointer-events-none absolute -left-24 bottom-0 h-96 w-96 rounded-full opacity-40 blur-3xl [background:radial-gradient(circle,var(--mint),transparent_60%)]" />
         <div className="relative grid gap-10 lg:grid-cols-2 lg:items-center">
           <div>
-            <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">07 — Journal</div>
-            <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">Wellness in your inbox, weekly.</h2>
+            <div className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+              07 — Journal
+            </div>
+            <h2 className="mt-3 font-display text-4xl leading-tight sm:text-5xl">
+              Wellness in your inbox, weekly.
+            </h2>
             <p className="mt-4 max-w-md text-muted-foreground">
-              A calm dispatch of movement, recovery, and product drops — from our studio to yours.
+              A calm dispatch of movement, recovery, and product drops — from
+              our studio to yours.
             </p>
           </div>
-          <form className="flex flex-col gap-3 sm:flex-row" onSubmit={(e) => e.preventDefault()}>
+          <form
+            className="flex flex-col gap-3 sm:flex-row"
+            onSubmit={(e) => e.preventDefault()}
+          >
             <input
               type="email"
               required

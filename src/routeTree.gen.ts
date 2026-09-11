@@ -24,6 +24,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as VerifyOtpRouteImport } from './routes/verify-otp'
 import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
@@ -53,6 +54,7 @@ import { Route as ExerciseEquipmentIdRouteImport } from './routes/exercise.equip
 import { Route as ExploreActiveIdRouteImport } from './routes/explore.active.$id'
 import { Route as ExploreEquipmentIdRouteImport } from './routes/explore.equipment.$id'
 import { Route as ApiPaymentsZiinaCreateRouteImport } from './routes/api/payments/ziina/create'
+import { Route as ApiPaymentsZiinaRefundRouteImport } from './routes/api/payments/ziina/refund'
 import { Route as ApiPaymentsZiinaVerifyRouteImport } from './routes/api/payments/ziina/verify'
 
 const IndexRoute = IndexRouteImport.update({
@@ -128,6 +130,11 @@ const ShopRoute = ShopRouteImport.update({
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VerifyOtpRoute = VerifyOtpRouteImport.update({
@@ -276,6 +283,11 @@ const ApiPaymentsZiinaCreateRoute = ApiPaymentsZiinaCreateRouteImport.update({
   path: '/api/payments/ziina/create',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPaymentsZiinaRefundRoute = ApiPaymentsZiinaRefundRouteImport.update({
+  id: '/api/payments/ziina/refund',
+  path: '/api/payments/ziina/refund',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPaymentsZiinaVerifyRoute = ApiPaymentsZiinaVerifyRouteImport.update({
   id: '/api/payments/ziina/verify',
   path: '/api/payments/ziina/verify',
@@ -298,6 +310,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-otp': typeof VerifyOtpRoute
   '/wallet': typeof WalletRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
@@ -327,6 +340,7 @@ export interface FileRoutesByFullPath {
   '/explore/active/$id': typeof ExploreActiveIdRoute
   '/explore/equipment/$id': typeof ExploreEquipmentIdRoute
   '/api/payments/ziina/create': typeof ApiPaymentsZiinaCreateRoute
+  '/api/payments/ziina/refund': typeof ApiPaymentsZiinaRefundRoute
   '/api/payments/ziina/verify': typeof ApiPaymentsZiinaVerifyRoute
 }
 export interface FileRoutesByTo {
@@ -341,6 +355,7 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-otp': typeof VerifyOtpRoute
   '/wallet': typeof WalletRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
@@ -370,6 +385,7 @@ export interface FileRoutesByTo {
   '/explore/active/$id': typeof ExploreActiveIdRoute
   '/explore/equipment/$id': typeof ExploreEquipmentIdRoute
   '/api/payments/ziina/create': typeof ApiPaymentsZiinaCreateRoute
+  '/api/payments/ziina/refund': typeof ApiPaymentsZiinaRefundRoute
   '/api/payments/ziina/verify': typeof ApiPaymentsZiinaVerifyRoute
 }
 export interface FileRoutesById {
@@ -389,6 +405,7 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/shop': typeof ShopRoute
   '/signup': typeof SignupRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/verify-otp': typeof VerifyOtpRoute
   '/wallet': typeof WalletRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
@@ -418,6 +435,7 @@ export interface FileRoutesById {
   '/explore/active/$id': typeof ExploreActiveIdRoute
   '/explore/equipment/$id': typeof ExploreEquipmentIdRoute
   '/api/payments/ziina/create': typeof ApiPaymentsZiinaCreateRoute
+  '/api/payments/ziina/refund': typeof ApiPaymentsZiinaRefundRoute
   '/api/payments/ziina/verify': typeof ApiPaymentsZiinaVerifyRoute
 }
 export interface FileRouteTypes {
@@ -438,6 +456,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/shop'
     | '/signup'
+    | '/sitemap.xml'
     | '/verify-otp'
     | '/wallet'
     | '/blog/$slug'
@@ -467,6 +486,7 @@ export interface FileRouteTypes {
     | '/explore/active/$id'
     | '/explore/equipment/$id'
     | '/api/payments/ziina/create'
+    | '/api/payments/ziina/refund'
     | '/api/payments/ziina/verify'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -481,6 +501,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/shop'
     | '/signup'
+    | '/sitemap.xml'
     | '/verify-otp'
     | '/wallet'
     | '/blog/$slug'
@@ -510,6 +531,7 @@ export interface FileRouteTypes {
     | '/explore/active/$id'
     | '/explore/equipment/$id'
     | '/api/payments/ziina/create'
+    | '/api/payments/ziina/refund'
     | '/api/payments/ziina/verify'
   id:
     | '__root__'
@@ -528,6 +550,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/shop'
     | '/signup'
+    | '/sitemap.xml'
     | '/verify-otp'
     | '/wallet'
     | '/blog/$slug'
@@ -557,6 +580,7 @@ export interface FileRouteTypes {
     | '/explore/active/$id'
     | '/explore/equipment/$id'
     | '/api/payments/ziina/create'
+    | '/api/payments/ziina/refund'
     | '/api/payments/ziina/verify'
   fileRoutesById: FileRoutesById
 }
@@ -576,6 +600,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   ShopRoute: typeof ShopRoute
   SignupRoute: typeof SignupRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   VerifyOtpRoute: typeof VerifyOtpRoute
   WalletRoute: typeof WalletRouteWithChildren
   ForgotPasswordResetRoute: typeof ForgotPasswordResetRoute
@@ -584,6 +609,7 @@ export interface RootRouteChildren {
   PoliciesSlugRoute: typeof PoliciesSlugRoute
   ProductSlugRoute: typeof ProductSlugRoute
   ApiPaymentsZiinaCreateRoute: typeof ApiPaymentsZiinaCreateRoute
+  ApiPaymentsZiinaRefundRoute: typeof ApiPaymentsZiinaRefundRoute
   ApiPaymentsZiinaVerifyRoute: typeof ApiPaymentsZiinaVerifyRoute
 }
 
@@ -692,6 +718,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/verify-otp': {
@@ -897,6 +930,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPaymentsZiinaCreateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/payments/ziina/refund': {
+      id: '/api/payments/ziina/refund'
+      path: '/api/payments/ziina/refund'
+      fullPath: '/api/payments/ziina/refund'
+      preLoaderRoute: typeof ApiPaymentsZiinaRefundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/payments/ziina/verify': {
       id: '/api/payments/ziina/verify'
       path: '/api/payments/ziina/verify'
@@ -1019,6 +1059,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   ShopRoute: ShopRoute,
   SignupRoute: SignupRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   VerifyOtpRoute: VerifyOtpRoute,
   WalletRoute: WalletRouteWithChildren,
   ForgotPasswordResetRoute: ForgotPasswordResetRoute,
@@ -1027,6 +1068,7 @@ const rootRouteChildren: RootRouteChildren = {
   PoliciesSlugRoute: PoliciesSlugRoute,
   ProductSlugRoute: ProductSlugRoute,
   ApiPaymentsZiinaCreateRoute: ApiPaymentsZiinaCreateRoute,
+  ApiPaymentsZiinaRefundRoute: ApiPaymentsZiinaRefundRoute,
   ApiPaymentsZiinaVerifyRoute: ApiPaymentsZiinaVerifyRoute,
 }
 export const routeTree = rootRouteImport

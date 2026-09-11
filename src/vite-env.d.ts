@@ -5,6 +5,8 @@ interface ImportMetaEnv {
   readonly VITE_SITE_URL?: string;
   readonly VITE_GOOGLE_CLIENT_ID?: string;
   readonly VITE_CRISP_WEBSITE_ID?: string;
+  readonly VITE_CLARITY_PROJECT_ID?: string;
+  readonly VITE_GA_MEASUREMENT_ID?: string;
 }
 
 interface ImportMeta {

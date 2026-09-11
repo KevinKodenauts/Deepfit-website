@@ -31,6 +31,7 @@ import {
   type OrderSummary,
 } from "@/lib/api/orders";
 import { getCustomerId } from "@/lib/auth/session";
+import { useOrderSync } from "@/hooks/useOrderSync";
 import { OrderDetailsSkeleton } from "@/components/skeleton/PageSkeletons";
 
 function statusClass(status: string) {
@@ -108,6 +109,13 @@ export function OrderDetailsPage() {
   useEffect(() => {
     loadOrder();
   }, [loadOrder]);
+
+  useOrderSync(
+    {
+      onAny: () => loadOrder({ silent: true }),
+    },
+    Number.isFinite(orderId) ? orderId : undefined,
+  );
 
   const openCancelModal = () => {
     setCancelError(null);
