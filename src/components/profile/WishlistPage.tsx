@@ -4,6 +4,7 @@ import { Heart, ShoppingBag } from "lucide-react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ProductsEmptyState } from "@/components/site/ProductsEmptyState";
+import { CurrencyAmount } from "@/components/CurrencySymbol";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
@@ -153,13 +154,13 @@ function WishlistItemCard({ item }: { item: WishlistItemView }) {
           </p>
         ) : (
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-base font-semibold tabular-nums text-emerald-700">
-              AED {product.price}
-            </span>
+            <CurrencyAmount className="text-base font-semibold tabular-nums text-emerald-700">
+              {product.price}
+            </CurrencyAmount>
             {product.compareAt ? (
-              <span className="text-sm tabular-nums text-muted-foreground line-through">
-                AED {product.compareAt}
-              </span>
+              <CurrencyAmount className="text-sm tabular-nums text-muted-foreground line-through">
+                {product.compareAt}
+              </CurrencyAmount>
             ) : null}
           </div>
         )}

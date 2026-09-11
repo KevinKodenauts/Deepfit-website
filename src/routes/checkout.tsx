@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { CreditCard, Banknote } from "lucide-react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { CurrencyAmount } from "@/components/CurrencySymbol";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { useAddresses } from "@/contexts/AddressContext";
@@ -225,7 +226,9 @@ function CheckoutPage() {
                     <span>
                       {item.title} × {item.qty}
                     </span>
-                    <span>AED {item.price * item.qty}</span>
+                    <span>
+                      <CurrencyAmount>{item.price * item.qty}</CurrencyAmount>
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -287,7 +290,9 @@ function CheckoutPage() {
               </div>
               <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
                 <span className="text-muted-foreground">Total</span>
-                <span className="font-display text-2xl">AED {grandTotal}</span>
+                <CurrencyAmount className="font-display text-2xl">
+                  {grandTotal}
+                </CurrencyAmount>
               </div>
               <button
                 type="button"

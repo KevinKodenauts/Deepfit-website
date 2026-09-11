@@ -1,9 +1,11 @@
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { ProductCard } from "@/components/site/ProductCard";
 import { ProductsEmptyState } from "@/components/site/ProductsEmptyState";
 import { ProductGridSkeleton } from "@/components/skeleton/PageSkeletons";
+import { CurrencyAmount } from "@/components/CurrencySymbol";
 import { categories as fallbackCategories, type Product } from "@/lib/products";
 import { LayoutGrid, List, SlidersHorizontal } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -44,21 +46,47 @@ type AvailabilityKey = "instock" | "preorder" | "new";
 
 const PRICE_OPTIONS: Array<{
   key: PriceKey;
-  label: string;
+  label: ReactNode;
   matches: (price: number) => boolean;
 }> = [
-  { key: "under-100", label: "Under AED 100", matches: (price) => price < 100 },
+  {
+    key: "under-100",
+    label: (
+      <>
+        Under <CurrencyAmount>100</CurrencyAmount>
+      </>
+    ),
+    matches: (price) => price < 100,
+  },
   {
     key: "100-500",
-    label: "AED 100 – 500",
+    label: (
+      <>
+        <CurrencyAmount>100</CurrencyAmount>
+        {" – 500"}
+      </>
+    ),
     matches: (price) => price >= 100 && price <= 500,
   },
   {
     key: "500-1000",
-    label: "AED 500 – 1,000",
+    label: (
+      <>
+        <CurrencyAmount>500</CurrencyAmount>
+        {" – 1,000"}
+      </>
+    ),
     matches: (price) => price > 500 && price <= 1000,
   },
-  { key: "1000-plus", label: "AED 1,000+", matches: (price) => price > 1000 },
+  {
+    key: "1000-plus",
+    label: (
+      <>
+        <CurrencyAmount>1,000</CurrencyAmount>+
+      </>
+    ),
+    matches: (price) => price > 1000,
+  },
 ];
 
 const AVAILABILITY_OPTIONS: Array<{ key: AvailabilityKey; label: string }> = [
@@ -631,7 +659,7 @@ function FilterCheckRow({
   checked,
   onToggle,
 }: {
-  label: string;
+  label: ReactNode;
   checked: boolean;
   onToggle: () => void;
 }) {

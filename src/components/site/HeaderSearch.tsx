@@ -4,6 +4,7 @@ import { Mic, Search, X } from "lucide-react";
 import { useSearchPage } from "@/hooks/useSearchPage";
 import { categoryProductToCard } from "@/lib/catalog";
 import { SearchDropdownSkeleton } from "@/components/skeleton/PageSkeletons";
+import { CurrencyAmount } from "@/components/CurrencySymbol";
 
 export function HeaderSearch() {
   const [open, setOpen] = useState(false);
@@ -169,7 +170,11 @@ export function HeaderSearch() {
                           {card.name}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {card.comingSoon ? "Coming soon" : `AED ${card.price}`}
+                          {card.comingSoon ? (
+                            "Coming soon"
+                          ) : (
+                            <CurrencyAmount>{card.price}</CurrencyAmount>
+                          )}
                         </span>
                       </span>
                     </button>

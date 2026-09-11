@@ -74,8 +74,8 @@ export function offerBannerHref(banner: OfferBanner) {
 export function formatOfferPrice(value?: string) {
   const trimmed = value?.trim();
   if (!trimmed) return "";
-  if (/aed/i.test(trimmed)) return trimmed;
-  if (/^\d+(\.\d+)?$/.test(trimmed)) return `AED ${trimmed}`;
+  if (/aed/i.test(trimmed)) return trimmed.replace(/aed/gi, "").trim();
+  if (/^\d+(\.\d+)?$/.test(trimmed)) return trimmed;
   return trimmed;
 }
 
