@@ -122,6 +122,7 @@ export function OrderDetailsPage() {
   const [reviewProduct, setReviewProduct] = useState<OrderProduct | null>(null);
   const [reviewPickerOpen, setReviewPickerOpen] = useState(false);
   const [invoiceError, setInvoiceError] = useState<string | null>(null);
+  const [invoiceDownloading, setInvoiceDownloading] = useState(false);
 
   const loadOrder = useCallback(
     (options?: { silent?: boolean }) => {
@@ -283,14 +284,16 @@ export function OrderDetailsPage() {
     }
   };
 
-  const handleDownloadInvoice = () => {
-    if (!order) return;
+  const handleDownloadInvoice = async () => {
+    if (!order || invoiceDownloading) return;
     setInvoiceError(null);
+    setInvoiceDownloading(true);
     try {
-      downloadOrderInvoice(order, {
+      await downloadOrderInvoice(order, {
         name: user?.name || user?.customerName,
         email: user?.email || user?.customerEmail,
         phone: user?.phone || user?.customerMobile,
+        address: order.shippingAddress || order.billingAddress,
       });
     } catch (error) {
       setInvoiceError(
@@ -298,6 +301,8 @@ export function OrderDetailsPage() {
           ? error.message
           : "Unable to download the invoice. Please try again.",
       );
+    } finally {
+      setInvoiceDownloading(false);
     }
   };
 
@@ -537,14 +542,15 @@ export function OrderDetailsPage() {
                 ) : null}
                 {showDeliveredActions ? (
                   <>
-                    {/* <button
+                    <button
                       type="button"
                       className={styles.invoiceBtn}
-                      onClick={handleDownloadInvoice}
+                      onClick={() => void handleDownloadInvoice()}
+                      disabled={invoiceDownloading}
                     >
                       <Download size={16} />
-                      Download invoice
-                    </button> */}
+                      {invoiceDownloading ? "Preparing invoice..." : "Download invoice"}
+                    </button>
                     <button
                       type="button"
                       className={styles.reviewBtn}
