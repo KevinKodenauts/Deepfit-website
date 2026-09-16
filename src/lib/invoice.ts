@@ -1,4 +1,4 @@
-import { SITE_EMAIL, SITE_URL } from "@/lib/site";
+import { SITE_COMPANY, SITE_EMAIL, SITE_URL } from "@/lib/site";
 import type { OrderAddress, OrderSummary } from "@/lib/api/orders";
 
 export type InvoiceCustomer = {
@@ -53,11 +53,20 @@ function escapeHtml(value: string) {
     .replace(/"/g, "&quot;");
 }
 
+const VAT_RATE = 0.05;
+
 function formatMoney(amount: number) {
   return `AED ${amount.toLocaleString("en-AE", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
+}
+
+/** Split an VAT-inclusive total into subtotal + 5% VAT. */
+function splitInclusiveVat(totalInclusive: number) {
+  const vat = Math.round(totalInclusive * VAT_RATE * 100) / 100;
+  const subtotal = Math.round((totalInclusive - vat) * 100) / 100;
+  return { subtotal, vat, total: totalInclusive };
 }
 
 function formatDate(value?: string) {
@@ -66,7 +75,7 @@ function formatDate(value?: string) {
   if (Number.isNaN(date.getTime())) return value;
   return date.toLocaleDateString("en-GB", {
     day: "2-digit",
-    month: "2-digit",
+    month: "short",
     year: "numeric",
   });
 }
@@ -109,15 +118,21 @@ function amountInWords(amount: number): string {
     result += ` and ${integerToWords(fils)}`;
     result += fils === 1 ? " Fil" : " Fils";
   }
-  return `( ${result} only)`;
+  return `${result} only`;
 }
 
-function formatAddressLines(address?: OrderAddress) {
-  if (!address) return "";
-  return [address.street, address.city, address.postalCode, address.country]
-    .filter(Boolean)
-    .join(", ");
+function formatAddressHtml(address?: OrderAddress) {
+  if (!address) return "—";
+  const lines = [
+    address.street,
+    [address.city, address.postalCode].filter(Boolean).join(", "),
+    address.country,
+  ].filter(Boolean);
+  return lines.length ? lines.map(escapeHtml).join("<br>") : "—";
 }
+
+const ICON_EMAIL = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>`;
+const ICON_WEB = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20"/><path d="M12 2a15 15 0 0 0 0 20"/></svg>`;
 
 function invoiceLogoUrl() {
   if (typeof window === "undefined") return "/images/logo/bcaa.png";
@@ -133,264 +148,403 @@ function siteHost() {
 }
 
 const INVOICE_STYLES = `
-        .invoice-container,
-        .invoice-container * {
-            box-sizing: border-box;
-        }
+  .invoice-container,
+  .invoice-container * {
+    box-sizing: border-box;
+  }
 
-        .invoice-container {
-            width: 210mm;
-            min-height: 297mm;
-            margin: auto;
-            background: #ffffff;
-            padding: 18mm 12mm;
-            font-family: Arial, Helvetica, sans-serif;
-            color: #222;
-        }
+  .invoice-container {
+    --ink: #15262c;
+    --muted: #5d7179;
+    --line: #d7e3e8;
+    --soft: #f3f8fa;
+    --brand: #1a637b;
+    --brand-dark: #134e61;
+    width: 210mm;
+    min-height: 297mm;
+    margin: auto;
+    background: #ffffff;
+    padding: 16mm 15mm 12mm;
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+  }
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 18px;
-        }
+  .invoice-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
 
-        .logo {
-            width: 230px;
-            height: auto;
-            object-fit: contain;
-        }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 28px;
+    margin-bottom: 22px;
+  }
 
-        .contact {
-            text-align: right;
-            font-size: 14px;
-            font-weight: 600;
-            padding-top: 8px;
-            line-height: 1.5;
-        }
+  .logo {
+    width: 150px;
+    height: auto;
+    object-fit: contain;
+  }
 
-        .invoice-title {
-            border: 1px solid #222;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 45px;
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            position: relative;
-        }
+  .brand-meta {
+    text-align: right;
+    max-width: 300px;
+  }
 
-        .invoice-copy {
-            position: absolute;
-            right: 0;
-            top: 0;
-            height: 45px;
-            width: 125px;
-            border-left: 1px solid #222;
-            font-size: 10px;
-            font-weight: 500;
-        }
+  .doc-label {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--brand);
+    margin-bottom: 8px;
+  }
 
-        .invoice-copy div {
-            height: 15px;
-            display: flex;
-            align-items: center;
-            padding-left: 7px;
-            border-bottom: 1px solid #222;
-        }
+  .brand-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
 
-        .invoice-copy div:last-child {
-            border-bottom: none;
-        }
+  .brand-address {
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
 
-        .info-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            border-left: 1px solid #222;
-            border-right: 1px solid #222;
-            border-bottom: 1px solid #222;
-        }
+  .contact {
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.55;
+    color: var(--ink);
+  }
 
-        .info-left,
-        .info-right {
-            padding: 12px;
-            min-height: 100px;
-        }
+  .accent-bar {
+    height: 4px;
+    background: linear-gradient(90deg, #1a637b 0%, #2d8a6e 55%, #6b5ea8 100%);
+    border-radius: 999px;
+    margin-bottom: 20px;
+  }
 
-        .info-left {
-            border-right: 1px solid #222;
-        }
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
 
-        .info-row {
-            display: grid;
-            grid-template-columns: 95px 15px 1fr;
-            font-size: 13px;
-            margin-bottom: 8px;
-        }
+  .panel {
+    background: var(--soft);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
 
-        .info-row .label {
-            font-weight: 700;
-        }
+  .panel-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--brand);
+    margin-bottom: 10px;
+  }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+  .customer-name {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
 
-        .items-table th,
-        .items-table td {
-            border: 1px solid #222;
-            padding: 9px 7px;
-            font-size: 12px;
-        }
+  .customer-address {
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--muted);
+  }
 
-        .items-table th {
-            text-align: center;
-            font-weight: 700;
-            height: 42px;
-        }
+  .meta-list {
+    display: grid;
+    gap: 8px;
+  }
 
-        .items-table td {
-            vertical-align: top;
-        }
+  .meta-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12px;
+  }
 
-        .items-table .sr {
-            width: 7%;
-            text-align: center;
-        }
+  .meta-item .label {
+    color: var(--muted);
+    font-weight: 600;
+  }
 
-        .items-table .product {
-            width: 40%;
-        }
+  .meta-item .value {
+    font-weight: 700;
+    text-align: right;
+  }
 
-        .items-table .hsn {
-            width: 12%;
-            text-align: center;
-        }
+  .items-card {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
 
-        .items-table .qty {
-            width: 8%;
-            text-align: center;
-        }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
 
-        .items-table .amount,
-        .items-table .total {
-            width: 16.5%;
-            text-align: right;
-        }
+  .items-table th,
+  .items-table td {
+    padding: 12px 14px;
+    font-size: 12px;
+    text-align: left;
+  }
 
-        .items-table tbody tr:not(.total-row) td {
-            height: 52px;
-        }
+  .items-table thead th {
+    background: var(--brand);
+    color: #ffffff;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
 
-        .total-row td {
-            height: 35px !important;
-            vertical-align: middle !important;
-            font-weight: 700;
-        }
+  .items-table tbody tr {
+    border-bottom: 1px solid var(--line);
+  }
 
-        .total-label {
-            text-align: right;
-        }
+  .items-table tbody tr:last-child {
+    border-bottom: none;
+  }
 
-        .bottom-section {
-            display: grid;
-            grid-template-columns: 58% 42%;
-            border-left: 1px solid #222;
-            border-right: 1px solid #222;
-            border-bottom: 1px solid #222;
-        }
+  .items-table tbody tr:nth-child(even) {
+    background: #fafcfd;
+  }
 
-        .left-bottom {
-            border-right: 1px solid #222;
-        }
+  .items-table .sr {
+    width: 8%;
+    text-align: center;
+    color: var(--muted);
+    font-weight: 600;
+  }
 
-        .amount-words {
-            min-height: 70px;
-            padding: 12px;
-            border-bottom: 1px solid #222;
-            font-size: 13px;
-        }
+  .items-table .product {
+    width: 48%;
+    font-weight: 600;
+    line-height: 1.45;
+  }
 
-        .amount-words strong {
-            display: block;
-            margin-bottom: 8px;
-        }
+  .items-table .hsn {
+    width: 12%;
+    text-align: center;
+    color: var(--muted);
+  }
 
-        .terms {
-            padding: 12px;
-            min-height: 85px;
-            font-size: 12px;
-        }
+  .items-table .qty {
+    width: 8%;
+    text-align: center;
+    font-weight: 600;
+  }
 
-        .terms-title {
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
+  .items-table .amount,
+  .items-table .total {
+    width: 12%;
+    text-align: right;
+    white-space: nowrap;
+  }
 
-        .terms p {
-            margin: 4px 0;
-        }
+  .items-table thead .sr,
+  .items-table thead .hsn,
+  .items-table thead .qty,
+  .items-table thead .amount,
+  .items-table thead .total {
+    text-align: center;
+  }
 
-        .signature {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 155px;
-            text-align: center;
-            font-size: 12px;
-        }
+  .items-table thead .amount,
+  .items-table thead .total {
+    text-align: right;
+  }
 
-        .company-name {
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: 1.25fr 0.75fr;
+    gap: 14px;
+    margin-bottom: 8px;
+  }
 
-        .signature-line {
-            width: 100px;
-            border-bottom: 1px solid #222;
-            margin-bottom: 8px;
-        }
+  .amount-words {
+    background: var(--soft);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
 
-        .authorized {
-            line-height: 18px;
-        }
+  .amount-words .label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--brand);
+    margin-bottom: 6px;
+  }
 
-        .footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 8px 0;
-            font-size: 13px;
-            font-weight: 600;
-        }
+  .amount-words .value {
+    font-size: 13px;
+    font-weight: 600;
+    font-style: italic;
+    line-height: 1.45;
+  }
 
-        .footer-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+  .totals-card {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
 
-        .icon {
-            font-size: 16px;
-        }
+  .totals-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    font-size: 12px;
+    border-bottom: 1px solid var(--line);
+  }
 
-        @media print {
-            .invoice-container {
-                width: 210mm;
-                min-height: 297mm;
-                margin: 0;
-                padding: 18mm 12mm;
-            }
+  .totals-row:last-child {
+    border-bottom: none;
+  }
 
-            @page {
-                size: A4;
-                margin: 0;
-            }
-        }
+  .totals-row .label {
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .totals-row .value {
+    font-weight: 700;
+  }
+
+  .totals-row.grand {
+    background: var(--brand);
+    color: #ffffff;
+    padding: 13px 14px;
+  }
+
+  .totals-row.grand .label,
+  .totals-row.grand .value {
+    color: #ffffff;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+  }
+
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1.25fr 0.75fr;
+    gap: 14px;
+    margin-top: 16px;
+  }
+
+  .terms {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 11.5px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  .terms-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .terms p {
+    margin: 0 0 4px;
+  }
+
+  .signature {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    text-align: center;
+    min-height: 128px;
+  }
+
+  .company-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--brand);
+    margin-bottom: 34px;
+  }
+
+  .signature-line {
+    width: 118px;
+    border-bottom: 1px solid var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .authorized {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .footer {
+    margin-top: 20px;
+    background: var(--brand-dark);
+    color: #ffffff;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 16px;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+
+  .footer-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .footer svg {
+    display: block;
+    flex-shrink: 0;
+  }
+
+  @media print {
+    .invoice-container {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0;
+      padding: 14mm 14mm 10mm;
+    }
+
+    @page {
+      size: A4;
+      margin: 0;
+    }
+  }
 `;
 
 function buildInvoiceInnerHtml(
@@ -400,14 +554,16 @@ function buildInvoiceInnerHtml(
   const invoiceNo = order.orderNumber;
   const invoiceDate = formatDate(order.deliveredAt || order.orderDate);
   const customerName = customer?.name?.trim() || "Customer";
-  const address = customer?.address || order.shippingAddress || order.billingAddress;
-  const addressText = formatAddressLines(address) || "—";
-  const customerState = address?.state || address?.city || address?.country || "—";
+  const address =
+    customer?.address || order.shippingAddress || order.billingAddress;
+  const addressHtml = formatAddressHtml(address);
+  const customerState =
+    address?.state || address?.city || address?.country || "—";
   const sellerState = "Dubai";
   const grandTotal = order.grandTotal;
+  const { subtotal, vat } = splitInclusiveVat(grandTotal);
   const logoUrl = invoiceLogoUrl();
   const website = `www.${siteHost()}`;
-  const minRows = Math.max(order.orderedProducts.length, 3);
 
   const productRows = order.orderedProducts
     .map(
@@ -423,131 +579,121 @@ function buildInvoiceInnerHtml(
     )
     .join("");
 
-  const emptyRows = Array.from(
-    { length: Math.max(0, minRows - order.orderedProducts.length) },
-    () => `
-            <tr>
-                <td class="sr"></td>
-                <td class="product"></td>
-                <td class="hsn"></td>
-                <td class="qty"></td>
-                <td class="amount"></td>
-                <td class="total"></td>
-            </tr>`,
-  ).join("");
-
   return `<style>${INVOICE_STYLES}</style>
 <div class="invoice-container">
+  <div class="invoice-body">
     <div class="header">
-        <div>
-            <img src="${escapeHtml(logoUrl)}" alt="DeepFit Logo" class="logo">
-        </div>
+      <div>
+        <img src="${escapeHtml(logoUrl)}" alt="DeepFit Logo" class="logo">
+      </div>
+      <div class="brand-meta">
+        <div class="doc-label">Tax Invoice</div>
+        <div class="brand-name">${escapeHtml(SITE_COMPANY.name)}</div>
+        <div class="brand-address">${escapeHtml(SITE_COMPANY.address)}</div>
         <div class="contact">
-            ${escapeHtml(SITE_EMAIL)}<br>
-            ${escapeHtml(website)}
+          ${escapeHtml(SITE_EMAIL)}<br>
+          ${escapeHtml(website)}
         </div>
+      </div>
     </div>
 
-    <div class="invoice-title">
-        INVOICE
-        <div class="invoice-copy">
-            <div>Original for Recipient</div>
-            <div>Duplicate</div>
-            <div>Triplicate</div>
+    <div class="accent-bar"></div>
+
+    <div class="meta-grid">
+      <div class="panel">
+        <div class="panel-title">Bill To</div>
+        <div class="customer-name">${escapeHtml(customerName)}</div>
+        <div class="customer-address">
+          ${addressHtml}<br>
+          ${escapeHtml(customerState)}
         </div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">Invoice Details</div>
+        <div class="meta-list">
+          <div class="meta-item">
+            <span class="label">Invoice No</span>
+            <span class="value">${escapeHtml(invoiceNo)}</span>
+          </div>
+          <div class="meta-item">
+            <span class="label">Date</span>
+            <span class="value">${escapeHtml(invoiceDate)}</span>
+          </div>
+          <div class="meta-item">
+            <span class="label">Place of Supply</span>
+            <span class="value">${escapeHtml(sellerState)}</span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="info-section">
-        <div class="info-left">
-            <div class="info-row">
-                <span class="label">Name</span>
-                <span>:</span>
-                <span>${escapeHtml(customerName)}</span>
-            </div>
-            <div class="info-row">
-                <span class="label">Address</span>
-                <span>:</span>
-                <span>${escapeHtml(addressText)}</span>
-            </div>
-            <div class="info-row">
-                <span class="label">State</span>
-                <span>:</span>
-                <span>${escapeHtml(customerState)}</span>
-            </div>
-        </div>
-        <div class="info-right">
-            <div class="info-row">
-                <span class="label">Invoice No</span>
-                <span>:</span>
-                <span>${escapeHtml(invoiceNo)}</span>
-            </div>
-            <div class="info-row">
-                <span class="label">Invoice Date</span>
-                <span>:</span>
-                <span>${escapeHtml(invoiceDate)}</span>
-            </div>
-            <div class="info-row">
-                <span class="label">State</span>
-                <span>:</span>
-                <span>${escapeHtml(sellerState)}</span>
-            </div>
-        </div>
-    </div>
-
-    <table class="items-table">
+    <div class="items-card">
+      <table class="items-table">
         <thead>
-            <tr>
-                <th class="sr">Sr.<br>No</th>
-                <th class="product">Name Of<br>Product/Service</th>
-                <th class="hsn">HSN<br>SAC</th>
-                <th class="qty">Qty</th>
-                <th class="amount">Amount</th>
-                <th class="total">Total</th>
-            </tr>
+          <tr>
+            <th class="sr">No</th>
+            <th class="product">Product / Service</th>
+            <th class="hsn">HSN / SAC</th>
+            <th class="qty">Qty</th>
+            <th class="amount">Amount</th>
+            <th class="total">Total</th>
+          </tr>
         </thead>
         <tbody>
-            ${productRows}
-            ${emptyRows}
-            <tr class="total-row">
-                <td colspan="4"></td>
-                <td class="total-label">Total:</td>
-                <td class="total">${escapeHtml(formatMoney(grandTotal))}</td>
-            </tr>
+          ${productRows}
         </tbody>
-    </table>
-
-    <div class="bottom-section">
-        <div class="left-bottom">
-            <div class="amount-words">
-                <strong>Total Invoice Amount in Words:</strong>
-                ${escapeHtml(amountInWords(grandTotal))}
-            </div>
-            <div class="terms">
-                <div class="terms-title">:Terms &amp; Conditions:</div>
-                <p>1) Goods once delivered are subject to DeepFit's return and refund policy.</p>
-                <p>(*Subject to Dubai Jurisdiction)</p>
-            </div>
-        </div>
-        <div class="signature">
-            <div class="company-name">DeepFit</div>
-            <div class="signature-line"></div>
-            <div class="authorized">
-                Proprietor<br>
-                (Authorized Signatory)
-            </div>
-        </div>
+      </table>
     </div>
 
-    <div class="footer">
-        <div class="footer-item">
-            <span class="icon">✉</span>
-            <span>${escapeHtml(SITE_EMAIL)}</span>
+    <div class="summary-grid">
+      <div class="amount-words">
+        <span class="label">Amount in Words</span>
+        <span class="value">${escapeHtml(amountInWords(grandTotal))}</span>
+      </div>
+      <div class="totals-card">
+        <div class="totals-row">
+          <span class="label">Subtotal</span>
+          <span class="value">${escapeHtml(formatMoney(subtotal))}</span>
         </div>
-        <div class="footer-item">
-            <span class="icon">🌐</span>
-            <span>${escapeHtml(website)}</span>
+        <div class="totals-row">
+          <span class="label">VAT (5%)</span>
+          <span class="value">${escapeHtml(formatMoney(vat))}</span>
         </div>
+        <div class="totals-row">
+          <span class="label">Delivery</span>
+          <span class="value">FREE</span>
+        </div>
+        <div class="totals-row grand">
+          <span class="label">Total Amount</span>
+          <span class="value">${escapeHtml(formatMoney(grandTotal))}</span>
+        </div>
+      </div>
     </div>
+
+    <div class="bottom-grid">
+      <div class="terms">
+        <div class="terms-title">Terms &amp; Conditions</div>
+        <p>1) Goods once delivered are subject to DeepFit's return and refund policy.</p>
+        <p>2) Subject to Dubai jurisdiction.</p>
+      </div>
+      <div class="signature">
+        <div class="company-name">DeepFit</div>
+        <div class="signature-line"></div>
+        <div class="authorized">Authorized Signatory</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="footer-item">
+      ${ICON_EMAIL}
+      <span>${escapeHtml(SITE_EMAIL)}</span>
+    </div>
+    <div class="footer-item">
+      ${ICON_WEB}
+      <span>${escapeHtml(website)}</span>
+    </div>
+  </div>
 </div>`;
 }
 
@@ -559,18 +705,18 @@ export function buildOrderInvoiceHtml(
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DeepFit Invoice - ${escapeHtml(invoiceNo)}</title>
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        background: #ffffff;
-        font-family: Arial, Helvetica, sans-serif;
-        color: #222;
-      }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DeepFit Invoice - ${escapeHtml(invoiceNo)}</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+      font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+      color: #15262c;
+    }
+  </style>
 </head>
 <body>
 ${buildInvoiceInnerHtml(order, customer)}
