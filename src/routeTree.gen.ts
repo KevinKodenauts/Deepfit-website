@@ -29,6 +29,7 @@ import { Route as VerifyOtpRouteImport } from './routes/verify-otp'
 import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as DeepfitExploreMoveHubRouteImport } from './routes/deepfit-explore_.move-hub'
 import { Route as ExerciseIndexRouteImport } from './routes/exercise.index'
 import { Route as ExerciseLibraryRouteImport } from './routes/exercise.library'
 import { Route as ExerciseMyEquipmentRouteImport } from './routes/exercise.my-equipment'
@@ -156,6 +157,11 @@ const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => BlogRoute,
+} as any)
+const DeepfitExploreMoveHubRoute = DeepfitExploreMoveHubRouteImport.update({
+  id: '/deepfit-explore_/move-hub',
+  path: '/deepfit-explore/move-hub',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ExerciseIndexRoute = ExerciseIndexRouteImport.update({
   id: '/',
@@ -314,6 +320,7 @@ export interface FileRoutesByFullPath {
   '/verify-otp': typeof VerifyOtpRoute
   '/wallet': typeof WalletRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
+  '/deepfit-explore/move-hub': typeof DeepfitExploreMoveHubRoute
   '/exercise/library': typeof ExerciseLibraryRoute
   '/exercise/my-equipment': typeof ExerciseMyEquipmentRoute
   '/explore/library': typeof ExploreLibraryRoute
@@ -359,6 +366,7 @@ export interface FileRoutesByTo {
   '/verify-otp': typeof VerifyOtpRoute
   '/wallet': typeof WalletRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
+  '/deepfit-explore/move-hub': typeof DeepfitExploreMoveHubRoute
   '/exercise/library': typeof ExerciseLibraryRoute
   '/exercise/my-equipment': typeof ExerciseMyEquipmentRoute
   '/explore/library': typeof ExploreLibraryRoute
@@ -409,6 +417,7 @@ export interface FileRoutesById {
   '/verify-otp': typeof VerifyOtpRoute
   '/wallet': typeof WalletRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
+  '/deepfit-explore_/move-hub': typeof DeepfitExploreMoveHubRoute
   '/exercise/library': typeof ExerciseLibraryRoute
   '/exercise/my-equipment': typeof ExerciseMyEquipmentRoute
   '/explore/library': typeof ExploreLibraryRoute
@@ -460,6 +469,7 @@ export interface FileRouteTypes {
     | '/verify-otp'
     | '/wallet'
     | '/blog/$slug'
+    | '/deepfit-explore/move-hub'
     | '/exercise/library'
     | '/exercise/my-equipment'
     | '/explore/library'
@@ -505,6 +515,7 @@ export interface FileRouteTypes {
     | '/verify-otp'
     | '/wallet'
     | '/blog/$slug'
+    | '/deepfit-explore/move-hub'
     | '/exercise/library'
     | '/exercise/my-equipment'
     | '/explore/library'
@@ -554,6 +565,7 @@ export interface FileRouteTypes {
     | '/verify-otp'
     | '/wallet'
     | '/blog/$slug'
+    | '/deepfit-explore_/move-hub'
     | '/exercise/library'
     | '/exercise/my-equipment'
     | '/explore/library'
@@ -603,6 +615,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   VerifyOtpRoute: typeof VerifyOtpRoute
   WalletRoute: typeof WalletRouteWithChildren
+  DeepfitExploreMoveHubRoute: typeof DeepfitExploreMoveHubRoute
   ForgotPasswordResetRoute: typeof ForgotPasswordResetRoute
   ForgotPasswordVerifyRoute: typeof ForgotPasswordVerifyRoute
   LabTestReportProductNameRoute: typeof LabTestReportProductNameRoute
@@ -754,6 +767,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/blog/$slug'
       preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof BlogRoute
+    }
+    '/deepfit-explore_/move-hub': {
+      id: '/deepfit-explore_/move-hub'
+      path: '/deepfit-explore/move-hub'
+      fullPath: '/deepfit-explore/move-hub'
+      preLoaderRoute: typeof DeepfitExploreMoveHubRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/exercise/': {
       id: '/exercise/'
@@ -1062,6 +1082,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   VerifyOtpRoute: VerifyOtpRoute,
   WalletRoute: WalletRouteWithChildren,
+  DeepfitExploreMoveHubRoute: DeepfitExploreMoveHubRoute,
   ForgotPasswordResetRoute: ForgotPasswordResetRoute,
   ForgotPasswordVerifyRoute: ForgotPasswordVerifyRoute,
   LabTestReportProductNameRoute: LabTestReportProductNameRoute,
