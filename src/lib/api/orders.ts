@@ -19,6 +19,14 @@ export type OrderProduct = {
   lastTrackedStatus?: string;
 };
 
+export type OrderAddress = {
+  street?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+};
+
 export type OrderSummary = {
   id: number;
   orderNumber: string;
@@ -32,6 +40,8 @@ export type OrderSummary = {
   paymentStatus?: string;
   paymentIntentId?: string;
   orderedProducts: OrderProduct[];
+  shippingAddress?: OrderAddress;
+  billingAddress?: OrderAddress;
 };
 
 type RawOrderProduct = {
@@ -62,6 +72,14 @@ type RawOrderProduct = {
   };
 };
 
+type RawOrderAddress = {
+  street?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+};
+
 type RawOrder = {
   id: number;
   orderId?: number;
@@ -79,6 +97,8 @@ type RawOrder = {
   isPaid?: boolean;
   products?: RawOrderProduct[];
   orderedProducts?: RawOrderProduct[];
+  shippingAddress?: RawOrderAddress | null;
+  billingAddress?: RawOrderAddress | null;
 };
 
 type OrdersResponse = {
@@ -150,6 +170,19 @@ function mapOrderProduct(product: RawOrderProduct): OrderProduct {
   };
 }
 
+function mapOrderAddress(
+  address?: RawOrderAddress | null,
+): OrderAddress | undefined {
+  if (!address) return undefined;
+  const street = address.street?.trim();
+  const city = address.city?.trim();
+  const state = address.state?.trim();
+  const postalCode = address.postalCode?.trim();
+  const country = address.country?.trim();
+  if (!street && !city && !state && !postalCode && !country) return undefined;
+  return { street, city, state, postalCode, country };
+}
+
 function mapOrder(order: RawOrder): OrderSummary {
   const orderedProducts = order.products?.length
     ? order.products.map(mapOrderProduct)
@@ -175,6 +208,8 @@ function mapOrder(order: RawOrder): OrderSummary {
     paymentStatus: order.paymentStatus,
     paymentIntentId: order.paymentIntentId || undefined,
     orderedProducts,
+    shippingAddress: mapOrderAddress(order.shippingAddress),
+    billingAddress: mapOrderAddress(order.billingAddress),
   };
 }
 
@@ -207,6 +242,8 @@ export function groupOrdersByNumber(orders: OrderSummary[]): OrderSummary[] {
       returnWindowDays: existing.returnWindowDays ?? order.returnWindowDays,
       orderedProducts: [...existing.orderedProducts, ...order.orderedProducts],
       grandTotal: existing.grandTotal + order.grandTotal,
+      shippingAddress: existing.shippingAddress || order.shippingAddress,
+      billingAddress: existing.billingAddress || order.billingAddress,
     });
   }
 
