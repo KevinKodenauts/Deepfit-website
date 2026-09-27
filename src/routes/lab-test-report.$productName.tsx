@@ -9,6 +9,7 @@ import { mapToProductDetail, type ProductDetailView } from "@/lib/api/mappers";
 
 const searchSchema = z.object({
   productId: z.coerce.number().optional(),
+  from: z.enum(["explore", "product"]).optional(),
 });
 
 export const Route = createFileRoute("/lab-test-report/$productName")({
@@ -30,9 +31,10 @@ export const Route = createFileRoute("/lab-test-report/$productName")({
 
 function LabTestReportPage() {
   const { productName } = Route.useParams();
-  const { productId: productIdParam } = Route.useSearch();
+  const { productId: productIdParam, from } = Route.useSearch();
   const [product, setProduct] = useState<ProductDetailView | null>(null);
   const [loading, setLoading] = useState(true);
+  const backFromExplore = from === "explore";
 
   useEffect(() => {
     let cancelled = false;
@@ -69,7 +71,16 @@ function LabTestReportPage() {
     <div className="min-h-screen bg-background text-foreground">
       <Nav />
       <section className="mx-auto max-w-3xl px-6 pb-20 pt-32 lg:px-10">
-        {product ? (
+        {backFromExplore ? (
+          <Link
+            to="/explore"
+            search={{ hub: "fuel" }}
+            className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground"
+          >
+            <ArrowLeft size={16} aria-hidden="true" />
+            Back to explore
+          </Link>
+        ) : product ? (
           <Link
             to="/product/$slug"
             params={{ slug: String(product.id) }}
