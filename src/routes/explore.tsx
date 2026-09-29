@@ -11,6 +11,7 @@ import {
 import { z } from "zod";
 import ChooseEquipment from "@/components/explore/ChooseEquipment";
 import { ExploreBlog } from "@/components/explore/ExploreBlog";
+import { FuelHub } from "@/components/explore/FuelHub";
 import { Footer } from "@/components/site/Footer";
 import { Nav } from "@/components/site/Nav";
 import styles from "@/styles/explore.module.css";
@@ -61,8 +62,6 @@ const HUBS: Hub[] = [
     name: "Fuel Hub",
     shortName: "Fuel",
     icon: UtensilsCrossed,
-    description:
-      "Nutrition plans, meal guides, and fueling tips are on the way.",
   },
   {
     id: "mind",
@@ -164,8 +163,10 @@ function ExplorePage() {
         </div>
 
         <div className={styles.content}>
-          {activeHub === 0 ? (
+          {hub.id === "move" ? (
             <ChooseEquipment hideHeader />
+          ) : hub.id === "fuel" ? (
+            <FuelHub />
           ) : hub.id === "blog" ? (
             <ExploreBlog />
           ) : (
