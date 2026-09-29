@@ -78,7 +78,7 @@ function LabTestReportPage() {
             className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground"
           >
             <ArrowLeft size={16} aria-hidden="true" />
-            Back to explore
+            Back to Fuel Hub
           </Link>
         ) : product ? (
           <Link

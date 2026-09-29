@@ -195,7 +195,7 @@ export function FuelHub() {
     void navigate({
       to: "/lab-test-report/$productName",
       params: { productName: slug },
-      search: { productId: product.id },
+      search: { productId: product.id, from: "explore" },
     });
   };
 
@@ -246,7 +246,7 @@ export function FuelHub() {
           )}
 
           <a
-            href={`/lab-test-report/${productNameSlug(selected.name)}?productId=${selected.id}`}
+            href={`/lab-test-report/${productNameSlug(selected.name)}?productId=${selected.id}&from=explore`}
             className={styles.certificateBtn}
             aria-label="View lab test reports"
             onClick={(event) => {
