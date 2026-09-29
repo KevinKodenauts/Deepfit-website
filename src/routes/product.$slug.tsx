@@ -194,7 +194,7 @@ function ProductCertificate({
   const slug = productNameSlug(productName);
   const navigate = useNavigate();
   if (!slug) return null;
-  const href = `/lab-test-report/${slug}?productId=${productId}`;
+  const href = `/lab-test-report/${slug}?productId=${productId}&from=product`;
 
   return (
     <a
@@ -215,7 +215,7 @@ function ProductCertificate({
         void navigate({
           to: "/lab-test-report/$productName",
           params: { productName: slug },
-          search: { productId },
+          search: { productId, from: "product" },
         });
       }}
       className="group mt-6 flex items-center gap-4 rounded-2xl border border-[#1A637B]/20 bg-[#E8F3F6]/80 px-4 py-3.5 shadow-[0_8px_24px_-12px_rgba(26,99,123,0.35)] transition duration-200 hover:border-[#1A637B]/40 hover:bg-[#E8F3F6] hover:shadow-[0_12px_28px_-10px_rgba(26,99,123,0.42)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1A637B] focus-visible:ring-offset-2"
