@@ -191,8 +191,9 @@ export function ProfileDesktop(profile: ProfileData) {
           </aside>
 
           <div className={styles.main}>
+            {/* Quick actions (temporarily hidden)
             <div className={styles.quickGrid}>
-              {/* <button
+              <button
                 type="button"
                 className={styles.quickCard}
                 onClick={() => requireAuth("/wallet")}
@@ -202,7 +203,7 @@ export function ProfileDesktop(profile: ProfileData) {
                 </span>
                 <span className={styles.quickLabel}>Wallet</span>
                 <span className={styles.quickHint}>View balance &amp; top up</span>
-              </button> */}
+              </button>
               <button
                 type="button"
                 className={`${styles.quickCard} ${styles.quickCardFull}`}
@@ -221,7 +222,7 @@ export function ProfileDesktop(profile: ProfileData) {
                   Track and manage purchases
                 </span>
               </button>
-              {/* <button
+              <button
                 type="button"
                 className={styles.quickCard}
                 onClick={() => requireAuth("/profile/referral")}
@@ -231,8 +232,9 @@ export function ProfileDesktop(profile: ProfileData) {
                 </span>
                 <span className={styles.quickLabel}>Referral tree</span>
                 <span className={styles.quickHint}>See your invite network</span>
-              </button> */}
+              </button>
             </div>
+            */}
 
             {/* <section className={styles.referralCard}>
               <div className={styles.referralHeader}>

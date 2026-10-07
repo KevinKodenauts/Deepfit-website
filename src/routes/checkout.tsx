@@ -79,15 +79,20 @@ function CheckoutPage() {
 
   useEffect(() => {
     const customerId = getCustomerId();
-    const pincode = selectedAddress?.pincode;
-    if (!customerId || !pincode) {
+    const emirate = selectedAddress?.state?.trim();
+    if (!customerId || !emirate) {
       setDeliveryFee(0);
       return;
     }
-    getShippingCharge(customerId, pincode)
+    getShippingCharge({
+      customerId,
+      addressId: selectedAddress?.id,
+      emirate,
+      pincode: selectedAddress?.pincode,
+    })
       .then(setDeliveryFee)
       .catch(() => setDeliveryFee(0));
-  }, [selectedAddress?.pincode]);
+  }, [selectedAddress?.id, selectedAddress?.state, selectedAddress?.pincode]);
 
   const handlePlaceOrder = useCallback(async () => {
     const customerId = getCustomerId();
@@ -288,11 +293,23 @@ function CheckoutPage() {
                   <Banknote size={16} /> Cash on delivery
                 </button> */}
               </div>
-              <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
-                <span className="text-muted-foreground">Total</span>
-                <CurrencyAmount className="font-display text-2xl">
-                  {grandTotal}
-                </CurrencyAmount>
+              <div className="mt-6 space-y-2 border-t border-border pt-4 text-sm">
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span>Delivery</span>
+                  <span>
+                    {deliveryFee === 0 ? (
+                      "Free"
+                    ) : (
+                      <CurrencyAmount>{deliveryFee}</CurrencyAmount>
+                    )}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Total</span>
+                  <CurrencyAmount className="font-display text-2xl">
+                    {grandTotal}
+                  </CurrencyAmount>
+                </div>
               </div>
               <button
                 type="button"

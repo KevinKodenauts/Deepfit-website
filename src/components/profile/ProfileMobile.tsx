@@ -92,6 +92,7 @@ export function ProfileMobile(profile: ProfileData) {
               </p>
             )}
 
+            {/* Invite & Earn (temporarily hidden)
             <div className={styles.inviteCard}>
               <div className={styles.inviteHeader}>
                 <h3 className={styles.inviteTitle}>Invite &amp; Earn 🎁</h3>
@@ -163,7 +164,9 @@ export function ProfileMobile(profile: ProfileData) {
                 <p className={styles.copyMessage}>{copyMessage}</p>
               ) : null}
             </div>
+            */}
 
+            {/* Quick actions (temporarily hidden)
             <div className={styles.quickActions}>
               <button
                 type="button"
@@ -190,6 +193,7 @@ export function ProfileMobile(profile: ProfileData) {
                 <span>Referral Tree</span>
               </button>
             </div>
+            */}
           </>
         ) : (
           <>

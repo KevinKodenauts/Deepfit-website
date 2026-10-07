@@ -14,7 +14,7 @@ import type {
   OtpVerifyResponse,
   ReferralTreeResponse,
 } from "./types";
-const APP_SOURCE = "Mobile";
+const APP_SOURCE = "Web";
 
 type CustomerDetailsResponse = {
   status: boolean;

@@ -105,15 +105,20 @@ function Cart() {
 
   useEffect(() => {
     const customerId = getCustomerId();
-    const pincode = selectedAddress?.pincode;
-    if (!customerId || !pincode) {
+    const emirate = selectedAddress?.state?.trim();
+    if (!customerId || !emirate) {
       setDeliveryFee(0);
       return;
     }
-    getShippingCharge(customerId, pincode)
+    getShippingCharge({
+      customerId,
+      addressId: selectedAddress?.id,
+      emirate,
+      pincode: selectedAddress?.pincode,
+    })
       .then(setDeliveryFee)
       .catch(() => setDeliveryFee(0));
-  }, [selectedAddress?.pincode]);
+  }, [selectedAddress?.id, selectedAddress?.state, selectedAddress?.pincode]);
 
   const openAddAddress = () => {
     setEditingAddress(null);

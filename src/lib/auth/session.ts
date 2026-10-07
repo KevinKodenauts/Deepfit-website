@@ -5,8 +5,9 @@ const ACCESS_TOKEN_KEY = "deepfit_access_token";
 const REFRESH_TOKEN_KEY = "deepfit_refresh_token";
 const USER_KEY = "deepfit_user";
 
-const ACCESS_TOKEN_DAYS = 7;
-const REFRESH_TOKEN_DAYS = 30;
+// Keep cookie lifetime aligned with backend SIMPLE_JWT (5h access / 1d refresh).
+const ACCESS_TOKEN_DAYS = 1;
+const REFRESH_TOKEN_DAYS = 1;
 
 let migrated = false;
 

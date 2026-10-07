@@ -558,15 +558,27 @@ export async function confirmZiinaPayment(payload: {
   };
 }
 
-export async function getShippingCharge(customerId: number, pincode: string) {
-  const data = await apiRequest<{ status: boolean; shippingCharge: number }>(
-    portalUrl("/getshippingcharge"),
-    {
-      method: "POST",
-      body: { customerId, pincode },
-      auth: true,
-    }
-  );
+export async function getShippingCharge(params: {
+  customerId?: number;
+  addressId?: number | null;
+  emirate?: string | null;
+  pincode?: string | null;
+}) {
+  const data = await apiRequest<{
+    status: boolean;
+    shippingCharge: number;
+    emirate?: string;
+  }>(portalUrl("/getshippingcharge"), {
+    method: "POST",
+    body: {
+      customerId: params.customerId,
+      addressId: params.addressId,
+      emirate: params.emirate,
+      state: params.emirate,
+      pincode: params.pincode,
+    },
+    auth: true,
+  });
   return data.shippingCharge ?? 0;
 }
 
