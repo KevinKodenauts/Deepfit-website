@@ -2,6 +2,12 @@ import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getCustomerReferralTree } from "@/lib/api/auth";
+import {
+  POINTS_PER_AED_REDEEM,
+  getCustomerRewardPoints,
+  type RewardLedgerEntry,
+  type RewardPendingCredit,
+} from "@/lib/api/rewards";
 
 export function formatProfilePhone(phone: string) {
   if (!phone) return "";
@@ -21,6 +27,11 @@ export function useProfilePage() {
   const { user, isAuthenticated, isLoading, logout, refreshProfile } = useAuth();
   const [profileLoading, setProfileLoading] = useState(false);
   const [copyMessage, setCopyMessage] = useState("");
+  const [pointsBalance, setPointsBalance] = useState(0);
+  const [rewardLedger, setRewardLedger] = useState<RewardLedgerEntry[]>([]);
+  const [pendingCredits, setPendingCredits] = useState<RewardPendingCredit[]>(
+    [],
+  );
   const [referralStats, setReferralStats] = useState({
     totalReferrals: 0,
     directInvites: 0,
@@ -30,7 +41,8 @@ export function useProfilePage() {
   const displayEmail = user?.customerEmail || user?.email || "";
   const displayPhone = formatProfilePhone(user?.phone || user?.customerMobile || "");
   const referralCode = user?.referralCode || "";
-  const totalRewards = user?.referralPoints ?? 0;
+  const totalRewards = pointsBalance || user?.referralPoints || 0;
+  const rewardsAedValue = Math.floor(totalRewards / POINTS_PER_AED_REDEEM);
   const initials = getProfileInitials(displayName || displayEmail || "User");
 
   const loadProfile = useCallback(async () => {
@@ -39,6 +51,27 @@ export function useProfilePage() {
     setProfileLoading(true);
     try {
       await refreshProfile();
+
+      try {
+        const rewards = await getCustomerRewardPoints();
+        if (rewards?.status) {
+          const bal = Number(
+            rewards.pointsBalance ?? rewards.referralPoints ?? 0,
+          );
+          if (Number.isFinite(bal)) setPointsBalance(bal);
+          setRewardLedger(
+            Array.isArray(rewards.ledger) ? rewards.ledger : [],
+          );
+          setPendingCredits(
+            Array.isArray(rewards.pendingCredits)
+              ? rewards.pendingCredits
+              : [],
+          );
+        }
+      } catch {
+        const fallback = Number(user?.referralPoints ?? 0);
+        if (Number.isFinite(fallback)) setPointsBalance(fallback);
+      }
 
       const tree = await getCustomerReferralTree(user.id);
       if (tree?.data) {
@@ -52,7 +85,7 @@ export function useProfilePage() {
     } finally {
       setProfileLoading(false);
     }
-  }, [isAuthenticated, refreshProfile, user?.id]);
+  }, [isAuthenticated, refreshProfile, user?.id, user?.referralPoints]);
 
   useEffect(() => {
     void loadProfile();
@@ -117,6 +150,10 @@ export function useProfilePage() {
     displayPhone,
     referralCode,
     totalRewards,
+    rewardsAedValue,
+    pointsPerAed: POINTS_PER_AED_REDEEM,
+    rewardLedger,
+    pendingCredits,
     initials,
     requireAuth,
     handleCopyReferral,

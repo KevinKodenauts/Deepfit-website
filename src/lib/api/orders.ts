@@ -384,6 +384,10 @@ export type PlaceOrderResult = {
   paymentUrl?: string;
   paymentIntentId?: string;
   isPaid?: boolean;
+  grandTotal?: string | number;
+  pointsRedeemed?: number;
+  pointsAed?: string | number;
+  pointsBalance?: number;
 };
 
 export async function placeOrder(payload: {
@@ -394,7 +398,10 @@ export async function placeOrder(payload: {
   couponCode?: string;
   subtotal?: number;
   shippingCost?: number;
+  /** Coupon discount only (points sent separately via pointsToRedeem). */
   discountAmount?: number;
+  /** Loyalty points to redeem (10 points = 1 AED). */
+  pointsToRedeem?: number;
   grandTotal?: number;
   platform?: "web" | "app";
 }) {
@@ -417,6 +424,9 @@ export async function placeOrder(payload: {
         variantId: item.variantId,
       })),
       ...(payload.couponCode ? { couponCode: payload.couponCode } : {}),
+      ...(payload.pointsToRedeem && payload.pointsToRedeem > 0
+        ? { pointsToRedeem: payload.pointsToRedeem }
+        : {}),
     },
     auth: true,
   });

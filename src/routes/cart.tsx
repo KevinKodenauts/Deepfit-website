@@ -23,6 +23,12 @@ import {
   startZiinaPayment,
   validateCoupon,
 } from "@/lib/api/orders";
+import {
+  MIN_POINTS_TO_REDEEM,
+  clampRedeemablePoints,
+  getCustomerRewardPoints,
+  pointsToAed,
+} from "@/lib/api/rewards";
 import { getCustomerId } from "@/lib/auth/session";
 import type { AddressView } from "@/lib/api/addresses";
 import { formatFullAddress, getAddressType } from "@/lib/addressDisplay";
@@ -47,7 +53,7 @@ type PaymentMethod = "ziina" | "cod";
 
 function Cart() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, refreshProfile } = useAuth();
   const {
     items,
     isLoading,
@@ -75,15 +81,33 @@ function Cart() {
   const [editingAddress, setEditingAddress] = useState<AddressView | null>(
     null,
   );
+  const [pointsBalance, setPointsBalance] = useState(0);
+  const [usePoints, setUsePoints] = useState(false);
+  const [pointsInput, setPointsInput] = useState("");
 
   const discount = useMemo(
     () => Math.min(Math.max(couponDiscount, 0), subtotal),
     [couponDiscount, subtotal],
   );
 
+  const maxRedeemablePoints = useMemo(() => {
+    const payable = Math.max(subtotal - discount + deliveryFee, 0);
+    return clampRedeemablePoints(pointsBalance, payable);
+  }, [pointsBalance, subtotal, discount, deliveryFee]);
+
+  const pointsToRedeem = useMemo(() => {
+    if (!usePoints) return 0;
+    const raw = Number.parseInt(pointsInput || String(maxRedeemablePoints), 10);
+    if (!Number.isFinite(raw) || raw <= 0) return 0;
+    const floored = Math.floor(raw / 10) * 10;
+    return Math.min(Math.max(floored, 0), maxRedeemablePoints);
+  }, [usePoints, pointsInput, maxRedeemablePoints]);
+
+  const pointsAed = useMemo(() => pointsToAed(pointsToRedeem), [pointsToRedeem]);
+
   const grandTotal = useMemo(
-    () => Math.max(subtotal - discount + deliveryFee, 0),
-    [subtotal, discount, deliveryFee],
+    () => Math.max(subtotal - discount - pointsAed + deliveryFee, 0),
+    [subtotal, discount, pointsAed, deliveryFee],
   );
 
   const prevSubtotalRef = useRef(subtotal);
@@ -102,6 +126,35 @@ function Cart() {
       void refreshAddresses();
     }
   }, [isAuthenticated, refreshCart, refreshAddresses]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setPointsBalance(0);
+      setUsePoints(false);
+      setPointsInput("");
+      return;
+    }
+    const fromUser = Number(user?.referralPoints ?? user?.referral_points ?? 0);
+    if (Number.isFinite(fromUser) && fromUser > 0) {
+      setPointsBalance(fromUser);
+    }
+    void getCustomerRewardPoints()
+      .then((res) => {
+        if (!res.status) return;
+        const bal = Number(res.pointsBalance ?? res.referralPoints ?? 0);
+        if (Number.isFinite(bal)) setPointsBalance(bal);
+      })
+      .catch(() => {
+        /* keep profile balance */
+      });
+  }, [isAuthenticated, user?.referralPoints, user?.referral_points]);
+
+  useEffect(() => {
+    if (!usePoints) return;
+    if (pointsToRedeem > maxRedeemablePoints) {
+      setPointsInput(String(maxRedeemablePoints));
+    }
+  }, [usePoints, pointsToRedeem, maxRedeemablePoints]);
 
   useEffect(() => {
     const customerId = getCustomerId();
@@ -176,8 +229,15 @@ function Cart() {
     }
 
     const isOnline = paymentMethod === "ziina";
-    if (isOnline && grandTotal < 2) {
-      alert("Online payments require a minimum of 2 AED.");
+    const fullyPointsPaid = pointsToRedeem > 0 && grandTotal < 0.01;
+    if (isOnline && !fullyPointsPaid && grandTotal < 2) {
+      alert(
+        "Online payments require a minimum of 2 AED remaining after points. Redeem more points or add items.",
+      );
+      return;
+    }
+    if (usePoints && pointsToRedeem > 0 && pointsToRedeem < MIN_POINTS_TO_REDEEM) {
+      alert(`Minimum ${MIN_POINTS_TO_REDEEM} points required to redeem.`);
       return;
     }
 
@@ -186,11 +246,12 @@ function Cart() {
       const result = await placeOrder({
         customerId,
         addressId: selectedAddressId,
-        paymentMethod: isOnline ? "ZIINA" : "COD",
+        paymentMethod: fullyPointsPaid ? "POINTS" : isOnline ? "ZIINA" : "COD",
         platform: "web",
         subtotal,
         shippingCost: deliveryFee,
         discountAmount: discount,
+        pointsToRedeem: pointsToRedeem > 0 ? pointsToRedeem : undefined,
         grandTotal,
         items: items.map((item) => ({
           productId: item.productId,
@@ -205,7 +266,9 @@ function Cart() {
         return;
       }
 
-      if (isOnline) {
+      void refreshProfile();
+
+      if (isOnline && !fullyPointsPaid && result.paymentRequired !== false) {
         let paymentUrl = result.paymentUrl;
         let paymentIntentId = result.paymentIntentId;
 
@@ -213,7 +276,7 @@ function Cart() {
           const payment = await startZiinaPayment({
             orderId: result.orderId,
             orderNumber: result.orderNumber,
-            amount: grandTotal,
+            amount: Number(result.grandTotal ?? grandTotal),
           });
           paymentUrl = payment.paymentUrl;
           paymentIntentId = payment.paymentIntentId;
@@ -257,6 +320,9 @@ function Cart() {
     grandTotal,
     subtotal,
     deliveryFee,
+    pointsToRedeem,
+    usePoints,
+    refreshProfile,
     discount,
     appliedCoupon,
     refreshCart,
@@ -520,6 +586,16 @@ function Cart() {
                     }
                   />
                 ) : null}
+                {pointsAed > 0 ? (
+                  <Row
+                    k={`Points (${pointsToRedeem})`}
+                    v={
+                      <span className="font-medium text-emerald-700">
+                        −<CurrencyAmount>{pointsAed}</CurrencyAmount>
+                      </span>
+                    }
+                  />
+                ) : null}
                 <Row
                   k={<span className="font-medium">Total</span>}
                   v={
@@ -529,6 +605,61 @@ function Cart() {
                   }
                 />
               </div>
+
+              {isAuthenticated && pointsBalance >= MIN_POINTS_TO_REDEEM ? (
+                <div className="mt-6 rounded-lg border border-border px-4 py-3">
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      className="mt-1"
+                      checked={usePoints}
+                      onChange={(e) => {
+                        const on = e.target.checked;
+                        setUsePoints(on);
+                        if (on) {
+                          setPointsInput(String(maxRedeemablePoints));
+                        } else {
+                          setPointsInput("");
+                        }
+                      }}
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-medium">
+                        Use reward points
+                      </span>
+                      <span className="mt-0.5 block text-xs text-muted-foreground">
+                        Balance: {pointsBalance} pts · 10 pts = 1 AED
+                        {maxRedeemablePoints > 0
+                          ? ` · up to ${maxRedeemablePoints} pts (AED ${pointsToAed(maxRedeemablePoints)})`
+                          : ""}
+                      </span>
+                    </span>
+                  </label>
+                  {usePoints ? (
+                    <div className="mt-3 flex items-center gap-2">
+                      <input
+                        type="number"
+                        min={MIN_POINTS_TO_REDEEM}
+                        step={10}
+                        max={maxRedeemablePoints}
+                        value={pointsInput}
+                        onChange={(e) => setPointsInput(e.target.value)}
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none transition focus:border-foreground/40 focus:ring-2 focus:ring-ring/20"
+                        placeholder="Points to redeem"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPointsInput(String(maxRedeemablePoints))
+                        }
+                        className="shrink-0 rounded-lg border border-border px-3 py-2 text-xs font-medium uppercase tracking-wider transition hover:bg-foreground/5"
+                      >
+                        Max
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
 
               <div className="mt-6">
                 {appliedCoupon ? (
